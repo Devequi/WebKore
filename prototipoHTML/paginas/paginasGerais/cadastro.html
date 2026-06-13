@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebKore</title>
+        <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+        <link rel="stylesheet" href="../../css/geral.css">
+        <link rel="stylesheet" href="../../css/paginasGerais/cadastro_login.css">
+</head>
+<body>
+    <main>
+        <section class="login">
+            <div class="apresentacao">
+                <img src="../../assets/logoWK.png" id="logo" alt="">
+                <h1>WebKore</h1>
+                <h2>Bem vindo</h2>
+                <p>Insira seus dados para criar sua conta</p>
+            </div>
+
+            <div class="inputs">
+                <select name="" id="tipoConta">
+                    <option value="jogador">Jogador</option>
+                    <option value="tecnico">Tecnico</option>
+                </select>
+                <div class="campos">
+                    <label for="inome"><span class="material-symbols-outlined">person</span></label>
+                    <input type="text" 
+                        id="inome"
+                        placeholder="Nome" 
+                        required>
+                </div>
+                <div class="campos" id="idataNasc">
+                    <label for="idata"><span class="material-symbols-outlined">Calendar_Month</span></label>
+                    <input type="date"
+                        id="idata"
+                        placeholder="Ano Nascimento"
+                        required
+                        >
+                </div>
+                <div class="campos">
+                    <label for="iemail"><span class="material-symbols-outlined">Drafts</span></label>
+                    <input type="text"
+                        id="iemail"
+                        placeholder="Email"
+                        required
+                        >
+                </div>
+                <div class="campos">
+                    <label for="isenha"><span class="material-symbols-outlined">key</span></label>
+                    <input type="password" 
+                        id="isenha"
+                        placeholder="Senha"
+                        required
+                        >
+                </div>
+            </div>   
+            <input type="button" value="Criar">
+        </section>
+    </main>
+
+    <script src="../../javascript/trocasdados.js"></script>
+</body>
+</html>

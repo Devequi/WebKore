@@ -1,0 +1,79 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+        Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue',
+        sans-serif;
+}
+
+:root {
+    /* Cores principais */
+    --color-primary: #0d315a;
+    --color-primary-light: #0026ff;
+
+    /* Backgrounds */
+    --bg-dark: #020617;
+    --bg-primary: #0f172a;
+    --bg-secondary: #0a1122;
+    --bg-terceary: #181d2eef;
+    --bg-card: rgba(255, 255, 255, 0.05);
+
+    /* Texto */
+    --text-primary: #ffffff;
+    --text-secondary: #b8b8b8;
+    --text-muted: #94a3b8;
+
+    /* Bordas */
+    --border-color: rgba(255, 255, 255, 0.08);
+
+    /* Sombras */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, .2);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, .3);
+
+    /* Bordas arredondadas */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+
+    /* Transições */
+    --transition: .3s ease;
+
+    /* Gradiente principal */
+    --gradient-bg:
+        radial-gradient(circle at 15% 20%, rgba(16,185,129,.18), transparent 25%),
+        radial-gradient(circle at 85% 80%, rgba(59,130,246,.18), transparent 25%),
+        linear-gradient(
+            135deg,
+            #020617 0%,
+            #0f172a 50%,
+            #111827 100%
+        );
+}
+
+.header {
+    padding: 15px;
+    background-color: var(--bg-primary);
+    display: flex;
+    flex-flow: row nowrap;
+}
+
+.header > h1 {
+    font-style: italic;
+    color: #ffffff;
+    font-size: 21px;
+}
+
+.header > .logo{
+    height: 25px;
+}
+
+.footer {
+    display: flex;
+    justify-content: space-between;
+
+    padding: 5px;
+
+    background-color: var(--bg-primary);
+}
