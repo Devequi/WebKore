@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="../../css/geral.css">
+    <link rel="stylesheet" href="../../css/paginasJogador/lobbyJogador.css">
+</head>
+<body>
+    <header class="header">
+        <img src="../../assets/logoWK.png" class="logo" alt=""> 
+        <h1>WebKore</h1>
+    </header>
+    <main>
+        <section class="infos">
+            <h2>Jogador</h2>
+            <h3>Lobby <strong>Atleta</strong></h3>
+            <p>
+                Selecione uma equipe para visualizar seu histórico de desempenho e frequência
+                ou busque uma equipe.
+            </p>
+        </section>
+
+       <section class="pesquisa">
+            <h2>Buscar equipe</h2>
+            <p>Digite o código da equipe que deseja e envie a solicitação.</p>
+
+            <div class="buscar">
+                <input type="text" placeholder="Código da equipe">
+                <input type="button" value="Buscar">
+            </div>
+        </section>
+
+        <section class="cardsEquipes">
+           <div class="team-card">
+                <div class="team-header">
+                    <img class="team-logo" src="https://cdn-icons-png.flaticon.com/512/53/53283.png" alt="Logo da equipe" />
+                    <div class="team-info">
+                    <h3 class="team-name">Equipe Sub-17</h3>
+                    <p class="team-sport">Futebol</p>
+                    </div>
+                </div>
+
+                <div class="team-body">
+                    <div class="team-stat">
+                        <span class="label">Treinos</span>
+                        <span class="value">24</span>
+                    </div>
+
+                    <div class="team-stat">
+                        <span class="label">Presença</span>
+                        <span class="value">92%</span>
+                    </div>
+
+                    <div class="team-stat">
+                        <span class="label">Ranking</span>
+                        <span class="value">#3</span>
+                    </div>
+                </div>
+                <div class="team-footer">
+                    <button class="btn-enter">Entrar</button>
+                    <button class="btn-details">Ver detalhes</button>
+                </div>
+            </div>
+             <div class="team-card">
+                <div class="team-header">
+                    <img class="team-logo" src="https://cdn-icons-png.flaticon.com/512/53/53283.png" alt="Logo da equipe" />
+                    <div class="team-info">
+                    <h3 class="team-name">Equipe Sub-17</h3>
+                    <p class="team-sport">Vôlei</p>
+                    </div>
+                </div>
+
+                <div class="team-body">
+                    <div class="team-stat">
+                        <span class="label">Treinos</span>
+                        <span class="value">14</span>
+                    </div>
+
+                    <div class="team-stat">
+                        <span class="label">Presença</span>
+                        <span class="value">62%</span>
+                    </div>
+
+                    <div class="team-stat">
+                        <span class="label">Ranking</span>
+                        <span class="value">#5</span>
+                    </div>
+                </div>
+
+                <div class="team-footer">
+                    <button class="btn-enter">Entrar</button>
+                    <button class="btn-details">Ver detalhes</button>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer>
+    </footer>
+    <script src="../../javascript/expandircard.js"></script>
+</body>
+</html>
