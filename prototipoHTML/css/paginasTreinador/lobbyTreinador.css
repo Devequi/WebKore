@@ -1,0 +1,213 @@
+body {
+    background-color: var(--bg-secondary);
+}
+
+main {
+    padding: 16px;
+}
+
+/* ===== INFORMAÇÕES ===== */
+
+.infos h2 {
+    font-size: 1rem;
+    color: var(--color-primary-light);
+}
+
+.infos h3 {
+    font-size: clamp(1.8rem, 5vw, 2.5rem);
+    color: var(--text-primary);
+}
+
+.infos p {
+    margin-top: 8px;
+    max-width: 350px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.infos strong {
+    color: var(--color-primary-light);
+    font-weight: 800;
+}
+
+/* ===== PESQUISA ===== */
+
+.pesquisa {
+    margin-top: 16px;
+    padding: 16px;
+
+    width: 100%;
+
+    background-color: var(--bg-terceary);
+
+    border: 1px solid rgba(23, 11, 66, 0.24);
+    border-radius: var(--radius-md);
+
+    box-shadow: var(--shadow-sm);
+}
+
+.pesquisa h2 {
+    color: var(--text-primary);
+}
+
+.pesquisa p {
+    margin-top: 4px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.btn-criarEquipe {
+    background-color: var(--bg-card);
+    color: var(--text-primary);
+
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+
+    width: 100%;
+
+    margin-top: 5px;
+    padding: 17px;
+}
+
+
+/* ===== CARDS ===== */
+
+.cardsEquipes {
+    margin-top: 20px;
+}
+
+.card {
+    padding: 16px;
+
+    background-color: var(--bg-terceary);
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-md);
+
+    box-shadow: var(--shadow-sm);
+}
+
+.team-card {
+    margin-bottom: 10px;
+    width: 100%;
+
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+
+    padding: 16px;
+    box-shadow: var(--shadow-sm);
+    font-family: Arial, sans-serif;
+    backdrop-filter: blur(10px);
+
+    transition: transform var(--transition), box-shadow var(--transition), border var(--transition);
+}
+
+.team-header {
+    display: flex;
+
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.team-logo {
+    width: 56px;
+    height: 56px;
+    
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.team-name {
+    font-size: 16px;
+    margin: 0;
+    color: var(--text-primary);
+    font-weight: 600;
+    }
+
+.team-sport {
+    font-size: 13px;
+    margin: 2px 0 0;
+    color: var(--text-muted);
+}
+
+.team-body {
+    display: none;
+    justify-content: space-between;
+    margin: 16px 0;
+    gap: 8px;
+}
+
+.team-stat {
+    flex: 1;
+    text-align: center;
+    padding: 8px;
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    transition: background var(--transition);
+}
+
+.label {
+    display: block;
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.value {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-top: 2px;
+}
+
+.team-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.btn-enter {
+    background: var(--color-primary);
+    color: var(--text-primary);
+    border: 1px solid transparent;
+    padding: 12px 16px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 13px;
+
+    width: 25%;
+}
+
+/*== Campo De copiar e Colar ==*/
+
+.campo-idEquipe{
+    overflow: hidden;
+
+    display: flex;
+
+    width: 70%;
+
+    padding: 3px;
+    background-color: var(--bg-secondary);
+    border-radius: var(--radius-sm)
+}
+
+.idEquipe {
+    width: 87%;
+    background-color: transparent;
+    padding: 3px;
+    border: 0;
+
+    font-size: 0.67em;
+    color: var(--text-primary);
+}
+
+.copiar {
+    background-color: transparent;
+    padding: 3px;
+    border: 0;
+    color: var(--text-primary);
+}
