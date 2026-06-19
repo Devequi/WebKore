@@ -2,13 +2,13 @@
 
 ## Tabela Resumida (SWOT)
 
-| Fatores Internos | Forças                                                                                                                                                                                                                                                                                                                                                      | Fraquezas                                                                                                                                                                                                                                                                                                                                                                          |
-| :--------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-|                  | • Interface simples e intuitiva.<br>• Gráficos e dashboards que facilitam a análise dos dados.<br>• Sistema com área exclusiva para treinadores e atletas.<br>• Gerenciamento de múltiplas equipes em uma única conta.<br>• Processo simplificado de entrada através de códigos de equipe.<br>• Estrutura preparada para diferentes modalidades esportivas. | • Dependência do correto preenchimento dos dados pelos treinadores.<br>• Necessidade de cuidados com privacidade e segurança das informações.<br>• Recursos financeiros limitados para desenvolvimento e infraestrutura.<br>• Primeira experiência da equipe com um sistema de maior porte.<br>• Necessidade de manter o sistema atualizado conforme novas modalidades e demandas. |
+| Fatores Internos | Forças                                                                                                                                                                                                                                                                                                                                                                   | Fraquezas                                                                                                                                                                                                                                                                                                                                                              |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|                  | • Interface simples e intuitiva.<br>• Dashboards e gráficos para acompanhamento de desempenho.<br>• Áreas específicas para treinadores e atletas.<br>• Participação em múltiplas equipes utilizando uma única conta.<br>• Entrada em equipes através de código de acesso.<br>• Suporte a diferentes modalidades esportivas.<br>• Critérios de avaliação personalizáveis. | • Dependência do preenchimento manual das informações pelos treinadores.<br>• Necessidade de cuidados com privacidade e proteção de dados dos usuários.<br>• Dependência de Dados Corretos <br>• Complexidade na manutenção e evolução do sistema.<br>• Dependência da participação ativa dos treinadores para manter os dados atualizados. |
 
-| Fatores Externos | Oportunidades                                                                                                                                                                                                                                                                                                    | Ameaças                                                                                                                                                                                                                                                                                                                    |
-| :--------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-|                  | • Crescimento do uso de tecnologia no esporte.<br>• Expansão para escolinhas, clubes e projetos esportivos.<br>• Possibilidade de inclusão de Inteligência Artificial no futuro.<br>• Crescente interesse por acompanhamento de desempenho esportivo.<br>• Possibilidade de adaptação para diversas modalidades. | • Existência de plataformas esportivas já consolidadas no mercado.<br>• Resistência de alguns treinadores ao uso de novas tecnologias.<br>• Mudanças na legislação sobre proteção de dados.<br>• Dependência de acesso à internet para utilização da plataforma.<br>• Possível dificuldade de adesão inicial dos usuários. |
+| Fatores Externos | Oportunidades                                                                                                                                                                                                                                                                                                       | Ameaças                                                                                                                                                                                                                                                                                                                                  |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|                  | • Crescimento do uso de tecnologia no esporte.<br>• Expansão para escolas, clubes e projetos esportivos.<br>• Possibilidade de parcerias com instituições esportivas e educacionais.<br>• Inclusão de novos recursos e dashboards no futuro.<br>• Interesse crescente pelo acompanhamento de desempenho individual. | • Existência de plataformas esportivas já consolidadas no mercado.<br>• Resistência de alguns usuários à adoção de ferramentas digitais.<br>• Mudanças em legislações relacionadas à proteção de dados.<br>• Problemas de conexão à internet em locais de treino.<br>• Dificuldade inicial para conquistar usuários e validar o sistema. |
 
 ---
 
@@ -18,51 +18,54 @@
 
 #### Interface Simples e Intuitiva
 
-O sistema foi projetado para ser de fácil utilização, permitindo que treinadores e atletas utilizem suas funcionalidades sem necessidade de treinamentos complexos.
+O WebKore foi planejado para oferecer uma navegação simples, permitindo que treinadores e atletas utilizem suas funcionalidades sem dificuldades.
 
 #### Dashboards e Gráficos
 
-Os dados registrados são transformados em gráficos e indicadores visuais, facilitando a análise da evolução dos atletas e da equipe.
+As informações registradas nos treinos são transformadas em gráficos e indicadores visuais, facilitando a análise da evolução dos atletas e das equipes.
 
-#### Integração entre Treinador e Atleta
+#### Separação de Perfis
 
-O WebKore reúne em uma única plataforma funcionalidades voltadas para os dois perfis, permitindo que treinadores acompanhem suas equipes enquanto atletas visualizam a própria evolução.
+O sistema possui áreas específicas para treinadores e atletas, permitindo que cada usuário tenha acesso apenas às funcionalidades relacionadas ao seu perfil.
 
-#### Gerenciamento de Múltiplas Equipes
+#### Participação em Múltiplas Equipes
 
-Treinadores e atletas podem participar de diversas equipes utilizando apenas uma conta, tornando o sistema mais flexível.
+Uma mesma conta poderá participar ou gerenciar várias equipes, facilitando a organização para usuários envolvidos em mais de um grupo esportivo.
 
-#### Entrada por Código de Equipe
+#### Entrada por Código
 
-O processo de vinculação entre atletas e equipes ocorre através de códigos únicos, simplificando o gerenciamento dos elencos.
+O ingresso dos atletas nas equipes acontece através de códigos de acesso, tornando o processo mais simples e organizado.
 
-#### Estrutura Adaptável
+#### Flexibilidade para Diferentes Modalidades
 
-A plataforma foi planejada para atender diferentes modalidades esportivas, permitindo futuras expansões sem grandes alterações na proposta do sistema.
+A estrutura do sistema foi planejada para atender diferentes modalidades esportivas, permitindo adaptações e expansões futuras.
+
+#### Critérios de Avaliação Personalizáveis
+
+Cada equipe poderá definir critérios próprios de avaliação, permitindo adaptar o sistema às necessidades de cada modalidade e metodologia de treinamento.
 
 ---
 
-### Fraquezas
+## Fraquezas
 
 #### Dependência do Registro Manual
 
-A qualidade das informações apresentadas depende diretamente do preenchimento correto dos dados pelos treinadores.
+A qualidade das informações exibidas depende diretamente do preenchimento correto dos dados pelos treinadores.
 
-#### Segurança e Privacidade
+#### Proteção de Dados
 
-Como o sistema armazena informações pessoais e esportivas dos usuários, é necessário investir tempo e atenção em mecanismos de proteção de dados.
+O sistema armazenará informações pessoais dos usuários, exigindo atenção especial à segurança e privacidade dos dados.
 
-#### Limitação de Recursos
+#### Recursos Limitados
 
-Por se tratar de um projeto acadêmico, existem limitações financeiras para contratação de serviços, infraestrutura e recursos adicionais.
+Por se tratar de um projeto acadêmico, existem limitações relacionadas ao tempo de desenvolvimento, infraestrutura e recursos disponíveis.
 
-#### Experiência da Equipe
+### Dependência da Qualidade dos Dados
+Informações incorretas ou incompletas podem comprometer gráficos, estatísticas e análises geradas pelo sistema.
 
-O desenvolvimento do WebKore representa um desafio importante, sendo um dos projetos mais completos já desenvolvidos pela equipe.
+#### Engajamento dos Usuários
 
-#### Evolução Contínua
-
-Novas modalidades esportivas e necessidades dos usuários podem exigir atualizações frequentes na plataforma.
+O funcionamento adequado da plataforma depende da utilização constante por parte dos treinadores e atletas.
 
 ---
 
@@ -72,44 +75,44 @@ Novas modalidades esportivas e necessidades dos usuários podem exigir atualiza�
 
 #### Crescimento da Tecnologia no Esporte
 
-O uso de dados para acompanhamento de desempenho vem se tornando cada vez mais comum em equipes esportivas de diferentes níveis.
+O uso de dados e estatísticas para análise de desempenho tem se tornado cada vez mais comum em diferentes níveis do esporte.
 
 #### Expansão para Novos Públicos
 
-Além de equipes escolares, o sistema pode atender clubes, academias, projetos sociais e outras organizações esportivas.
+Além de equipes escolares, o sistema pode atender clubes, escolinhas esportivas, projetos sociais e equipes amadoras.
 
-#### Inteligência Artificial
+#### Parcerias Institucionais
 
-No futuro, a plataforma poderá incorporar recursos de análise preditiva e recomendações automáticas baseadas nos dados registrados.
+Existe potencial para utilização da plataforma por instituições esportivas e educacionais interessadas em acompanhar o desenvolvimento de seus atletas.
 
-#### Valorização do Desempenho Individual
+#### Evolução da Plataforma
 
-Atletas têm buscado cada vez mais acompanhar a própria evolução, o que aumenta o interesse por ferramentas desse tipo.
+Novos dashboards, métricas e funcionalidades poderão ser incorporados futuramente conforme surgirem novas necessidades.
 
-#### Novas Modalidades
+#### Interesse pelo Desenvolvimento Individual
 
-A estrutura do sistema permite sua utilização em diferentes esportes, ampliando seu potencial de crescimento.
+Cada vez mais atletas buscam acompanhar sua própria evolução, aumentando o interesse por ferramentas de monitoramento de desempenho.
 
 ---
 
-### Ameaças
+## Ameaças
 
 #### Concorrência
 
-Existem soluções de gestão esportiva já estabelecidas no mercado que podem disputar o mesmo público-alvo.
+Existem plataformas esportivas já estabelecidas que oferecem recursos semelhantes e possuem maior presença no mercado.
 
 #### Resistência à Mudança
 
-Alguns treinadores ainda preferem utilizar métodos tradicionais, como anotações em papel e planilhas.
+Alguns treinadores ainda preferem métodos tradicionais de acompanhamento, como anotações em papel ou planilhas.
 
-#### Legislação de Dados
+#### Mudanças na Legislação
 
-Mudanças ou exigências mais rígidas relacionadas à proteção de dados podem aumentar a complexidade do sistema.
+Alterações em leis relacionadas à proteção de dados podem exigir adaptações no sistema.
 
-#### Dependência de Internet
+#### Problemas de Conectividade
 
-Por ser uma plataforma web, a utilização depende da disponibilidade de conexão com a internet.
+Locais de treino podem apresentar falhas de conexão com a internet. Para minimizar esse problema, o WebKore utilizará armazenamento local temporário para evitar a perda de informações durante o registro dos dados.
 
 #### Adoção Inicial
 
-Como qualquer novo sistema, pode haver dificuldades para conquistar a confiança e adesão dos primeiros usuários.
+Como qualquer novo sistema, o WebKore pode enfrentar dificuldades para conquistar seus primeiros usuários e validar sua proposta.

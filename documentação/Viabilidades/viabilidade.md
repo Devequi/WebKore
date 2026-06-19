@@ -2,49 +2,68 @@
 
 ## Resumo das Viabilidades
 
-| Pilar de Viabilidade | Foco Principal                | Estratégia do Projeto                                                                       |
-| :------------------- | :---------------------------- | :------------------------------------------------------------------------------------------ |
-| **Técnica**          | Ferramentas e Desenvolvimento | Uso de tecnologias modernas, rápidas e confiáveis como React, Vite, Node.js e Recharts.     |
-| **Econômica**        | Custos e Investimento         | Utilização de ferramentas gratuitas (*open-source*) e redução de custos no desenvolvimento. |
-| **Operacional**      | Praticidade e Uso Diário      | Interface simples, intuitiva e fácil de utilizar para treinadores e atletas.                |
-| **Legal**            | Segurança e Privacidade       | Proteção das informações dos usuários e alinhamento com a LGPD.                             |
+| Pilar de Viabilidade | Foco Principal                | Estratégia do Projeto                                                                               |
+| -------------------- | ----------------------------- | --------------------------------------------------------------------------------------------------- |
+| **Técnica**          | Ferramentas e Desenvolvimento | Utilização de tecnologias modernas, amplamente utilizadas e adequadas para aplicações web.          |
+| **Econômica**        | Custos e Investimento         | Uso de ferramentas gratuitas e de código aberto, reduzindo custos de desenvolvimento e implantação. |
+| **Operacional**      | Praticidade e Uso Diário      | Interface intuitiva e funcionalidades voltadas para a rotina de treinadores e atletas.              |
+| **Legal**            | Segurança e Privacidade       | Proteção das informações dos usuários e alinhamento com os princípios da LGPD.                      |
 
 ---
 
 ## Detalhamento dos Pilares
 
-### 1) Viabilidade Técnica
+### 1. Viabilidade Técnica
 
-O sistema é tecnicamente viável por utilizar tecnologias modernas, populares e amplamente utilizadas no desenvolvimento web atual.
+O WebKore é tecnicamente viável por utilizar tecnologias modernas, consolidadas e amplamente utilizadas no desenvolvimento web.
 
-* **Frontend:** O uso do **React** junto com o **Vite** permitirá criar uma interface rápida, organizada e de fácil utilização.
-* **Backend:** O **Node.js** com **Express** será utilizado para desenvolver a comunicação entre o sistema e o banco de dados de forma eficiente.
-* **Visualização de Dados:** A biblioteca **Recharts** será responsável pela criação de gráficos e dashboards que ajudarão treinadores e atletas a visualizarem o desempenho esportivo de maneira simples e intuitiva.
-* **Expansão Futura:** A estrutura do projeto também permitirá futuras melhorias e novas funcionalidades, como integração com inteligência artificial e análises mais avançadas.
+* **Frontend:** React e Vite serão utilizados para criar uma interface rápida, organizada e responsiva.
+* **Backend:** Node.js e Express serão responsáveis pela comunicação entre a aplicação e o banco de dados.
+* **Visualização de Dados:** A biblioteca Recharts será utilizada na criação de gráficos e dashboards para análise de desempenho.
+* **Banco de Dados:** MySQL e Prisma ORM permitirão o armazenamento e gerenciamento das informações de forma estruturada.
+* **Comunidade e Documentação:** As tecnologias escolhidas possuem ampla documentação e grande comunidade de desenvolvedores, facilitando o aprendizado, a resolução de problemas e a manutenção do sistema.
+* **Possibilidade de Expansão:** A estrutura do projeto permitirá futuras melhorias, como novos dashboards,integração com IA, métricas esportivas e suporte para outras modalidades.
 
-### 2) Viabilidade Econômica
+---
 
-O projeto possui baixo custo de desenvolvimento, tornando sua implementação economicamente viável.
+### 2. Viabilidade Econômica
 
-* **Tecnologias Gratuitas:** Todas as ferramentas utilizadas no desenvolvimento são gratuitas e de código aberto (*open-source*), evitando gastos com licenciamento de software.
+O projeto apresenta baixo custo de desenvolvimento, tornando sua implementação economicamente viável.
+
+* **Tecnologias Gratuitas:** Todas as ferramentas utilizadas são gratuitas e de código aberto, eliminando custos com licenciamento de software.
 * **Baixo Custo de Implantação:** O sistema poderá ser hospedado inicialmente em serviços gratuitos ou de baixo custo.
-* **Cliente Real:** Como o projeto atende uma necessidade real do Esporte Clube da ETEC de Araras, o risco de o sistema não ser utilizado é reduzido.
-* **Facilidade de Manutenção:** As tecnologias escolhidas facilitam futuras correções e melhorias no sistema.
+* **Cliente Real:** O projeto foi idealizado para atender uma necessidade identificada do EsportEtec, aumentando as chances de utilização da plataforma após sua conclusão.
+* **Facilidade de Manutenção:** As tecnologias escolhidas facilitam futuras correções, atualizações e melhorias.
 
-### 3) Viabilidade Operacional
+---
 
-O sistema foi pensado para ser simples e fácil de utilizar no dia a dia.
+### 3. Viabilidade Operacional
 
-* **Facilidade de Uso:** A plataforma será intuitiva para que treinadores e atletas consigam utilizar o sistema sem dificuldades.
-* **Praticidade:** O registro de treinos, métricas e presença poderá ser realizado de maneira rápida e organizada.
-* **Análise Visual:** Os dashboards e gráficos permitirão acompanhar a evolução dos atletas de forma mais clara e visual.
-* **Acesso em Diferentes Dispositivos:** O sistema poderá ser acessado em computadores, tablets e celulares.
+O sistema foi planejado para ser simples e prático no dia a dia.
 
-### 4) Viabilidade Legal
+* **Facilidade de Uso:** A interface será intuitiva, permitindo que treinadores e atletas utilizem o sistema sem grandes dificuldades.
+* **Registro Simplificado:** O cadastro de presenças, avaliações e métricas poderá ser realizado de forma rápida e organizada.
+* **Análise Visual:** Os dashboards e gráficos facilitarão a visualização da evolução dos atletas e das equipes.
+* **Acesso em Diferentes Dispositivos:** O sistema poderá ser utilizado em computadores, tablets e smartphones.
+* **Entrada por Código:** Os atletas poderão ingressar nas equipes por meio de códigos de acesso, simplificando o gerenciamento e a organização das equipes.
+* **Armazenamento Local:** O sistema utilizará armazenamento local temporário para auxiliar o registro de informações em situações de instabilidade de conexão.
 
-O projeto também considera questões relacionadas à segurança e privacidade das informações dos usuários.
+---
 
-* **Alinhamento com a LGPD:** O sistema buscará seguir os princípios da Lei Geral de Proteção de Dados (LGPD), garantindo maior proteção das informações cadastradas.
-* **Controle de Acesso:** Cada utilizador terá acesso apenas às informações permitidas pelo seu perfil.
-* **Proteção das Informações:** As palavras-passe serão armazenadas de forma segura e o sistema contará com autenticação de usuários.
-* **Privacidade dos Dados:** As informações registradas serão utilizadas apenas para fins relacionados ao acompanhamento esportivo dos atletas.
+### 4. Viabilidade Legal
+
+O projeto considera aspectos relacionados à segurança, privacidade e proteção das informações dos usuários.
+
+* **Alinhamento com a LGPD:** O sistema buscará seguir os princípios da Lei Geral de Proteção de Dados (LGPD), promovendo maior segurança no tratamento das informações.
+* **Controle de Acesso:** Cada usuário terá acesso apenas às funcionalidades e informações permitidas pelo seu perfil.
+* **Proteção das Informações:** As senhas serão armazenadas de forma segura e o sistema contará com mecanismos de autenticação.
+* **Uso Adequado dos Dados:** As informações registradas serão utilizadas exclusivamente para fins relacionados ao acompanhamento esportivo dos atletas.
+* **Privacidade dos Usuários:** O acesso às informações será restrito aos usuários autorizados, reduzindo riscos relacionados ao compartilhamento indevido de dados.
+
+---
+
+## Considerações Finais
+
+A análise de viabilidade demonstra que o WebKore pode ser desenvolvido utilizando tecnologias acessíveis, com baixo custo de implantação e foco em uma necessidade real identificada no ambiente esportivo da ETEC de Araras.
+
+Além de apresentar viabilidade técnica e econômica, o projeto busca oferecer uma solução prática para treinadores e atletas, mantendo atenção aos aspectos de segurança, privacidade e proteção dos dados dos usuários.
