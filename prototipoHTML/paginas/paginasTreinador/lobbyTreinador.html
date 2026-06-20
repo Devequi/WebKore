@@ -21,10 +21,36 @@
             </p>
         </section>
 
-       <section class="pesquisa">
-            <h2>Criação equipe</h2>
-            <p>Começe a criar sua equipe.</p>
-            <input type="button" value="Criar equipe" class="btn-criarEquipe">
+        <section class="create-team-section">
+            <div class="create-card">
+                <div class="create-header">
+                    <div>
+                        <h2>Criar Nova Equipe</h2>
+                        <p>Preencha os dados para gerar o código de acesso.</p>
+                    </div>
+                </div>
+                
+                <form class="create-form">
+                    <div class="input-group">
+                        <label for="teamName">Nome da Equipe</label>
+                        <input type="text" id="teamName" placeholder="Ex: Sub-17 Principal" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="teamSport">Modalidade Esportiva</label>
+                        <select id="teamSport" required>
+                            <option value="" disabled selected hidden>Selecione a modalidade</option>
+                            <option value="futebol">Futebol</option>
+                            <option value="volei">Vôlei</option>
+                            <option value="basquete">Basquete</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn-criarEquipe">
+                        Criar Equipe
+                    </button>
+                </form>
+            </div>
         </section>
 
         <section class="cardsEquipes">
@@ -67,6 +93,5 @@
     </main>
     <footer>
     </footer>
-    <script src="../../javascript/expandircard.js"></script>
 </body>
 </html>

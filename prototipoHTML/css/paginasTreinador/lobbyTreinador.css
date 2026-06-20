@@ -1,213 +1,253 @@
-body {
-    background-color: var(--bg-secondary);
-}
+/* =========================
+   LAYOUT & CONTAINERS
+========================= */
 
 main {
     padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
 }
 
-/* ===== INFORMAÇÕES ===== */
+.infos {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
 
 .infos h2 {
-    font-size: 1rem;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
     color: var(--color-primary-light);
 }
 
 .infos h3 {
-    font-size: clamp(1.8rem, 5vw, 2.5rem);
-    color: var(--text-primary);
+    font-size: 1.6rem;
+    font-weight: 700;
 }
 
 .infos p {
-    margin-top: 8px;
-    max-width: 350px;
-    color: var(--text-secondary);
-    line-height: 1.5;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.4;
 }
 
-.infos strong {
+/* =========================
+   CARD DE CRIAÇÃO (FORMULÁRIO)
+========================= */
+
+.create-card {
+    padding: 20px;
+    background: var(--bg-card);
+    border: 1px solid rgba(255, 255, 255, 0.12); /* Borda levemente mais clara para destacar ação */
+    border-radius: var(--radius-lg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-md);
+}
+
+.create-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.create-icon {
+    font-size: 28px;
     color: var(--color-primary-light);
-    font-weight: 800;
 }
 
-/* ===== PESQUISA ===== */
-
-.pesquisa {
-    margin-top: 16px;
-    padding: 16px;
-
-    width: 100%;
-
-    background-color: var(--bg-terceary);
-
-    border: 1px solid rgba(23, 11, 66, 0.24);
-    border-radius: var(--radius-md);
-
-    box-shadow: var(--shadow-sm);
+.create-header h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
 }
 
-.pesquisa h2 {
-    color: var(--text-primary);
+.create-header p {
+    font-size: 0.75rem;
+    color: var(--text-muted);
 }
 
-.pesquisa p {
-    margin-top: 4px;
-    font-size: 0.9rem;
+.create-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.input-group label {
+    font-size: 0.75rem;
+    font-weight: 600;
     color: var(--text-secondary);
+}
+
+/* Estilização inputs de texto e select transparentes/modernos */
+.create-form input[type="text"],
+.create-form select {
+    width: 100%;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    outline: none;
+    transition: var(--transition);
+}
+
+.create-form input[type="text"]:focus,
+.create-form select:focus {
+    border-color: var(--color-primary-light);
+    box-shadow: 0 0 0 2px rgba(0, 38, 255, 0.2);
+}
+
+/* Força as opções do select a ficarem legíveis em celulares com temas nativos escuros */
+.create-form select option {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
 }
 
 .btn-criarEquipe {
-    background-color: var(--bg-card);
-    color: var(--text-primary);
-
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--border-color);
-
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     width: 100%;
-
-    margin-top: 5px;
-    padding: 17px;
+    padding: 14px;
+    background: var(--color-primary-light);
+    border: none;
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+    margin-top: 4px;
 }
 
+.btn-criarEquipe:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
 
-/* ===== CARDS ===== */
+/* =========================
+   LISTAGEM DE EQUIPES EXISTENTES
+========================= */
 
 .cardsEquipes {
-    margin-top: 20px;
-}
-
-.card {
-    padding: 16px;
-
-    background-color: var(--bg-terceary);
-
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: var(--radius-md);
-
-    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .team-card {
-    margin-bottom: 10px;
-    width: 100%;
-
+    padding: 16px;
     background: var(--bg-card);
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-
-    padding: 16px;
-    box-shadow: var(--shadow-sm);
-    font-family: Arial, sans-serif;
-    backdrop-filter: blur(10px);
-
-    transition: transform var(--transition), box-shadow var(--transition), border var(--transition);
+    border-radius: var(--radius-md);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
 .team-header {
     display: flex;
-
+    align-items: center;
     gap: 12px;
-    margin-bottom: 14px;
 }
 
 .team-logo {
-    width: 56px;
-    height: 56px;
-    
-    border-radius: var(--radius-md);
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    filter: brightness(0) invert(1); /* Deixa ícones pretos em formato branco neon */
+    opacity: 0.8;
+}
+
+.team-info {
+    display: flex;
+    flex-direction: column;
 }
 
 .team-name {
-    font-size: 16px;
-    margin: 0;
-    color: var(--text-primary);
+    font-size: 1rem;
     font-weight: 600;
-    }
+}
 
 .team-sport {
-    font-size: 13px;
-    margin: 2px 0 0;
+    font-size: 0.75rem;
     color: var(--text-muted);
 }
 
-.team-body {
-    display: none;
-    justify-content: space-between;
-    margin: 16px 0;
-    gap: 8px;
-}
-
-.team-stat {
-    flex: 1;
-    text-align: center;
-    padding: 8px;
-    border-radius: var(--radius-sm);
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid var(--border-color);
-    transition: background var(--transition);
-}
-
-.label {
-    display: block;
-    font-size: 11px;
-    color: var(--text-muted);
-}
-
-.value {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-top: 2px;
-}
-
+/* Rodapé dos cards de equipe responsivo */
 .team-footer {
     display: flex;
-    justify-content: space-between;
-    margin-top: 10px;
+    flex-direction: column;
+    gap: 10px;
 }
 
-.btn-enter {
-    background: var(--color-primary);
-    color: var(--text-primary);
-    border: 1px solid transparent;
-    padding: 12px 16px;
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    transition: var(--transition);
-    font-size: 13px;
-
-    width: 25%;
-}
-
-/*== Campo De copiar e Colar ==*/
-
-.campo-idEquipe{
-    overflow: hidden;
-
+.campo-idEquipe {
     display: flex;
-
-    width: 70%;
-
-    padding: 3px;
-    background-color: var(--bg-secondary);
-    border-radius: var(--radius-sm)
+    width: 100%;
+    background: rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
 }
 
 .idEquipe {
-    width: 87%;
-    background-color: transparent;
-    padding: 3px;
-    border: 0;
-
-    font-size: 0.67em;
-    color: var(--text-primary);
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 10px;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    outline: none;
+    text-overflow: ellipsis;
 }
 
 .copiar {
-    background-color: transparent;
-    padding: 3px;
-    border: 0;
+    background: rgba(255, 255, 255, 0.05);
+    border: none;
+    border-left: 1px solid var(--border-color);
+    padding: 0 12px;
     color: var(--text-primary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-enter {
+    width: 100%;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-enter:hover {
+    background: var(--text-primary);
+    color: var(--bg-dark);
+}
+
+/* =========================
+   MEDIA QUERIES (TABLET/PC)
+========================= */
+@media (min-width: 520px) {
+    main {
+        max-width: 500px;
+        margin: 0 auto;
+    }
 }

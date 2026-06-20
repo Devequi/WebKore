@@ -262,93 +262,7 @@ main {
     color: var(--text-secondary);
 }
 
-.footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
 
-    width: 100%;
-    height: 70px;
-
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-
-    background: rgba(15, 23, 42, .85);
-    backdrop-filter: blur(20px);
-
-    border-top: 1px solid var(--border-color);
-
-    z-index: 1000;
-}
-
-.footer a {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-
-    text-decoration: none;
-
-    color: var(--text-muted);
-
-    font-size: .75rem;
-
-    transition: var(--transition);
-}
-
-.footer a:hover,
-.footer a.active {
-    color: var(--text-primary);
-}
-
-.footer i {
-    font-size: 1.2rem;
-}
-
-.footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-
-    width: 100%;
-    height: 70px;
-
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-
-    background: rgba(15, 23, 42, .85);
-    backdrop-filter: blur(20px);
-
-    border-top: 1px solid var(--border-color);
-
-    z-index: 1000;
-}
-
-.footer a {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-
-    text-decoration: none;
-
-    color: var(--text-muted);
-
-    font-size: .75rem;
-
-    transition: var(--transition);
-}
-
-.footer a:hover,
-.footer a.active {
-    color: var(--text-primary);
-}
-
-.footer i {
-    font-size: 1.2rem;
-}
 
 
 .performance-card {
@@ -434,9 +348,9 @@ main {
 .p4 { left: 65%; top: 42%; }
 .p5 { left: 85%; top: 37%; }
 
-.months {
+.days {
     display: flex;
 
-    gap: 34px;
+    gap: 25px;
     color: var(--text-muted);
 }

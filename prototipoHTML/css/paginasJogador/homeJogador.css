@@ -1,31 +1,29 @@
 /* =========================
-   LAYOUT
+   LAYOUT BASE (CELULAR)
 ========================= */
 
-body {
-    background-color: var(--bg-secondary);
-}
-
 main {
-    padding: 10px;
-}
-
-a {
-    margin-top: 6px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
 }
 
 .header-buttons {
     display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    flex: 1;
+    align-items: center;
+    gap: 12px;
 }
 
 .icon-btn {
     background: transparent;
     border: none;
     color: var(--text-primary);
+    font-size: 24px;
     cursor: pointer;
+    display: flex;
+    align-items: center;
 }
 
 /* =========================
@@ -33,37 +31,37 @@ a {
 ========================= */
 
 .card,
-.evo-card,
-.last-training-card,
+.chart-card,
 .history-card {
     padding: 16px;
-
     background: var(--bg-card);
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-
+    border-radius: var(--radius-lg);
     backdrop-filter: blur(10px);
-
-    color: var(--text-primary);
-
+    -webkit-backdrop-filter: blur(10px);
     box-shadow: var(--shadow-sm);
 }
 
 /* =========================
-   TOP CARDS
+   TOP CARDS (GRID COMPACTO)
 ========================= */
 
 .top-cards {
-    display: flex;
+    display: grid;
+    /* O minmax(0, 1fr) impede que os cards empurrem a tela para o lado se o texto for grande */
+    grid-template-columns: repeat(2, minmax(0, 1fr)); 
     gap: 10px;
 }
 
 .card {
-    flex: 1;
-
     display: flex;
     flex-direction: column;
     gap: 4px;
+}
+
+/* Faz o card de desempenho ocupar a largura total das 2 colunas abaixo */
+.card.card-full {
+    grid-column: span 2;
 }
 
 .card-icon {
@@ -72,148 +70,94 @@ a {
 }
 
 .title-card {
-    font-size: .8rem;
+    font-size: 0.75rem;
     color: var(--text-muted);
+    font-weight: 500;
+}
+
+/* Container flex para a nota e a evolução ficarem organizados */
+.value-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap; /* Caso a tela seja minúscula, o badge quebra sem quebrar o layout */
+    margin: 4px 0;
 }
 
 .value-card {
-    font-size: 2rem;
+    font-size: 1.8rem;
     font-weight: 700;
     line-height: 1;
 }
 
+/* Badge de % que subiu após o treino */
+.trend-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.trend-badge.positive {
+    background: rgba(34, 197, 94, 0.12);
+    color: var(--color-success);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.trend-badge .material-icons {
+    font-size: 12px;
+}
+
 .desc-card {
-    font-size: .75rem;
+    font-size: 0.7rem;
     color: var(--text-muted);
 }
 
-/* =========================
-EVOLUÇÃO
-========================= */
-
-.evolution-card {
-    margin-top: 10px;
+/* Customizações exclusivas para o Card de Ranking */
+.ranking-card .accent-icon {
+    color: #fbbf24; /* Cor dourada/amber para destacar o espírito de competição/pódio */
+    filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.2));
 }
 
-.evo-card {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+/* Diminui levemente o tamanho do total de atletas (/ 22) para dar destaque ao "3º" */
+.value-total {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-left: 2px;
 }
 
-.evo-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.evo-header .value-card {
-    color: #22c55e;
-    font-size: 2.2rem;
-}
-
-.progress-bar {
-    width: 100%;
-    height: 8px;
-
-    overflow: hidden;
-
-    background: rgba(255, 255, 255, .08);
-    border-radius: 999px;
-}
-
-.progress {
-    width: 43%;
-    height: 100%;
-
-    background: linear-gradient(
-        90deg,
-        var(--color-primary),
-        var(--color-primary-light)
-    );
-
-    border-radius: 999px;
+/* Se você quiser simular uma queda no ranking futuramente, basta usar essa classe no HTML: */
+.trend-badge.negative {
+    background: rgba(239, 68, 68, 0.12);
+    color: var(--color-danger);
+    border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
 /* =========================
-ÚLTIMO TREINO
+   GRÁFICO DE EVOLUÇÃO
 ========================= */
 
-.last-training {
-    margin-top: 10px;
-}
-
-.training-header,
+.chart-header,
 .history-header {
     display: flex;
     align-items: center;
     gap: 8px;
+    margin-bottom: 16px;
 }
 
-.training-header .material-icons,
+.chart-header .material-icons,
 .history-header .material-icons {
     color: var(--color-primary-light);
 }
 
-.training-header h3,
+.chart-header h3,
 .history-header h3 {
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 600;
-}
-
-.last-training-card {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.training-stats {
-    display: flex;
-    gap: 10px;
-}
-
-.training-stat {
-    flex: 1;
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-
-    padding: 10px;
-
-    background: rgba(255,255,255,.03);
-    border-radius: var(--radius-sm);
-}
-
-.stat-label {
-    font-size: .75rem;
-    color: var(--text-muted);
-}
-
-.stat-value {
-    margin-top: 4px;
-
-    font-size: 1.2rem;
-    font-weight: 700;
-}
-
-.training-date {
-    text-align: center;
-
-    font-size: .8rem;
-    color: var(--text-muted);
-}
-
-/* =========================
-HISTÓRICO DE DESEMPENHO
-========================= */
-
-.performance-history {
-    margin-top: 10px;
-}
-
-.history-header {
-    margin-bottom: 20px;
 }
 
 .chart-container {
@@ -222,7 +166,8 @@ HISTÓRICO DE DESEMPENHO
 
 .chart-line {
     width: 100%;
-    height: 150px;
+    height: auto; /* Torna o SVG do gráfico perfeitamente responsivo */
+    display: block;
 }
 
 .chart-line circle {
@@ -232,20 +177,105 @@ HISTÓRICO DE DESEMPENHO
 .chart-labels {
     display: flex;
     justify-content: space-between;
-
-    margin-top: -10px;
-
-    font-size: .75rem;
+    margin-top: 4px;
+    font-size: 0.7rem;
     color: var(--text-muted);
+    padding: 0 4px;
 }
 
 .chart-info {
     display: block;
-
     margin-top: 12px;
-
     text-align: center;
-
-    font-size: .8rem;
+    font-size: 0.75rem;
     color: var(--text-muted);
+}
+
+/* =========================
+   HISTÓRICO DE TREINOS
+========================= */
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: var(--radius-md);
+    gap: 8px;
+}
+
+.item-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0; /* Evita estouro de texto */
+}
+
+.training-type {
+    font-weight: 600;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.training-date {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+.item-stats {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0; /* Impede que os badges amassem em telas muito pequenas */
+}
+
+.stat-badge {
+    padding: 4px 6px;
+    border-radius: var(--radius-sm);
+    font-size: 0.7rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.stat-badge.present {
+    background: rgba(34, 197, 94, 0.12);
+    color: var(--color-success);
+}
+
+.stat-badge.absent {
+    background: rgba(239, 68, 68, 0.12);
+    color: var(--color-danger);
+}
+
+.stat-badge.score {
+    background: rgba(0, 38, 255, 0.15);
+    color: #60a5fa;
+    border: 1px solid rgba(0, 38, 255, 0.2);
+}
+
+.stat-badge.score-empty {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-muted);
+}
+
+
+/* =========================
+   MEDIA QUERIES (DESKTOP/TABLET)
+   O Mobile-First constrói para cima!
+========================= */
+@media (min-width: 520px) {
+    main {
+        max-width: 500px;
+        margin: 0 auto; /* Centraliza a interface simulando o formato do app celular no PC */
+    }
 }

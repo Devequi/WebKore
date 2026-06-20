@@ -1,0 +1,200 @@
+/* =========================
+   LAYOUT BASE
+========================= */
+
+main {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    padding-bottom: 90px;
+}
+
+/* Customização de elementos adicionados ao header */
+.back-btn {
+    color: var(--text-primary);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    transition: var(--transition);
+}
+
+.back-btn:hover {
+    transform: scale(1.1);
+}
+
+.badge-count {
+    background: var(--color-primary-light);
+    color: var(--text-primary);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    box-shadow: 0 0 10px rgba(0, 38, 255, 0.4);
+}
+
+/* Seção informativa superior */
+.infos {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.infos h2 {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--color-primary-light);
+}
+
+.infos h3 {
+    font-size: 1.6rem;
+    font-weight: 700;
+}
+
+.infos p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+/*Container da lista */
+.requests-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* =========================
+   CARDS DE SOLICITAÇÃO (MOBILE)
+========================= */
+
+.request-card {
+    padding: 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column; /* Força empilhamento vertical nativo em celulares muito pequenos */
+    gap: 16px;
+    transition: var(--transition);
+}
+
+.request-card:hover {
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Perfil do Jogador */
+.player-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.avatar-container .material-icons {
+    font-size: 40px;
+    color: var(--text-muted);
+    display: block;
+}
+
+.player-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.player-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.player-meta {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* Botões de Ação */
+.request-actions {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+}
+
+.btn-action {
+    flex: 1; /* Faz os dois botões dividirem o espaço igualmente de forma líquida */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-action .material-icons {
+    font-size: 16px;
+}
+
+/* Estilo do botão recusar (Vermelho Neon contido) */
+.refuse-btn {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--color-danger);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.refuse-btn:hover {
+    background: var(--color-danger);
+    color: var(--text-primary);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+/* Estilo do botão aceitar (Verde Neon contido) */
+.accept-btn {
+    background: rgba(34, 197, 94, 0.1);
+    color: var(--color-success);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.accept-btn:hover {
+    background: var(--color-success);
+    color: var(--text-primary);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+}
+
+/* =========================
+   MEDIA QUERIES (TABLET/PC)
+   A partir de celulares maiores ou tablets mudamos para linha unica
+========================= */
+
+@media (min-width: 440px) {
+    .request-card {
+        flex-direction: row; /* Alinha perfil na esquerda e botões na direita */
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .request-actions {
+        width: auto; /* Cancela a largura total de celular */
+    }
+
+    .btn-action {
+        flex: none;
+        padding: 8px 16px; /* Encolhe o tamanho do botão para caber lateralmente */
+    }
+}
+
+@media (min-width: 520px) {
+    main {
+        max-width: 500px;
+        margin: 0 auto; /* Centraliza no formato padrão de app WebKore no PC */
+    }
+}

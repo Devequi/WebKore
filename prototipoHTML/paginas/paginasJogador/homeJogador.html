@@ -3,101 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home Jogador</title>
+    <title>Home Jogador - WebKore</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="../../css/geral.css">
     <link rel="stylesheet" href="../../css/paginasJogador/homeJogador.css">
 </head>
 <body>
     <header class="header">
-        <img src="../../assets/logoWK.png" class="logo" alt=""> 
+        <img src="../../assets/logoWK.png" class="logo" alt="Logo WebKore"> 
         <h1>WebKore</h1>
         <article class="header-buttons">
             <a href="lobbyJogador.html"><i class="material-icons icon-btn">person</i></a>
             <a href="settings.html"><i class="material-icons icon-btn">settings</i></a>
         </article>
     </header>
+
     <main>
         <section class="top-cards">
 
             <div class="card">
                 <span class="material-icons card-icon">event_available</span>
-                <span class="title-card">Presença Média</span>
+                <span class="title-card">Média de Presença</span>
                 <span class="value-card">90%</span>
-                <span class="desc-card">Na equipe atual</span>
+                <span class="desc-card">Frequência na equipe</span>
             </div>
 
             <div class="card">
-                <span class="material-icons card-icon">emoji_events</span>
-                <span class="title-card">Ranking Equipe</span>
-                <span class="value-card">#3</span>
-                <span class="desc-card">Entre a equipe</span>
+                <span class="material-icons card-icon">fitness_center</span>
+                <span class="title-card">Treinos Realizados</span>
+                <span class="value-card">24</span>
+                <span class="desc-card">Total de treinos concluídos</span>
             </div>
 
-        </section>
-
-        <section class="evolution-card">
-            <div class="evo-card">
-                <span class="material-icons card-icon">trending_up</span>
-
-                <div class="evo-header">
-                    <span class="title-card">Evolução de desempenho</span>
-                    <span class="value-card">+43%</span>
+            <div class="card card-full">
+                <span class="material-icons card-icon">star</span>
+                <span class="title-card">Média de Desempenho</span>
+                
+                <div class="value-container">
+                    <span class="value-card">8.7</span>
+                    <span class="trend-badge positive">
+                        <span class="material-icons">trending_up</span>
+                        +4.3% 
+                    </span>
                 </div>
-
-                <span class="desc-card">Últimos 30 dias</span>
-
-                <div class="progress-bar">
-                    <div class="progress"></div>
-                </div>
+                
+                <span class="desc-card">Nota calculada a partir das avaliações do treinadore</span>
             </div>
-        </section>
 
-        <section class="last-training">
-            <div class="last-training-card">
-
-                <div class="training-header">
-                    <span class="material-icons">history</span>
-                    <h3>Último Treino</h3>
+            <div class="card card-full ranking-card">
+                <span class="material-icons card-icon accent-icon">leaderboard</span>
+                <span class="title-card">Posição no Ranking</span>
+                
+                <div class="value-container">
+                    <span class="value-card">
+                        3º <span class="value-total">/ 22</span>
+                    </span>
+                    <span class="trend-badge positive">
+                        <span class="material-icons">arrow_upward</span>
+                        +2 posições esta semana
+                    </span>
                 </div>
-
-                <div class="training-stats">
-                    <div class="training-stat">
-                        <span class="stat-label">Presença</span>
-                        <span class="stat-value">✔️</span>
-                    </div>
-
-                    <div class="training-stat">
-                        <span class="stat-label">Desempenho</span>
-                        <span class="stat-value">8.7</span>
-                    </div>
-
-                    <div class="training-stat">
-                        <span class="stat-label">Ranking</span>
-                        <span class="stat-value">#2</span>
-                    </div>
-                </div>
-
-                <span class="training-date">
-                    Realizado em 10/06/2026
-                </span>
-
+                
+                <span class="desc-card">Sua colocação com base na média de desempenho da equipe</span>
             </div>
         </section>
 
-        <section class="performance-history">
-
-            <div class="history-card">
-
-                <div class="history-header">
+        <section class="evolution-section">
+            <div class="chart-card">
+                <div class="chart-header">
                     <span class="material-icons">insights</span>
-                    <h3>Histórico de Desempenho</h3>
+                    <h3>Gráfico de Evolução</h3>
                 </div>
 
                 <div class="chart-container">
-
                     <svg viewBox="0 0 300 120" class="chart-line">
-
                         <polyline
                             points="20,90 70,80 120,65 170,55 220,35 280,20"
                             fill="none"
@@ -106,35 +85,75 @@
                             stroke-linecap="round"
                             stroke-linejoin="round"
                         />
-
                         <circle cx="20" cy="90" r="4"/>
                         <circle cx="70" cy="80" r="4"/>
                         <circle cx="120" cy="65" r="4"/>
                         <circle cx="170" cy="55" r="4"/>
                         <circle cx="220" cy="35" r="4"/>
                         <circle cx="280" cy="20" r="4"/>
-
                     </svg>
 
                     <div class="chart-labels">
-                        <span>Jan</span>
-                        <span>Fev</span>
-                        <span>Mar</span>
-                        <span>Abr</span>
-                        <span>Mai</span>
-                        <span>Jun</span>
+                        <span>11/03</span>
+                        <span>14/03</span>
+                        <span>19/03</span>
+                        <span>24/03</span>
+                        <span>30/03</span>
+                        <span>05/04 </span>
                     </div>
-
                 </div>
 
                 <span class="chart-info">
-                    Evolução dos últimos 6 meses
+                    Evolução do desempenho técnico nos últimos 6 meses
                 </span>
-
             </div>
+        </section>
 
+        <section class="training-history">
+            <div class="history-card">
+                <div class="history-header">
+                    <span class="material-icons">history</span>
+                    <h3>Histórico de Treinos</h3>
+                </div>
+
+                <div class="history-list">
+                    <div class="history-item">
+                        <div class="item-details">
+                            <span class="training-type">Treino Coletivo</span>
+                            <span class="training-date">15/06/2026</span>
+                        </div>
+                        <div class="item-stats">
+                            <span class="stat-badge present">Presença: ✔️</span>
+                            <span class="stat-badge score">Nota: 8.7</span>
+                        </div>
+                    </div>
+
+                    <div class="history-item">
+                        <div class="item-details">
+                            <span class="training-type">Treino Físico</span>
+                            <span class="training-date">12/06/2026</span>
+                        </div>
+                        <div class="item-stats">
+                            <span class="stat-badge present">Presença: ✔️</span>
+                            <span class="stat-badge score">Nota: 7.5</span>
+                        </div>
+                    </div>
+
+                    <div class="history-item">
+                        <div class="item-details">
+                            <span class="training-type">Treino Misto</span>
+                            <span class="training-date">10/06/2026</span>
+                        </div>
+                        <div class="item-stats">
+                            <span class="stat-badge absent">Presença: ❌</span>
+                            <span class="stat-badge score-empty">Nota: --</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
     </main>
+
     <footer class="footer">
     </footer>
 </body>
