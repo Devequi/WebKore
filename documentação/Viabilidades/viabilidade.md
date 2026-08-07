@@ -62,8 +62,3 @@ O projeto considera aspectos relacionados à segurança, privacidade e proteçã
 
 ---
 
-## Considerações Finais
-
-A análise de viabilidade demonstra que o WebKore pode ser desenvolvido utilizando tecnologias acessíveis, com baixo custo de implantação e foco em uma necessidade real identificada no ambiente esportivo da ETEC de Araras.
-
-Além de apresentar viabilidade técnica e econômica, o projeto busca oferecer uma solução prática para treinadores e atletas, mantendo atenção aos aspectos de segurança, privacidade e proteção dos dados dos usuários.
