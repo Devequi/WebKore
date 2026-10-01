@@ -1,0 +1,185 @@
+/* ============================================
+   REQUESTS PAGE - Página de requisições/convites
+   ============================================ */
+
+.request-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.request-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.85rem;
+  background: var(--surface);
+  transition: all 0.2s ease;
+}
+
+.request-card:hover {
+  border-color: var(--primary);
+  background: var(--surface-strong);
+}
+
+.request-card span {
+  color: var(--muted);
+}
+
+.request-card > .avatar + div {
+  display: grid;
+  min-width: 0;
+  flex: 1 1 12rem;
+}
+
+.request-card > .avatar + div strong,
+.request-card > .avatar + div span {
+  overflow-wrap: anywhere;
+}
+
+.request-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin-left: auto;
+}
+
+.request-card__accept.button {
+  border-color: #79a6ff;
+  color: #ffffff;
+  background: #365fae;
+}
+
+.request-card__accept.button:hover:not(:disabled) {
+  border-color: #9bbcff;
+  color: #ffffff;
+  background: #4777d2;
+}
+
+.request-card__accept.button:focus-visible {
+  border-color: #b8ceff;
+  box-shadow: 0 0 0 3px rgba(91, 141, 239, 0.45);
+}
+
+.request-card .button {
+  min-height: 44px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+.profile-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.profile-chip div {
+  display: grid;
+  min-width: 0;
+}
+
+.profile-chip span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted);
+}
+
+.empty-state {
+  display: grid;
+  gap: 0.7rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  text-align: center;
+}
+
+.empty-state h3 {
+  font-size: 1.1rem;
+}
+
+.empty-state p {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* Media Queries */
+@media (max-width: 640px) {
+  .request-list {
+    gap: 0.6rem;
+  }
+
+  .request-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 0.7rem;
+  }
+
+  .request-card__actions {
+    width: 100%;
+    margin-left: 0;
+    gap: 0.5rem;
+  }
+
+  .request-card .button {
+    flex: 1;
+    min-height: 44px;
+    padding: 0.5rem 0.8rem;
+    font-size: 0.875rem;
+  }
+
+  .empty-state {
+    padding: 0.75rem;
+  }
+
+  .empty-state h3 {
+    font-size: 1rem;
+  }
+
+  .empty-state p {
+    font-size: 0.85rem;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .request-list {
+    gap: 0.85rem;
+  }
+
+  .request-card {
+    min-height: 50px;
+    padding: 0.9rem;
+  }
+
+  .request-card__actions {
+    margin-left: auto;
+  }
+}
+
+@media (min-width: 780px) {
+  .request-card {
+    min-height: 60px;
+    padding: 1rem;
+  }
+
+  .request-card__actions {
+    margin-left: auto;
+  }
+}
+
+@media (min-width: 1060px) {
+  .request-list {
+    gap: 1rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .request-card {
+    padding: 1rem;
+  }
+}

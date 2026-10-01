@@ -1,0 +1,398 @@
+/* ============================================
+   TRAININGS PAGE - Página de treinos/treinamentos
+   ============================================ */
+
+.tabs-header {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding-bottom: 0.5rem;
+}
+
+.tab-button {
+  width: auto;
+  min-height: 44px;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.tab-button:hover {
+  color: var(--ink);
+}
+
+.tab-button.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+.training-history {
+  min-width: 0;
+}
+
+.accordion-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.training-card {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.85rem;
+  background: var(--surface);
+  transition: all 0.2s ease;
+}
+
+.training-card:hover {
+  border-color: var(--primary);
+  background: var(--surface-strong);
+}
+
+.training-card span {
+  color: var(--muted);
+}
+
+.training-card__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  width: 100%;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.training-card__summary div {
+  display: grid;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.training-card__summary span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.training-editor {
+  display: grid;
+  min-width: 0;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.training-delete {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.training-delete .button,
+.training-history .section-heading > .button {
+  max-width: 100%;
+  white-space: normal;
+}
+
+.training-form {
+  display: grid;
+  gap: 1rem;
+  max-width: 40rem;
+}
+
+.training-form .button {
+  justify-self: start;
+}
+
+.form-hint {
+  color: var(--muted-strong);
+  font-size: var(--text-sm);
+}
+
+.training-athlete {
+  display: grid;
+  min-width: 0;
+  gap: 1rem;
+  border-top: 1px solid var(--line);
+  padding-top: 1rem;
+}
+
+.training-athlete__head {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.training-athlete__head > div:not(.avatar) {
+  display: grid;
+  min-width: 0;
+  flex: 1 1 10rem;
+}
+
+.training-athlete__head strong,
+.training-athlete__head span {
+  overflow-wrap: anywhere;
+}
+
+.training-athlete__head .switch {
+  flex: 0 1 auto;
+  max-width: 100%;
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.7rem;
+}
+
+.metric-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+  min-height: 54px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.55rem;
+  background: var(--surface-strong);
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.metric-stepper > span {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.metric-stepper div {
+  display: inline-grid;
+  grid-template-columns: 34px 34px 34px;
+  align-items: center;
+  justify-items: center;
+}
+
+.metric-stepper button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 8px;
+  color: var(--primary);
+  background: var(--surface-strong);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.metric-stepper button:hover {
+  background: var(--primary);
+  color: #fff;
+}
+
+.rating-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.7rem;
+}
+
+.rating-grid label {
+  gap: 0.25rem;
+}
+
+.rating-grid label span {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.rating-grid input {
+  min-height: 32px;
+  padding: 0;
+  accent-color: var(--primary);
+}
+
+/* Media Queries */
+@media (max-width: 640px) {
+  .tabs-header {
+    gap: 0.3rem;
+    margin-bottom: 1rem;
+  }
+
+  .tab-button {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.85rem;
+  }
+
+  .accordion-list {
+    gap: 0.6rem;
+  }
+
+  .training-card {
+    padding: 0.7rem;
+  }
+
+  .training-card__summary {
+    gap: 0.6rem;
+  }
+
+  .metric-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.5rem;
+  }
+
+  .metric-stepper {
+    min-height: 44px;
+    padding: 0.4rem;
+    gap: 0.4rem;
+  }
+
+  .metric-stepper div {
+    grid-template-columns: 40px 32px 40px;
+  }
+
+  .metric-stepper button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .rating-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .training-delete {
+    justify-content: stretch;
+  }
+
+  .training-delete .button,
+  .training-history .section-heading > .button {
+    width: 100%;
+  }
+
+  .training-form .button {
+    justify-self: stretch;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 768px) {
+  .tabs-header {
+    gap: 0.4rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .tab-button {
+    padding: 0.65rem 0.9rem;
+    font-size: 0.9rem;
+  }
+
+  .accordion-list {
+    gap: 0.7rem;
+  }
+
+  .training-card {
+    padding: 0.8rem;
+  }
+
+  .metric-grid {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.6rem;
+  }
+
+  .rating-grid {
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 0.6rem;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .accordion-list {
+    gap: 0.85rem;
+  }
+
+  .training-card {
+    min-height: 50px;
+    padding: 0.9rem;
+  }
+
+  .metric-grid {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  }
+
+  .rating-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+}
+
+@media (min-width: 780px) {
+  .training-history {
+    gap: 1.5rem;
+  }
+
+  .training-card {
+    min-height: 60px;
+    padding: 1rem;
+  }
+
+  .metric-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+
+  .rating-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+}
+
+@media (min-width: 1060px) {
+  .accordion-list {
+    gap: 1rem;
+  }
+
+  .training-editor {
+    gap: 1.5rem;
+  }
+
+  .metric-grid {
+    gap: 0.85rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .training-card {
+    padding: 1rem;
+  }
+
+  .metric-stepper {
+    min-height: 60px;
+    padding: 0.65rem;
+  }
+
+  .metric-stepper div {
+    grid-template-columns: 40px 40px 40px;
+  }
+
+  .metric-stepper button {
+    width: 38px;
+    height: 38px;
+  }
+
+  .rating-grid {
+    gap: 0.85rem;
+  }
+}
