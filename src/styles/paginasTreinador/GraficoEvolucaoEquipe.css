@@ -1,0 +1,31 @@
+.team-evolution {
+  min-width: 0;
+  align-self: start;
+}
+
+.team-evolution .section-heading { margin-bottom: 0.8rem; }
+.team-evolution__date { color: var(--muted-strong); font-size: 0.85rem; }
+.team-evolution__summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+.team-evolution__value { padding: 1rem; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-strong); }
+.team-evolution__value strong { display: block; margin: 0.5rem 0 0.25rem; font-size: clamp(1.5rem, 3vw, 2rem); line-height: 1.2; }
+.team-evolution__value small, .team-evolution__series-heading small, .team-evolution__hint { color: var(--muted); font-size: 0.8rem; }
+.team-evolution__hint { margin: 0.8rem 0 0; }
+.team-evolution__label { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--ink); font-size: 0.85rem; font-weight: 600; }
+.team-evolution__label i { width: 9px; height: 9px; flex: 0 0 9px; border-radius: 50%; background: var(--primary); }
+.team-evolution__label--presenca i { background: var(--blue); border-radius: 2px; }
+.team-evolution__series { margin-top: 1rem; }
+.team-evolution__series + .team-evolution__series { border-top: 1px solid var(--line); padding-top: 0.85rem; }
+.team-evolution__series-heading { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.3rem 1rem; margin-bottom: 0.25rem; }
+.team-evolution__plot { width: 100%; min-width: 0; height: 145px; }
+.team-evolution__tooltip { max-width: 245px; padding: 0.75rem; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface-strong); color: var(--ink); font-size: 0.8rem; }
+.team-evolution__tooltip dl { margin: 0.5rem 0; }
+.team-evolution__tooltip dl div { display: flex; justify-content: space-between; gap: 0.75rem; }
+.team-evolution__tooltip dd { margin: 0; font-weight: 700; white-space: nowrap; }
+.team-evolution__tooltip small { color: var(--muted); }
+
+@media (max-width: 480px) {
+  .team-evolution__summary { grid-template-columns: 1fr; gap: 0.5rem; }
+  .team-evolution__value { padding: 0.75rem; }
+  .team-evolution__plot { height: 140px; }
+  .team-evolution__tooltip { max-width: 230px; padding: 0.6rem; }
+}
