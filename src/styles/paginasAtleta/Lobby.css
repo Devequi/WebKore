@@ -1,0 +1,189 @@
+/* ============================================
+   ATHLETE LOBBY PAGE - Página inicial do atleta
+   ============================================ */
+
+.linked-teams {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.linked-team {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.85rem;
+  background: var(--surface);
+  transition: all 0.2s ease;
+}
+
+.linked-team:hover {
+  border-color: var(--primary);
+  background: var(--surface-strong);
+}
+
+.linked-team span {
+  color: var(--muted);
+}
+
+.linked-teams__empty {
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.linked-team .button {
+  min-height: 44px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  margin-left: auto;
+}
+
+.team-result {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-strong);
+  display: grid;
+  gap: 0.7rem;
+}
+
+.team-result span {
+  color: var(--amber);
+  font-weight: 900;
+}
+
+.team-result h3 {
+  font-size: 1.1rem;
+}
+
+.team-result p {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.sync-box {
+  display: grid;
+  gap: 0.7rem;
+  padding: 1rem;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  background: var(--surface-strong);
+}
+
+.sync-box h3 {
+  font-size: 1.1rem;
+}
+
+.sync-box p {
+  font-size: 0.9rem;
+}
+
+/* Media Queries */
+@media (max-width: 640px) {
+  .linked-teams {
+    gap: 0.6rem;
+  }
+
+  .linked-team {
+    flex-direction: column;
+    align-items: flex-start;
+    min-height: auto;
+    padding: 0.75rem;
+    gap: 0.6rem;
+  }
+
+  .linked-team .button {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .team-result {
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .team-result h3 {
+    font-size: 1rem;
+  }
+
+  .team-result p {
+    font-size: 0.85rem;
+  }
+
+  .sync-box {
+    padding: 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .sync-box h3 {
+    font-size: 1rem;
+  }
+
+  .sync-box p {
+    font-size: 0.85rem;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 768px) {
+  .linked-teams {
+    gap: 0.7rem;
+  }
+
+  .linked-team {
+    padding: 0.8rem;
+    gap: 0.7rem;
+  }
+
+  .team-result {
+    margin-top: 0.85rem;
+    padding: 1rem;
+    gap: 0.6rem;
+  }
+
+  .sync-box {
+    padding: 1rem;
+    gap: 0.6rem;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .linked-team {
+    min-height: 50px;
+    padding: 0.9rem;
+  }
+
+  .team-result {
+    padding: 1.15rem;
+  }
+}
+
+@media (min-width: 780px) {
+  .linked-team {
+    min-height: 60px;
+  }
+
+  .team-result {
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 1060px) {
+  .linked-teams {
+    gap: 1rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .linked-team {
+    padding: 1rem;
+  }
+
+  .sync-box {
+    padding: 1.5rem;
+  }
+}
