@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  COACH
+  ATHLETE
+}
+
+enum MembershipStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum TrainingType {
+  PHYSICAL
+  COLLECTIVE
+  MIXED
+}
+
+model User {
+  id           String       @id @default(cuid())
+  name         String
+  email        String       @unique
+  passwordHash String
+  role         UserRole
+  photoUrl     String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  teams        Team[]       @relation("CoachTeams")
+  memberships  Membership[]
+}
+
+model Team {
+  id          String       @id @default(cuid())
+  name        String
+  modality    String
+  code        String       @unique
+  objectiveCriteria Json?
+  qualitativeCriteria Json?
+  coachId     String
+  coach       User         @relation("CoachTeams", fields: [coachId], references: [id])
+  memberships Membership[]
+  trainings   Training[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Membership {
+  id        String           @id @default(cuid())
+  teamId    String
+  athleteId String
+  status    MembershipStatus @default(PENDING)
+  number    Int?
+  position  String?
+  team      Team             @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  athlete   User             @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@unique([teamId, athleteId])
+}
+
+model Training {
+  id          String       @id @default(cuid())
+  teamId      String
+  date        DateTime
+  type        TrainingType
+  description String?
+  team        Team         @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  records     TrainingRecord[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model TrainingRecord {
+  id         String       @id @default(cuid())
+  trainingId String
+  athleteId  String
+  present    Boolean      @default(true)
+  training   Training     @relation(fields: [trainingId], references: [id], onDelete: Cascade)
+  metrics    SportMetric[]
+  evaluation Evaluation?
+
+  @@unique([trainingId, athleteId])
+}
+
+model Evaluation {
+  id                  String         @id @default(cuid())
+  recordId            String         @unique
+  technique           Int            @default(5)
+  physicalCondition   Int            @default(5)
+  participation       Int            @default(5)
+  teamwork            Int            @default(5)
+  record              TrainingRecord @relation(fields: [recordId], references: [id], onDelete: Cascade)
+}
+
+model SportMetric {
+  id       String         @id @default(cuid())
+  recordId String
+  name     String
+  value    Int            @default(0)
+  record   TrainingRecord @relation(fields: [recordId], references: [id], onDelete: Cascade)
+
+  @@unique([recordId, name])
+}
