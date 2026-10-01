@@ -1,0 +1,30 @@
+# Dependências e artefatos locais
+node_modules/
+dist/
+coverage/
+.vite/
+*.log
+*.tmp
+*.tsbuildinfo
+logs/
+tmp/
+temp/
+.cache/
+
+# Configuração privada; exemplos podem ser versionados
+.env
+.env.*
+!.env.example
+!**/.env.example
+*.pem
+*.key
+
+# Arquivos locais de editor e sistema
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Planejamento interno de documentação, sem uso pela aplicação
+/ordem.txt
