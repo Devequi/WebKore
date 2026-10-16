@@ -8,6 +8,7 @@ import { loadStateForStartup, resetState, saveState } from "../services/storage.
 import { getApprovedAthletes } from "../utils/selectors.js";
 import { changeCriterion, criteriaError, defaultQualitativeCriteria, evaluationFromRatings, getTeamCriteria, normalizeModality, qualitativeFields } from "../../shared/criteria.js";
 import { joinedStatus, membershipPatch, normalizeTeamCode } from "../../shared/contracts.js";
+import { validateBirthDate } from "../../shared/birthDate.js";
 
 function makeMetrics(modality) {
   return Object.fromEntries((metricCatalog[modality] || metricCatalog.Futsal).map((metric) => [metric, 0]));
@@ -169,6 +170,7 @@ export function useWebKoreData() {
         }));
       },
       async updateUser({ userId, patch }) {
+        if (patch.birthDate !== undefined) validateBirthDate(patch.birthDate);
         if (session?.source === "api") return mutateApi(() => api.updateMe(patch));
         const { password, ...fields } = patch;
         const safePatch = { ...fields, ...(password ? { passwordHash: await bcrypt.hash(password, 10) } : {}) };
@@ -263,6 +265,7 @@ export function useWebKoreData() {
         }));
       },
       updateAthlete({ athleteId, teamId, patch }) {
+        if (!teamId && patch.birthDate !== undefined) validateBirthDate(patch.birthDate);
         if (session?.source === "api") return mutateApi(() => teamId
           ? api.updateMembership(teamId, athleteId, patch)
           : api.updateMe(patch));

@@ -7,6 +7,7 @@ import { getJwtSecret } from "../server/src/lib/environment.js";
 import { authenticate, clearSession, restoreSession } from "../src/services/session.js";
 import { api, getAuthToken, setAuthToken } from "../src/services/api.js";
 import { changeCriterion } from "../shared/criteria.js";
+import { calculateAge } from "../shared/birthDate.js";
 
 // Execução explícita: cria somente fixtures com IDs capturados e as limpa no finally.
 const stage = Number(process.argv[2] || 1);
@@ -32,7 +33,8 @@ async function request(path, method = "GET", body, token = getAuthToken(), expec
 }
 async function register(role, suffix) {
   const email = `webkore-test-${run}-${suffix}@example.invalid`;
-  const result = await authenticate({ name: `Teste ${suffix}`, email, password, role }, true);
+  const result = await authenticate({ name: `Teste ${suffix}`, email, password, role,
+    ...(role === "athlete" ? { birthDate: "2004-02-29" } : {}) }, true);
   createdUsers.push(result.user.id);
   return { ...result, email, token: getAuthToken() };
 }
@@ -72,9 +74,26 @@ try {
     team = await api.updateTeam(team.id, changeCriterion(team, { kind: "qualitative", previousName: "Técnica", nextName: "Habilidade" }, "rename"));
     await request(`/teams/${team.id}`, "PATCH", { qualitativeCriteria: [...team.qualitativeCriteria, "Quinta nota"] }, validToken, 400);
     const athlete = await register("athlete", "athlete");
+    assert.equal(athlete.user.birthDate, "2004-02-29");
+    assert.equal((await prisma.user.findUnique({ where: { id: athlete.user.id } })).birthDate.toISOString(), "2004-02-29T00:00:00.000Z");
+    assert.equal((await api.me()).user.birthDate, "2004-02-29");
+    assert.equal((await request("/auth/login", "POST", { email: athlete.email, password, role: "athlete" }, null)).user.birthDate, "2004-02-29");
     await api.requestJoin(team.code);
     setAuthToken(validToken);
     await api.respondRequest(team.id, athlete.user.id, "approved");
+    const athleteInDashboard = (await api.me()).state.users.find((item) => item.id === athlete.user.id);
+    assert.equal(athleteInDashboard.birthDate, "2004-02-29");
+    assert.equal(calculateAge(athleteInDashboard.birthDate, "2026-03-01"), 22);
+    assert.equal((await request("/teams")).find((item) => item.id === team.id).athletes.find((item) => item.id === athlete.user.id).birthDate, "2004-02-29");
+    for (const birthDate of [null, "", "2026-02-30", "9999-12-31", "29/02/2004"]) {
+      await request("/auth/register", "POST", { name: "Data inválida", email: `invalid-birth-${run}@example.invalid`, password, role: "athlete", birthDate }, null, 400);
+      await request("/auth/me", "PATCH", { birthDate }, athlete.token, 400);
+    }
+    // Simula apenas nesta fixture uma conta anterior à restauração do campo.
+    await prisma.user.update({ where: { id: athlete.user.id }, data: { birthDate: null } });
+    assert.equal((await request("/auth/login", "POST", { email: athlete.email, password }, null)).user.birthDate, null);
+    assert.equal((await request("/auth/me", "PATCH", { name: "Atleta antigo" }, athlete.token)).user.birthDate, null);
+    assert.equal((await request("/auth/me", "PATCH", { birthDate: "2004-02-29" }, athlete.token)).user.birthDate, "2004-02-29");
     const training = await api.createTraining({ teamId: team.id, date: "2026-09-30", type: "Misto", records: [{ athleteId: athlete.user.id,
       ratings: { Habilidade: 8 }, metrics: { Gols: 3 } }] });
     const recordId = training.athletes[athlete.user.id].id;

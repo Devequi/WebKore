@@ -44,6 +44,7 @@ export function toPublicUser(user, membership) {
     role: String(user.role).toLowerCase(),
     name: user.name,
     email: user.email,
+    birthDate: toDateOnly(user.birthDate) ?? null,
     photo: user.photoUrl || user.name.split(" ").slice(0, 2).map((part) => part[0]).join("").toUpperCase(),
     number: membership?.number ?? undefined,
     position: membership?.position ?? undefined,

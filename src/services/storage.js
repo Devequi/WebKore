@@ -26,7 +26,7 @@ function withoutDeprecatedProfileFields(state) {
         return [id, { ...record, ratings }];
       }))
     })),
-    users: state.users.map(({ age: _age, birthDate: _birthDate, password, ...user }) => ({
+    users: state.users.map(({ age: _age, password, ...user }) => ({
       ...user,
       ...(typeof password === "string" && password ? { passwordHash: bcrypt.hashSync(password, 10) } : {})
     }))

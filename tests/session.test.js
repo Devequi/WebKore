@@ -71,3 +71,24 @@ test("cache offline pertence à sessão anterior, não restaura JWT expirado e l
     assert.ok(localStorage.getItem("webkore-api-state-v1:cached-user").includes("preserved-training"));
   } finally { globalThis.fetch = originalFetch; delete globalThis.localStorage; }
 });
+
+test("cadastro local exige nascimento válido e preserva data sem manter idade fixa", async () => {
+  globalThis.localStorage = memoryStorage();
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => { throw new TypeError("offline"); };
+  const credentials = { name: "Atleta local", email: "birth@example.invalid", password: crypto.randomUUID(), role: "athlete" };
+  try {
+    for (const birthDate of [undefined, "", "2026-02-30", "9999-12-31"]) {
+      await assert.rejects(() => authenticate({ ...credentials, birthDate }, true), /nascimento/);
+    }
+    const payload = await authenticate({ ...credentials, birthDate: "2004-02-29" }, true);
+    assert.equal(payload.user.birthDate, "2004-02-29");
+    assert.equal((await restoreSession()).user.birthDate, "2004-02-29");
+    const stored = loadState();
+    stored.users.find((user) => user.id === payload.user.id).age = 12;
+    localStorage.setItem("webkore-state-v2", JSON.stringify(stored));
+    const reloaded = loadState();
+    assert.equal(reloaded.users.find((user) => user.id === payload.user.id).birthDate, "2004-02-29");
+    assert.equal(reloaded.users.find((user) => user.id === payload.user.id).age, undefined);
+  } finally { clearSession(); globalThis.fetch = originalFetch; delete globalThis.localStorage; }
+});

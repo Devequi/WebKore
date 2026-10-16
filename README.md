@@ -89,6 +89,12 @@ atualizadas por esse script. Execute o seed apenas em um banco de demonstração
 O schema e as migrations existentes foram preservados. Antes de aplicar
 migrations em um banco com dados, revise seu conteúdo e mantenha um backup.
 
+O cadastro de atleta exige data de nascimento e a área Atletas do treinador
+calcula a idade automaticamente. Consulte [Data de nascimento e idade](Documentação/data-nascimento.md)
+para os arquivos alterados, testes e instruções de migration. Se a coluna
+`birthDate` ainda existir e a migration antiga `remove_birth_date` estiver
+pendente, siga as instruções de resolução antes de aplicar migrations para preservar a coluna.
+
 ## Verificações
 
 ### Banco exclusivo de desenvolvimento/testes

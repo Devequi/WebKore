@@ -1,5 +1,5 @@
 // Projeções explícitas: hashes nunca são carregados pelas consultas de sessão/equipe.
-export const publicUserSelect = { id: true, name: true, email: true, role: true, photoUrl: true, createdAt: true, updatedAt: true };
+export const publicUserSelect = { id: true, name: true, email: true, role: true, photoUrl: true, birthDate: true, createdAt: true, updatedAt: true };
 export const coachIdentitySelect = { id: true, name: true, role: true, photoUrl: true };
 export function visibleTeams(user) {
   return user.role === "COACH" ? { coachId: user.id } : { memberships: { some: { athleteId: user.id } } };

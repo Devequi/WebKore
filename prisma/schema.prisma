@@ -31,6 +31,7 @@ model User {
   passwordHash String
   role         UserRole
   photoUrl     String?
+  birthDate    DateTime?    @db.Date
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
   teams        Team[]       @relation("CoachTeams")

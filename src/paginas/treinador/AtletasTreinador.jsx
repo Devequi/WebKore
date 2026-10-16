@@ -1,5 +1,7 @@
 import { Save, Trash2, UserRoundCheck } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTodayDate } from "../../hooks/useTodayDate.js";
+import { formatAge } from "../../../shared/birthDate.js";
 import { EvolutionChart } from "../../componentes/charts/GraficoEvolucao.jsx";
 import { Avatar } from "../../componentes/ui/Avatar.jsx";
 import { Button } from "../../componentes/ui/Botao.jsx";
@@ -24,6 +26,7 @@ export function AthletesPage({
   state,
   team
 }) {
+  const today = useTodayDate();
   const atletas = team ? getApprovedAthletes(state, team.id) : [];
 
   const atletaSelecionado =
@@ -123,7 +126,7 @@ export function AthletesPage({
                   <strong>{atleta.name}</strong>
 
                   <span>
-                    #{atleta.number} · {atleta.position}
+                    #{atleta.number} · {atleta.position} · {formatAge(atleta.birthDate, today)}
                   </span>
                 </div>
 
@@ -153,6 +156,7 @@ export function AthletesPage({
               <h2>{atletaSelecionado.name}</h2>
 
               <p>{atletaSelecionado.position || "Atleta da equipe"}</p>
+              <p>{formatAge(atletaSelecionado.birthDate, today)}</p>
             </div>
           </div>
 

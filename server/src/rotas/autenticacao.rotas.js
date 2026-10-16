@@ -6,7 +6,7 @@ import { requireAuth } from "../intermediario/autenticacao.js";
 import { prisma } from "../lib/prisma.js";
 import { getJwtSecret } from "../lib/environment.js";
 import { publicUserSelect, teamRelations, visibleRecords, visibleTeams, visibleTrainings } from "../lib/acesso.js";
-import { email as validateEmail, HttpError, password as validatePassword, sendError, text } from "../lib/validacao.js";
+import { birthDate as validateBirthDate, email as validateEmail, HttpError, password as validatePassword, sendError, text } from "../lib/validacao.js";
 import {
   normalizeRole,
   toClientMembership,
@@ -97,7 +97,7 @@ async function buildSessionPayload(userId) {
 
 authRouter.post("/register", async (request, response) => {
   try {
-    const { email, name, password, role } = request.body;
+    const { email, name, password, role, birthDate } = request.body;
 
     if (!name || !email || !password || !role) {
       return response.status(400).json({
@@ -109,6 +109,7 @@ authRouter.post("/register", async (request, response) => {
 
     const normalizedRole = normalizeRole(role);
     if (!normalizedRole) throw new HttpError(400, "Perfil inválido.");
+    const normalizedBirthDate = normalizedRole === "ATHLETE" ? validateBirthDate(birthDate) : null;
     const normalizedName = text(name, "Nome");
     validatePassword(password, true);
 
@@ -132,6 +133,7 @@ authRouter.post("/register", async (request, response) => {
         email: normalizedEmail,
         passwordHash,
         role: normalizedRole,
+        birthDate: normalizedBirthDate,
         photoUrl: normalizedName
           .split(" ")
           .slice(0, 2)
@@ -202,9 +204,10 @@ authRouter.get("/me", requireAuth, async (request, response) => {
 
 authRouter.patch("/me", requireAuth, async (request, response) => {
   try {
-    const { email, name, password, photo } = request.body;
+    const { email, name, password, photo, birthDate } = request.body;
 
     const data = {};
+    if (birthDate !== undefined) data.birthDate = validateBirthDate(birthDate);
     if (name !== undefined) data.name = text(name, "Nome");
     if (email !== undefined) data.email = validateEmail(email);
     if (photo !== undefined) data.photoUrl = photo === null || photo === "" ? null : text(photo, "Foto");

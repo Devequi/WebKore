@@ -2,6 +2,7 @@ import { Save, Trash2, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Avatar } from "../../componentes/ui/Avatar.jsx";
 import { Button } from "../../componentes/ui/Botao.jsx";
+import { BirthDateField } from "../../componentes/ui/CampoNascimento.jsx";
 import { getAthleteTeams } from "../../utils/selectors.js";
 import "../../styles/paginasAtleta/AthleteProfile.css";
 
@@ -9,7 +10,7 @@ export function AthleteProfile({ actions, athleteId, state }) {
   const athlete = state.users.find((user) => user.id === athleteId);
   const teams = getAthleteTeams(state, athleteId);
   const dialogRef = useRef(null);
-  const [form, setForm] = useState({ name: athlete.name, email: athlete.email, photo: athlete.photo });
+  const [form, setForm] = useState({ name: athlete.name, email: athlete.email, photo: athlete.photo, birthDate: athlete.birthDate || "" });
   const [feedback, setFeedback] = useState(null);
   const [saving, setSaving] = useState(false);
   const [leaving, setLeaving] = useState(false);
@@ -26,7 +27,8 @@ export function AthleteProfile({ actions, athleteId, state }) {
     setSaving(true);
     setFeedback(null);
     try {
-      await actions.updateAthlete({ athleteId, patch: form });
+      const { birthDate, ...fields } = form;
+      await actions.updateAthlete({ athleteId, patch: { ...fields, ...(birthDate ? { birthDate } : {}) } });
       setFeedback({ type: "success", text: "Perfil atualizado." });
     } catch (error) {
       setFeedback({ type: "error", text: error.message || "Não foi possível salvar o perfil." });
@@ -96,6 +98,11 @@ export function AthleteProfile({ actions, athleteId, state }) {
               value={form.email}
             />
           </label>
+          <BirthDateField
+            value={form.birthDate}
+            onChange={(birthDate) => setForm((current) => ({ ...current, birthDate }))}
+            required={Boolean(athlete.birthDate)}
+          />
           <Button disabled={saving} icon={Save} type="submit">
             {saving ? "Salvando..." : "Salvar perfil"}
           </Button>

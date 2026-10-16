@@ -2,6 +2,7 @@ import { LogIn, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { PublicHeader } from "../componentes/layout/CabecalhoPublico.jsx";
 import { Button } from "../componentes/ui/Botao.jsx";
+import { BirthDateField } from "../componentes/ui/CampoNascimento.jsx";
 import "../styles/paginasPublicas/LoginPage.css";
 
 const initialLogin = {
@@ -11,6 +12,7 @@ const initialLogin = {
 };
 
 const initialRegister = {
+  birthDate: "",
   name: "",
   email: "",
   password: "",
@@ -255,6 +257,14 @@ export function LoginPage({ onLogin, onRegister, notice }) {
                 value={registerForm.password}
               />
             </label>
+
+            {registerForm.role === "athlete" && (
+              <BirthDateField
+                value={registerForm.birthDate}
+                onChange={(birthDate) => setRegisterForm((current) => ({ ...current, birthDate }))}
+                required
+              />
+            )}
 
             <label className="checkbox-line">
               <input

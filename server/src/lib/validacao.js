@@ -1,3 +1,13 @@
+import { validateBirthDate } from "../../../shared/birthDate.js";
+
+export function birthDate(value) {
+  try {
+    return new Date(`${validateBirthDate(value)}T00:00:00.000Z`);
+  } catch (error) {
+    throw new HttpError(400, error.message);
+  }
+}
+
 export class HttpError extends Error {
   constructor(status, message) { super(message); this.status = status; }
 }

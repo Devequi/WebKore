@@ -1,4 +1,5 @@
 import bcrypt from "bcryptjs";
+import { validateBirthDate } from "../../shared/birthDate.js";
 import { api, getAuthToken, NetworkError, setAuthToken } from "./api.js";
 import { loadApiCache, loadState, saveApiCache, saveState } from "./storage.js";
 
@@ -51,6 +52,7 @@ export async function restoreSession() {
 
 export async function authenticate(payload, register = false) {
   const credentials = { ...payload, email: payload.email.trim().toLowerCase() };
+  if (register && credentials.role === "athlete") validateBirthDate(credentials.birthDate);
   try {
     const result = await (register ? api.register(credentials) : api.login(credentials));
     if (result.user.role !== payload.role) {
@@ -69,6 +71,7 @@ export async function authenticate(payload, register = false) {
       }
       user = {
         id: crypto.randomUUID(), role: credentials.role, name: credentials.name,
+        birthDate: credentials.role === "athlete" ? credentials.birthDate : null,
         email: credentials.email, passwordHash: await bcrypt.hash(credentials.password, 10),
         photo: credentials.name.split(" ").slice(0, 2).map((part) => part[0]).join("").toUpperCase()
       };
