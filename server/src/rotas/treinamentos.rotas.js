@@ -179,96 +179,48 @@ trainingsRouter.post("/", async (request, response) => {
 
 trainingsRouter.patch("/:trainingId/athletes/:athleteId", async (request, response) => {
   try {
+    if (request.user.role !== "COACH") throw new HttpError(403, "Apenas treinadores podem editar treinos.");
     const { athleteId, trainingId } = request.params;
-    const { metrics, present, ratings } = request.body;
+    const { metrics, present, ratings, expectedMetrics } = request.body;
     validatePresence(present);
     if (ratings !== undefined) validateNotes(ratings);
-    if (Array.isArray(metrics)) throw new HttpError(400, "Envie métricas por nome para atualizar o treino.");
+    if (Array.isArray(metrics) || Array.isArray(expectedMetrics)) throw new HttpError(400, "Envie métricas por nome para atualizar o treino.");
     if (metrics !== undefined) validateMetrics(metrics);
+    if (expectedMetrics !== undefined) validateMetrics(expectedMetrics);
 
-    if (request.user.role !== "COACH") {
-      return response.status(403).json({ message: "Apenas treinadores podem editar treinos." });
-    }
-
-    const training = await prisma.training.findFirst({
-      where: {
-        id: trainingId,
-        team: {
-          coachId: request.user.id
-        }
-      },
-      include: {
-        team: true
-      }
-    });
-
-    if (!training) {
-      return response.status(404).json({ message: "Treino nao encontrado." });
-    }
-
-    const evaluationData = ratings ? evaluationDataFromRatings(ratings, training.team, false) : null;
-    const record = await prisma.trainingRecord.update({
-      where: {
-        trainingId_athleteId: {
-          trainingId,
-          athleteId
-        }
-      },
-      data: {
-        ...(present !== undefined ? { present: Boolean(present) } : {}),
-        ...(ratings
-          ? {
-              evaluation: {
-                upsert: {
-                  create: { ...evaluationDataFromRatings({}, training.team), ...evaluationData },
-                  update: evaluationData
-                }
-              }
-            }
-          : {}),
-      },
-      include: {
-        evaluation: true,
-        metrics: true
-      }
-    });
-
-    if (metrics) {
-      await Promise.all(
-        Object.entries(metrics).map(([name, value]) =>
-          prisma.sportMetric.upsert({
-            where: {
-              recordId_name: {
-                recordId: record.id,
-                name
-              }
-            },
-            create: {
-              recordId: record.id,
-              name,
-              value: Number(value) || 0
-            },
-            update: {
-              value: Number(value) || 0
-            }
-          })
-        )
-      );
-    }
-
-    const updatedTraining = await prisma.training.findUnique({
-      where: { id: trainingId },
-      include: {
-        records: {
-          include: {
-            evaluation: true,
-            metrics: true
-          }
+    const updated = await prisma.$transaction(async (transaction) => {
+      const training = await transaction.training.findFirst({
+        where: { id: trainingId, team: { coachId: request.user.id } }, include: { team: true }
+      });
+      if (!training) throw new HttpError(404, "Treino não encontrado.");
+      const evaluationData = ratings === undefined ? null : evaluationDataFromRatings(ratings, training.team, false);
+      const record = await transaction.trainingRecord.update({
+        where: { trainingId_athleteId: { trainingId, athleteId } },
+        data: {
+          ...(present !== undefined ? { present } : {}),
+          ...(evaluationData ? { evaluation: { upsert: {
+            create: { ...evaluationDataFromRatings({}, training.team), ...evaluationData }, update: evaluationData
+          } } } : {})
+        },
+        include: { metrics: true }
+      });
+      for (const [name, expected] of Object.entries(expectedMetrics || {})) {
+        if ((record.metrics.find((metric) => metric.name === name)?.value ?? 0) !== expected) {
+          throw new HttpError(409, "A métrica foi alterada em outra operação. Atualize o painel e tente novamente.");
         }
       }
-    });
-
-    return response.json(toClientTraining(updatedTraining, training.team));
+      for (const [name, value] of Object.entries(metrics || {})) {
+        await transaction.sportMetric.upsert({
+          where: { recordId_name: { recordId: record.id, name } },
+          create: { recordId: record.id, name, value }, update: { value }
+        });
+      }
+      const result = await transaction.training.findUnique({
+        where: { id: trainingId }, include: { records: { include: { evaluation: true, metrics: true } } }
+      });
+      return toClientTraining(result, training.team);
+    }, { isolationLevel: "Serializable" });
+    return response.json(updated);
   } catch (error) {
     return sendError(response, error, "Erro ao atualizar treino.");
   }

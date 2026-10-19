@@ -45,21 +45,8 @@ async function buildSessionPayload(userId) {
     }
   });
 
-  const memberships = await prisma.membership.findMany({
-    where:
-      user.role === "COACH"
-        ? {
-            team: {
-              coachId: user.id
-            }
-          }
-        : {
-            athleteId: user.id
-          },
-    orderBy: {
-      createdAt: "desc"
-    }
-  });
+  const memberships = teams.flatMap((team) => team.memberships)
+    .sort((first, second) => second.createdAt - first.createdAt);
 
   const visibleUserMap = new Map([[user.id, toPublicUser(user)]]);
 
@@ -67,7 +54,6 @@ async function buildSessionPayload(userId) {
     visibleUserMap.set(team.coach.id, toPublicUser(team.coach));
 
     team.memberships.forEach((membership) => {
-      if (user.role === "COACH" && team.coachId !== user.id && membership.athleteId !== user.id) return;
       visibleUserMap.set(membership.athlete.id, toPublicUser(membership.athlete, membership));
     });
   });
@@ -89,8 +75,7 @@ async function buildSessionPayload(userId) {
       users: Array.from(visibleUserMap.values()),
       teams: teams.map(toClientTeam),
       memberships: memberships.map(toClientMembership),
-      trainings: trainings.map((training) => toClientTraining(training, training.team)),
-      syncQueue: []
+      trainings: trainings.map((training) => toClientTraining(training, training.team))
     }
   };
 }

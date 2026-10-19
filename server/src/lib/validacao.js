@@ -79,7 +79,7 @@ export function date(value) {
 
 export function sendError(response, error, fallback = "Erro inesperado ao processar a requisição.") {
   const status = error instanceof HttpError ? error.status
-    : error.code === "P2002" ? 409 : error.code === "P2025" ? 404 : error.code === "P2003" ? 409
+    : error.code === "P2002" || error.code === "P2034" ? 409 : error.code === "P2025" ? 404 : error.code === "P2003" ? 409
     : error.code === "P2000" || error.name === "PrismaClientValidationError" || error.type === "entity.parse.failed" ? 400
     : error.type === "entity.too.large" ? 413 : 500;
   const message = error instanceof HttpError ? error.message

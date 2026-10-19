@@ -19,7 +19,3 @@ export function membershipPatch(patch) {
   }
   return data;
 }
-
-export function joinedStatus(status) {
-  return status === "rejected" || !status ? "pending" : status;
-}

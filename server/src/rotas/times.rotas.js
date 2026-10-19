@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { randomBytes } from "node:crypto";
 
 import { requireAuth } from "../intermediario/autenticacao.js";
 import { prisma } from "../lib/prisma.js";
@@ -6,7 +7,7 @@ import { coachIdentitySelect, teamRelations, visibleTeams } from "../lib/acesso.
 import { normalizeStatus, toClientMembership, toClientTeam } from "../lib/serializadores.js";
 import { criteriaError, defaultQualitativeCriteria, getTeamCriteria, metricCatalog, normalizeModality } from "../../../shared/criteria.js";
 import { membershipPatch, normalizeTeamCode } from "../../../shared/contracts.js";
-import { HttpError, sendError, text, validateParam } from "../lib/validacao.js";
+import { date as validateUpdatedAt, HttpError, sendError, text, validateParam } from "../lib/validacao.js";
 
 export const teamsRouter = Router();
 
@@ -54,25 +55,12 @@ teamsRouter.post("/", async (request, response) => {
         message: "Informe nome e modalidade da equipe."
       });
     }
-    text(name, "Nome da equipe");
-    text(modality, "Modalidade");
-
-    let code;
-    let existingTeam;
-
-    do {
-      code = `WK-TEAM-${Math.floor(100 + Math.random() * 900)}`;
-
-      existingTeam = await prisma.team.findUnique({
-        where: {
-          code
-        }
-      });
-    } while (existingTeam);
+    const normalizedName = text(name, "Nome da equipe");
+    const code = `WK-TEAM-${randomBytes(8).toString("hex").toUpperCase()}`;
 
     const team = await prisma.team.create({
       data: {
-        name,
+        name: normalizedName,
         modality,
         code,
         coachId: request.user.id,
@@ -109,7 +97,7 @@ teamsRouter.post("/join", async (request, response) => {
     }
     text(code, "Código");
 
-    const team = await prisma.team.findFirst({
+    const team = await prisma.team.findUnique({
       where: {
         code: normalizeTeamCode(code)
       }
@@ -228,7 +216,7 @@ teamsRouter.patch(
 teamsRouter.patch("/:teamId", async (request, response) => {
   try {
     const { teamId } = request.params;
-    const { modality: rawModality, name, objectiveCriteria, qualitativeCriteria } = request.body;
+    const { modality: rawModality, name, objectiveCriteria, qualitativeCriteria, expectedUpdatedAt } = request.body;
     const modality = rawModality === undefined ? undefined : normalizeModality(rawModality);
 
     if (request.user.role !== "COACH") {
@@ -255,16 +243,24 @@ teamsRouter.patch("/:teamId", async (request, response) => {
         if (error) return response.status(400).json({ message: error });
       }
     }
-    if (qualitativeCriteria && qualitativeCriteria.length < Math.min(getTeamCriteria(team, "qualitative").length, 4) &&
-      await prisma.training.count({ where: { teamId } })) {
-      return response.status(409).json({ message: "Um critério qualitativo usado em treinos não pode ser removido. Renomeie-o para preservar as notas." });
-    }
-    if (name !== undefined) data.name = name;
+    if (name !== undefined) data.name = text(name, "Nome da equipe");
     if (modality !== undefined) data.modality = modality;
     if (objectiveCriteria !== undefined) data.objectiveCriteria = objectiveCriteria;
     if (qualitativeCriteria !== undefined) data.qualitativeCriteria = qualitativeCriteria;
 
     const updated = await prisma.$transaction(async (transaction) => {
+      // Detecta duas alterações de critérios baseadas na mesma versão da equipe.
+      // O update condicional adquire o bloqueio antes de renomear métricas.
+      const changed = await transaction.team.updateMany({
+        where: { id: teamId, coachId: request.user.id, updatedAt: expectedUpdatedAt === undefined
+          ? team.updatedAt : validateUpdatedAt(expectedUpdatedAt) },
+        data: { ...data, updatedAt: new Date(Math.max(Date.now(), team.updatedAt.getTime() + 1)) }
+      });
+      if (!changed.count) throw new HttpError(409, "A equipe foi alterada em outra operação. Atualize o painel e tente novamente.");
+      if (qualitativeCriteria && qualitativeCriteria.length < Math.min(getTeamCriteria(team, "qualitative").length, 4) &&
+        await transaction.training.count({ where: { teamId } })) {
+        throw new HttpError(409, "Um critério qualitativo usado em treinos não pode ser removido. Renomeie-o para preservar as notas.");
+      }
       const previous = getTeamCriteria(team, "objective");
       if (objectiveCriteria && objectiveCriteria.length === previous.length) {
         for (const [index, nextName] of objectiveCriteria.entries()) {
@@ -277,7 +273,7 @@ teamsRouter.patch("/:teamId", async (request, response) => {
           }
         }
       }
-      return transaction.team.update({ where: { id: teamId }, data, include: teamRelations(request.user) });
+      return transaction.team.findUnique({ where: { id: teamId }, include: teamRelations(request.user) });
     });
 
     return response.json(toClientTeam(updated));
