@@ -17,6 +17,7 @@
 .team-evolution__series + .team-evolution__series { border-top: 1px solid var(--line); padding-top: 0.85rem; }
 .team-evolution__series-heading { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.3rem 1rem; margin-bottom: 0.25rem; }
 .team-evolution__plot { width: 100%; min-width: 0; height: 145px; }
+.team-evolution__area-plot { width: 100%; min-width: 0; height: 320px; margin-top: 0.5rem; }
 .team-evolution__tooltip { max-width: 245px; padding: 0.75rem; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface-strong); color: var(--ink); font-size: 0.8rem; }
 .team-evolution__tooltip dl { margin: 0.5rem 0; }
 .team-evolution__tooltip dl div { display: flex; justify-content: space-between; gap: 0.75rem; }
