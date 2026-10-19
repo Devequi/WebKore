@@ -1,19 +1,20 @@
-import { useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { Activity, BarChart3, ClipboardList, Home, Settings, ShieldCheck, Users } from "lucide-react";
 import { AppShell } from "./componentes/layout/AplicativoShell.jsx";
-import { AthleteDashboard } from "./paginas/atleta/PainelAtleta.jsx";
 import { AthleteLobby } from "./paginas/atleta/Lobby.jsx";
 import { AthleteProfile } from "./paginas/atleta/PerfilAtleta.jsx";
 import { TeamSearch } from "./paginas/atleta/PesquisaTime.jsx";
-import { AthletesPage } from "./paginas/treinador/AtletasTreinador.jsx";
 import { CoachLobby } from "./paginas/treinador/LobbyTreinador.jsx";
 import { RequestsPage } from "./paginas/treinador/SolicitacoesTreinador.jsx";
-import { SettingsPage } from "./paginas/treinador/ConfigsTreinador.jsx";
-import { TeamHome } from "./paginas/treinador/PrincipalTreinador.jsx";
-import { TrainingsPage } from "./paginas/treinador/treinamentosPagina.jsx";
 import { LoginPage } from "./paginas/PaginaLogin.jsx";
 import { useWebKoreData } from "./hooks/useWebKoreData.js";
 import { getAthleteTeams, getCoachTeams } from "./utils/selectors.js";
+
+const AthleteDashboard = lazy(() => import("./paginas/atleta/PainelAtleta.jsx").then((page) => ({ default: page.AthleteDashboard })));
+const AthletesPage = lazy(() => import("./paginas/treinador/AtletasTreinador.jsx").then((page) => ({ default: page.AthletesPage })));
+const TeamHome = lazy(() => import("./paginas/treinador/PrincipalTreinador.jsx").then((page) => ({ default: page.TeamHome })));
+const TrainingsPage = lazy(() => import("./paginas/treinador/treinamentosPagina.jsx").then((page) => ({ default: page.TrainingsPage })));
+const SettingsPage = lazy(() => import("./paginas/treinador/ConfigsTreinador.jsx").then((page) => ({ default: page.SettingsPage })));
 
 const coachTabs = [
   { id: "coach-home", label: "Home", icon: Home },
@@ -33,8 +34,8 @@ export function App() {
   const [state, actions] = useWebKoreData();
   const session = state.session || { role: "", userId: "" };
   const [activeView, setActiveView] = useState("login");
-  const [selectedTeamId, setSelectedTeamId] = useState("team-1");
-  const [selectedAthleteId, setSelectedAthleteId] = useState("athlete-1");
+  const [selectedTeamId, setSelectedTeamId] = useState("");
+  const [selectedAthleteId, setSelectedAthleteId] = useState("");
 
   const coachTeams = useMemo(() => getCoachTeams(state, session.userId), [state, session.userId]);
   const athleteTeams = useMemo(() => getAthleteTeams(state, session.userId), [state, session.userId]);
@@ -43,10 +44,7 @@ export function App() {
   const currentUser = state.users.find((user) => user.id === session.userId);
 
   function withNotice(content) {
-    const notice = session.source === "local"
-      ? "Modo local: dados preservados neste navegador, sem sincronização com a API."
-      : state.offline ? "API indisponível: exibindo a última consulta desta sessão. Alterações exigem conexão." : null;
-    return <>{state.localDataNotice && <p className="form-feedback" role="status">{state.localDataNotice}</p>}{notice && <p className="form-feedback" role="status">{notice}</p>}{content}</>;
+    return <>{state.sessionMessage && <p className="form-feedback" role="status">{state.sessionMessage} <button type="button" onClick={() => actions.refresh().catch(() => undefined)}>Atualizar painel</button></p>}<Suspense fallback={<p role="status">Carregando página...</p>}>{content}</Suspense></>;
   }
 
   useEffect(() => {
@@ -80,7 +78,7 @@ export function App() {
   if (state.loadingSession) return <main className="auth-page"><p role="status">Restaurando sessão...</p></main>;
 
   if (!state.session || !currentUser || activeView === "login") {
-    return <LoginPage onLogin={handleLogin} onRegister={handleRegister} notice={[state.sessionMessage, state.localDataNotice].filter(Boolean).join(" ")} />;
+    return <LoginPage onLogin={handleLogin} onRegister={handleRegister} notice={state.sessionMessage} />;
   }
 
   if (session.role === "coach" && activeView === "coach-lobby") {

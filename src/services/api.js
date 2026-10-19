@@ -1,5 +1,7 @@
+import { getAuthToken } from "./storage.js";
+export { getAuthToken, setAuthToken } from "./storage.js";
+
 const API_BASE_URL = import.meta.env?.VITE_API_URL || "http://localhost:3333/api";
-const TOKEN_KEY = "webkore-auth-token-v1";
 
 export class ApiError extends Error {
   constructor(message, status) {
@@ -13,18 +15,6 @@ export class NetworkError extends Error {
   constructor() {
     super("Não foi possível conectar à API. Verifique sua conexão e o servidor.");
     this.name = "NetworkError";
-  }
-}
-
-export function getAuthToken() {
-  return localStorage.getItem(TOKEN_KEY);
-}
-
-export function setAuthToken(token) {
-  if (token) {
-    localStorage.setItem(TOKEN_KEY, token);
-  } else {
-    localStorage.removeItem(TOKEN_KEY);
   }
 }
 
@@ -45,9 +35,11 @@ async function request(path, options = {}) {
       ...options,
       headers,
       body: options.body ? JSON.stringify(options.body) : undefined,
-      signal: options.signal || AbortSignal.timeout(10000)
+      cache: "no-store",
+      signal: options.signal ? AbortSignal.any([options.signal, AbortSignal.timeout(10000)]) : AbortSignal.timeout(10000)
     });
-  } catch {
+  } catch (error) {
+    if (options.signal?.aborted) throw error;
     throw new NetworkError();
   }
 
@@ -59,34 +51,34 @@ async function request(path, options = {}) {
     throw new ApiError(data?.message || "Erro ao comunicar com a API.", response.status);
   }
 
+  if (data === null) throw new ApiError("O servidor retornou uma resposta inválida. Tente novamente.", 502);
+
   return data;
 }
 
 export const api = {
-  async login(credentials) {
-    const data = await request("/auth/login", {
+  login(credentials, options) {
+    return request("/auth/login", {
       method: "POST",
-      body: credentials
+      body: credentials,
+      ...options
     });
-    setAuthToken(data.token);
-    return data;
   },
 
-  async register(payload) {
-    const data = await request("/auth/register", {
+  register(payload, options) {
+    return request("/auth/register", {
       method: "POST",
-      body: payload
+      body: payload,
+      ...options
     });
-    setAuthToken(data.token);
-    return data;
   },
 
-  me() {
-    return request("/auth/me");
+  me(options) {
+    return request("/auth/me", options);
   },
 
-  searchTeam(code) {
-    return request(`/teams?code=${encodeURIComponent(code.trim())}`);
+  searchTeam(code, options) {
+    return request(`/teams?code=${encodeURIComponent(code.trim())}`, options);
   },
 
   updateMe(patch) {

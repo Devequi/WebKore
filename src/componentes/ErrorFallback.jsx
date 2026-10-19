@@ -11,9 +11,9 @@ export class ErrorFallback extends React.Component {
     return (
       <main className="runtime-error">
         <h1>WebKore encontrou um erro ao abrir</h1>
-        <p>{this.state.error.message}</p>
+        <p>Não foi possível carregar esta página.</p>
         <p>Seus dados foram preservados. Tente novamente ou volte à tela de login.</p>
-        <button onClick={() => this.setState({ error: null })} type="button">Tentar novamente</button>
+        <button onClick={() => window.location.reload()} type="button">Tentar novamente</button>
         <button onClick={() => { clearSession(); window.location.reload(); }} type="button">Voltar ao login</button>
       </main>
     );

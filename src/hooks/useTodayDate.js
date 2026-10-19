@@ -6,7 +6,7 @@ export function useTodayDate() {
   const [today, setToday] = useState(todayDateOnly);
   useEffect(() => {
     const update = () => setToday(todayDateOnly());
-    const timer = window.setInterval(update, 1000);
+    const timer = window.setInterval(update, 30000);
     window.addEventListener("focus", update);
     document.addEventListener("visibilitychange", update);
     return () => {

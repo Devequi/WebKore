@@ -1,5 +1,5 @@
 import { Search, Send } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { api } from "../../services/api.js";
 import { Button } from "../../componentes/ui/Botao.jsx";
 import "../../styles/paginasAtleta/PesquisaTime.css";
@@ -11,26 +11,20 @@ export function TeamSearch({ actions, athleteId, state }) {
   const [remoteTeam, setRemoteTeam] = useState(null);
   const [searching, setSearching] = useState(false);
   useEffect(() => {
-    if (state.session?.source !== "api" || !code.trim()) { setRemoteTeam(null); setSearching(false); return; }
+    if (!code.trim()) { setRemoteTeam(null); setSearching(false); return; }
     let active = true;
+    const controller = new AbortController();
     setRemoteTeam(null);
     setSearching(true);
     const timer = setTimeout(() => {
-      api.searchTeam(code).then((teams) => { if (active) setRemoteTeam(teams[0] || null); })
+      api.searchTeam(code, { signal: controller.signal }).then((teams) => { if (active) setRemoteTeam(teams[0] || null); })
         .catch((error) => { if (active) setFeedback({ type: "error", text: error.message }); })
         .finally(() => { if (active) setSearching(false); });
     }, 300);
-    return () => { active = false; clearTimeout(timer); };
-  }, [code, state.session?.source]);
+    return () => { active = false; controller.abort(); clearTimeout(timer); };
+  }, [code]);
 
-  const procurarTime = useMemo(
-    () =>
-      state.session?.source === "api" ? remoteTeam : state.teams.find(
-        (team) =>
-          team.code.toUpperCase() === code.trim().toUpperCase()
-      ),
-    [code, state.teams, state.session?.source, remoteTeam]
-  );
+  const procurarTime = remoteTeam;
 
   const entradaTime = procurarTime
     ? state.memberships.find(
@@ -114,7 +108,7 @@ export function TeamSearch({ actions, athleteId, state }) {
                   : "Solicitar entrada"}
             </Button>
           </article>
-        ) : searching ? <p role="status">Buscando equipe...</p> : code.trim() ? (
+        ) : searching ? <p role="status">Buscando equipe...</p> : feedback?.type === "error" ? null : code.trim() ? (
           <div className="empty-state">
             <strong>Equipe não encontrada</strong>
 

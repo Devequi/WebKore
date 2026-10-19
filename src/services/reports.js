@@ -1,8 +1,11 @@
 import { formatDate } from "../utils/formatters.js";
 import { getApprovedAthletes, getRecordAverage, getTeamTrainings } from "../utils/selectors.js";
 
-function csvCell(value) {
-  return `"${String(value ?? "").replaceAll('"', '""')}"`;
+export function csvCell(value) {
+  const text = String(value ?? "");
+  // Planilhas não devem executar fórmulas inseridas em nomes ou descrições.
+  const safe = /^\s*[=+@-]/.test(text) ? `'${text}` : text;
+  return `"${safe.replaceAll('"', '""')}"`;
 }
 
 export function downloadTeamReport(state, team) {

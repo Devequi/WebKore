@@ -51,14 +51,14 @@ export function SettingsPage({
       email: currentUser.email,
       password: ""
     });
-  }, [currentUser]);
+  }, [currentUser.id, currentUser.name, currentUser.email]);
 
   useEffect(() => {
     setFormTime({
       name: team?.name || "",
       modality: team?.modality || "Futebol"
     });
-  }, [team]);
+  }, [team?.id, team?.name, team?.modality]);
 
   async function salvarConta(event) {
     event.preventDefault();

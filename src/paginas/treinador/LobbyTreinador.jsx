@@ -12,6 +12,7 @@ export function CoachLobby({
   state,
   teams: times
 }) {
+  const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({
     name: "",
     modality: "Futsal"
@@ -20,7 +21,8 @@ export function CoachLobby({
   async function criarTime(event) {
     event.preventDefault();
 
-    if (!form.name.trim()) return;
+    if (creating || !form.name.trim()) return;
+    setCreating(true);
 
     try {
       await actions.createTeam({
@@ -30,6 +32,8 @@ export function CoachLobby({
     } catch (error) {
       alert(error.message || "Nao foi possivel criar a equipe.");
       return;
+    } finally {
+      setCreating(false);
     }
 
     setForm({
@@ -131,10 +135,11 @@ export function CoachLobby({
           </label>
 
           <Button
+            disabled={creating}
             icon={Plus}
             type="submit"
           >
-            Criar equipe
+            {creating ? "Criando..." : "Criar equipe"}
           </Button>
         </form>
 

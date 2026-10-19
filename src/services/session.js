@@ -1,86 +1,41 @@
-import bcrypt from "bcryptjs";
 import { validateBirthDate } from "../../shared/birthDate.js";
-import { api, getAuthToken, NetworkError, setAuthToken } from "./api.js";
-import { loadApiCache, loadState, saveApiCache, saveState } from "./storage.js";
+import { api, ApiError, getAuthToken, setAuthToken } from "./api.js";
 
-const SESSION_KEY = "webkore-session-v1";
-
-export function rememberSession(payload, source = "api") {
-  const session = { userId: payload.user.id, role: payload.user.role, source };
-  if (source === "api") saveApiCache(payload);
-  localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-  return { ...payload, session, offline: source === "local" };
+export function rememberSession(payload) {
+  const user = payload?.user;
+  const state = payload?.state;
+  if (!user?.id || !["coach", "athlete"].includes(user.role) ||
+      !["users", "teams", "memberships", "trainings"].every((key) => Array.isArray(state?.[key])) ||
+      !state.users.some((item) => item?.id === user.id)) {
+    throw new ApiError("O servidor retornou uma sessão incompleta. Tente novamente.", 502);
+  }
+  return { ...payload, session: { userId: user.id, role: user.role } };
 }
 
 export function clearSession() {
   setAuthToken(null);
-  localStorage.removeItem(SESSION_KEY);
 }
 
-function tokenClaims(token) {
-  try {
-    return JSON.parse(atob(token.split(".")[1].replaceAll("-", "+").replaceAll("_", "/")));
-  } catch {
-    return null;
-  }
-}
-
-export async function restoreSession() {
-  let stored;
-  try { stored = JSON.parse(localStorage.getItem(SESSION_KEY)); } catch { stored = null; }
+export async function restoreSession(options) {
   const token = getAuthToken();
-  if (token) {
-    try {
-      return rememberSession(await api.me());
-    } catch (error) {
-      const claims = tokenClaims(token);
-      const cache = stored?.source === "api" ? loadApiCache(stored.userId) : null;
-      if (error instanceof NetworkError && cache && claims?.id === stored.userId && claims.exp * 1000 > Date.now()) {
-        return { ...cache, session: stored, offline: true };
-      }
-      if (!(error instanceof NetworkError)) clearSession();
-      throw error;
-    }
+  if (!token) return null;
+  try {
+    return rememberSession(await api.me(options));
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401 && token === getAuthToken()) clearSession();
+    throw error;
   }
-  if (stored?.source === "local") {
-    const state = loadState();
-    const user = state.users.find((item) => item.id === stored.userId && item.passwordHash);
-    if (user) return { user, state, session: stored, offline: true };
-  }
-  return null;
 }
 
-export async function authenticate(payload, register = false) {
+export async function authenticate(payload, register = false, options) {
   const credentials = { ...payload, email: payload.email.trim().toLowerCase() };
   if (register && credentials.role === "athlete") validateBirthDate(credentials.birthDate);
-  try {
-    const result = await (register ? api.register(credentials) : api.login(credentials));
-    if (result.user.role !== payload.role) {
-      clearSession();
-      throw new Error("E-mail, senha ou perfil inválido.");
-    }
-    return rememberSession(result);
-  } catch (error) {
-    if (!(error instanceof NetworkError)) throw error;
-    const state = loadState();
-    let user = state.users.find((item) => item.email.toLowerCase() === credentials.email);
-    if (register) {
-      if (user) throw new Error("Já existe uma conta local com este e-mail.");
-      if (!credentials.name?.trim() || !["coach", "athlete"].includes(credentials.role) || credentials.password?.length < 6) {
-        throw new Error("Informe nome, perfil e uma senha de pelo menos 6 caracteres.");
-      }
-      user = {
-        id: crypto.randomUUID(), role: credentials.role, name: credentials.name,
-        birthDate: credentials.role === "athlete" ? credentials.birthDate : null,
-        email: credentials.email, passwordHash: await bcrypt.hash(credentials.password, 10),
-        photo: credentials.name.split(" ").slice(0, 2).map((part) => part[0]).join("").toUpperCase()
-      };
-      state.users = [...state.users, user];
-      saveState(state);
-    } else if (!user?.passwordHash || user.role !== credentials.role || !(await bcrypt.compare(credentials.password, user.passwordHash))) {
-      throw new Error("API indisponível. Nenhuma conta local válida foi encontrada; dados antigos foram preservados.");
-    }
-    setAuthToken(null);
-    return rememberSession({ user, state }, "local");
+  const result = await (register ? api.register(credentials, options) : api.login(credentials, options));
+  const session = rememberSession(result);
+  if (result.user.role !== payload.role || typeof result.token !== "string" || !result.token) {
+    throw new ApiError("E-mail, senha ou perfil inválido.", 401);
   }
+  options?.signal?.throwIfAborted();
+  setAuthToken(result.token);
+  return session;
 }

@@ -5,6 +5,7 @@ import { Button } from "../../componentes/ui/Botao.jsx";
 import { EmptyState } from "../../componentes/ui/EstadoVazio.jsx";
 import { formatDate } from "../../utils/formatters.js";
 import { runUiAction } from "../../utils/runUiAction.js";
+import { todayDateOnly } from "../../../shared/birthDate.js";
 import {
   getApprovedAthletes,
   getTeamTrainings
@@ -15,7 +16,7 @@ export function TrainingsPage({ actions, state, team }) {
   const formularioRef = useRef(null);
   const dataRef = useRef(null);
   const [form, setForm] = useState({
-    date: new Date().toISOString().slice(0, 10),
+    date: todayDateOnly(),
     type: "Misto",
     description: ""
   });
@@ -67,7 +68,7 @@ export function TrainingsPage({ actions, state, team }) {
     setFeedback({ type: "success", text: "Treino cadastrado." });
 
     setForm({
-      date: new Date().toISOString().slice(0, 10),
+      date: todayDateOnly(),
       type: "Misto",
       description: ""
     });
@@ -103,6 +104,7 @@ export function TrainingsPage({ actions, state, team }) {
         trainingId,
         athleteId,
         patch: {
+          expectedMetrics: { [metric]: valorAtual },
           metrics: {
             [metric]: Math.max(0, valorAtual + delta)
           }
