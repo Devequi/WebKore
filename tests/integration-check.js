@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import jwt from "jsonwebtoken";
 import { createApp } from "../server/src/aplicativo.js";
 import { prisma } from "../server/src/lib/prisma.js";
@@ -15,6 +15,14 @@ const run = randomUUID();
 const password = randomUUID();
 const createdUsers = [];
 const createdTeams = [];
+const models = ["user", "team", "membership", "training", "trainingRecord", "evaluation", "sportMetric"];
+async function snapshot() {
+  return Promise.all(models.map(async (model) => {
+    const rows = await prisma[model].findMany({ orderBy: { id: "asc" } });
+    return { model, count: rows.length, digest: createHash("sha256").update(JSON.stringify(rows)).digest("hex") };
+  }));
+}
+const originalData = await snapshot();
 const values = new Map();
 globalThis.localStorage = { getItem: (key) => values.get(key) ?? null,
   setItem: (key, value) => values.set(key, String(value)), removeItem: (key) => values.delete(key) };
@@ -40,7 +48,7 @@ async function register(role, suffix) {
 }
 try {
   const coach = await register("coach", "coach");
-  assert.equal(coach.session.source, "api");
+  assert.equal(coach.session.role, "coach");
   assert.equal(coach.user.password, undefined);
   assert.equal(coach.user.passwordHash, undefined);
   assert.equal((await restoreSession()).user.id, coach.user.id);
@@ -219,6 +227,28 @@ try {
       assert.ok(await prisma.trainingRecord.findUnique({ where: { trainingId_athleteId: { trainingId: privateTraining.id, athleteId: secondAthlete.user.id } } }));
       console.log("Etapa 6: dois atletas, equipes de dois treinadores, projeção, notas privadas, busca, saída sem apagar histórico e JWT/conta verificados OK.");
     }
+    if (stage >= 7) {
+      const version = (await request("/teams")).find((item) => item.id === team.id).updatedAt;
+      await api.updateTeam(team.id, { name: "Edição atual", expectedUpdatedAt: version });
+      await request(`/teams/${team.id}`, "PATCH", { name: "Edição antiga", expectedUpdatedAt: version }, validToken, 409);
+      assert.equal((await api.me()).state.teams.find((item) => item.id === team.id).name, "Edição atual");
+      await request(`/teams/${team.id}`, "PATCH", { name: "a".repeat(192) }, validToken, 400);
+      await request(`/trainings/${training.id}/athletes/${athlete.user.id}`, "PATCH", {
+        present: true, ratings: { "Técnica nova": 9 }, metrics: { "Gols marcados": 6 }, expectedMetrics: { "Gols marcados": 99 }
+      }, validToken, 409);
+      const unchanged = (await api.me()).state.trainings.find((item) => item.id === training.id).athletes[athlete.user.id];
+      assert.equal(unchanged.present, false);
+      assert.equal(unchanged.ratings["Técnica nova"], 0);
+      assert.equal(unchanged.metrics["Gols marcados"], 0);
+      const parallel = await Promise.all([1, 2].map((value) => nativeFetch(`${base}/api/trainings/${training.id}/athletes/${athlete.user.id}`, {
+        method: "PATCH", headers: { "Content-Type": "application/json", Authorization: `Bearer ${validToken}` },
+        body: JSON.stringify({ metrics: { "Gols marcados": value }, expectedMetrics: { "Gols marcados": 0 } })
+      })));
+      assert.deepEqual(parallel.map((result) => result.status).sort(), [200, 409]);
+      assert.equal((await nativeFetch(`${base}/api/health`)).headers.get("cache-control"), "no-store");
+      await request("/rota-inexistente", "GET", undefined, validToken, 404);
+      console.log("Etapa 7: conflito de versão, rollback integral de presença/notas/métricas, escritas simultâneas, limites, cache e 404 JSON OK.");
+    }
     await api.deleteTeam(team.id);
     assert.equal(await prisma.membership.count({ where: { teamId: team.id } }), 0);
     assert.equal(await prisma.training.count({ where: { teamId: team.id } }), 0);
@@ -232,6 +262,7 @@ try {
   globalThis.fetch = nativeFetch;
   if (createdTeams.length) await prisma.team.deleteMany({ where: { id: { in: createdTeams } } });
   if (createdUsers.length) await prisma.user.deleteMany({ where: { id: { in: createdUsers } } });
+  assert.deepEqual(await snapshot(), originalData, "Registros anteriores devem permanecer integralmente iguais.");
   await prisma.$disconnect();
   await new Promise((resolve) => server.close(resolve));
   delete globalThis.localStorage;
