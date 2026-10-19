@@ -3,6 +3,11 @@ import { createRoot } from "react-dom/client";
 import { App } from "./App.jsx";
 import "./styles/global.css";
 import { ErrorFallback } from "./componentes/ErrorFallback.jsx";
+import { retireLegacyPwa } from "./services/retirePwa.js";
+import { removeLegacyApiCache } from "./services/storage.js";
+
+try { removeLegacyApiCache(); }
+catch { console.warn("Não foi possível limpar o cache de consultas antigo."); }
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
@@ -12,19 +17,11 @@ createRoot(document.getElementById("root")).render(
   </React.StrictMode>
 );
 
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    // O vite-plugin-pwa injeta o registro do service worker no build.
-    if (import.meta.env.PROD) return;
-
-    navigator.serviceWorker.getRegistrations().then((registrations) => {
-      registrations.forEach((registration) => registration.unregister());
-    });
-    if ("caches" in window) {
-      window.caches
-        .keys()
-        .then((keys) => keys.filter((key) => key.startsWith("webkore-cache")).forEach((key) => window.caches.delete(key)))
-        .catch(() => undefined);
-    }
-  });
-}
+retireLegacyPwa({
+  serviceWorker: navigator.serviceWorker,
+  cacheStorage: window.caches,
+  baseUrl: new URL(import.meta.env.BASE_URL, window.location.origin).href
+}).then(({ controlled, removed }) => {
+  // Uma navegação libera o controlador antigo após desregistro; só ocorre uma vez.
+  if (controlled && removed) window.location.reload();
+}).catch(() => console.warn("Não foi possível desativar o PWA antigo. Feche as outras abas do WebKore e atualize a página."));
