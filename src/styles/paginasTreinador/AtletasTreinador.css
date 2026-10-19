@@ -71,6 +71,25 @@
   font-weight: 900;
 }
 
+.athlete-history__title { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
+.athlete-history__title span { min-width: 0; overflow-wrap: normal; word-break: normal; }
+.athlete-history[open] > .athlete-dashboard__toggle .athlete-history__title svg { transform: none; }
+.athlete-history .timeline article { min-width: 0; overflow-wrap: anywhere; }
+
+@supports (interpolate-size: allow-keywords) {
+  .athlete-history::details-content {
+    interpolate-size: allow-keywords;
+    block-size: 0;
+    overflow: hidden;
+    transition: block-size 200ms ease, content-visibility 200ms allow-discrete;
+  }
+  .athlete-history[open]::details-content { block-size: auto; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .athlete-history::details-content { transition: none; }
+}
+
 .avatar {
   display: grid;
   place-items: center;

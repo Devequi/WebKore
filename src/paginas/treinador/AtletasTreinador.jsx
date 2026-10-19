@@ -1,8 +1,8 @@
-import { Save, Trash2, UserRoundCheck } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ChevronDown, History, Save, Trash2, UserRoundCheck } from "lucide-react";
+import { useEffect, useId, useState } from "react";
 import { useTodayDate } from "../../hooks/useTodayDate.js";
 import { formatAge } from "../../../shared/birthDate.js";
-import { EvolutionChart } from "../../componentes/charts/GraficoEvolucao.jsx";
+import { AthleteDashboard } from "../../componentes/charts/DashboardAtleta.jsx";
 import { Avatar } from "../../componentes/ui/Avatar.jsx";
 import { Button } from "../../componentes/ui/Botao.jsx";
 import { KpiCard } from "../../componentes/ui/CartaoKpi.jsx";
@@ -63,6 +63,8 @@ export function AthletesPage({
     position: atletaSelecionado?.position ?? ""
   });
   const [feedback, setFeedback] = useState(null);
+  const [historicoAberto, setHistoricoAberto] = useState(false);
+  const historicoId = useId();
 
   useEffect(() => {
     if (atletaSelecionado) {
@@ -126,7 +128,7 @@ export function AthletesPage({
                   <strong>{atleta.name}</strong>
 
                   <span>
-                    #{atleta.number} · {atleta.position} · {formatAge(atleta.birthDate, today)}
+                    {[atleta.number != null ? `#${atleta.number}` : null, atleta.position, formatAge(atleta.birthDate, today)].filter(Boolean).join(" · ")}
                   </span>
                 </div>
 
@@ -254,23 +256,23 @@ export function AthletesPage({
           )}
         </section>
 
-        <EvolutionChart
+        <AthleteDashboard
           data={evolucao}
-          title="Evolução individual"
+          stats={stats}
+          athleteId={atletaSelecionado.id}
         />
 
-        <section className="panel">
-          <div className="section-heading">
-            <div>
-              <span className="eyebrow">
-                Histórico completo
-              </span>
+        <details
+          className="panel athlete-dashboard athlete-history"
+          open={historicoAberto}
+          onToggle={(event) => setHistoricoAberto(event.currentTarget.open)}
+        >
+          <summary className="athlete-dashboard__toggle" aria-expanded={historicoAberto} aria-controls={historicoId}>
+            <h2 className="athlete-history__title"><History size={20} aria-hidden="true" /><span>Histórico Completo do Atleta</span></h2>
+            <ChevronDown size={20} aria-hidden="true" />
+          </summary>
 
-              <h2>Avaliações</h2>
-            </div>
-          </div>
-
-          <div className="timeline">
+          <div className="athlete-dashboard__content timeline" id={historicoId}>
             {treinos.map((treino) => {
               const dadosAtleta =
                 treino.athletes[atletaSelecionado.id];
@@ -299,7 +301,7 @@ export function AthletesPage({
               );
             })}
           </div>
-        </section>
+        </details>
       </section>
     </div>
   );
