@@ -1,7 +1,9 @@
-import { Clipboard, Plus } from "lucide-react";
+import { Clipboard, Plus, UserRound, Users, Trophy } from "lucide-react";
 import { useState } from "react";
 import { PublicHeader } from "../../componentes/layout/CabecalhoPublico.jsx";
 import { Button } from "../../componentes/ui/Botao.jsx";
+import { KpiCard } from "../../componentes/ui/CartaoKpi.jsx";
+import { EmptyState } from "../../componentes/ui/EstadoVazio.jsx";
 import "../../styles/paginasTreinador/LobbyTreinador.css";
 
 export function CoachLobby({
@@ -9,10 +11,12 @@ export function CoachLobby({
   currentUser,
   onLogout,
   onOpenTeam,
+  onProfile,
   state,
   teams: times
 }) {
   const [creating, setCreating] = useState(false);
+  const [feedback, setFeedback] = useState(null);
   const [form, setForm] = useState({
     name: "",
     modality: "Futsal"
@@ -23,6 +27,7 @@ export function CoachLobby({
 
     if (creating || !form.name.trim()) return;
     setCreating(true);
+    setFeedback(null);
 
     try {
       await actions.createTeam({
@@ -30,7 +35,7 @@ export function CoachLobby({
         coachId: currentUser.id
       });
     } catch (error) {
-      alert(error.message || "Nao foi possivel criar a equipe.");
+      setFeedback({ type: "error", text: error.message || "Não foi possível criar a equipe." });
       return;
     } finally {
       setCreating(false);
@@ -40,10 +45,15 @@ export function CoachLobby({
       name: "",
       modality: "Futsal"
     });
+    setFeedback({ type: "success", text: "Equipe criada." });
   }
 
-  function copiarCodigo(code) {
-    navigator.clipboard?.writeText(code);
+  async function copiarCodigo(code) {
+    try {
+      if (!navigator.clipboard) throw new Error("Copie o código exibido no card.");
+      await navigator.clipboard.writeText(code);
+      setFeedback({ type: "success", text: "Código copiado." });
+    } catch (error) { setFeedback({ type: "error", text: error.message || "Não foi possível copiar o código." }); }
   }
 
   const atletasPorTime = new Map(
@@ -61,7 +71,7 @@ export function CoachLobby({
   ).size;
 
   return (
-    <main className="lobby-page">
+    <main className="lobby-page coach-lobby coach-experience">
       <PublicHeader onLogout={onLogout} />
 
       <section className="lobby-hero">
@@ -73,24 +83,15 @@ export function CoachLobby({
             os painéis de desempenho do WebKore.
           </p>
         </div>
+        <Button icon={UserRound} onClick={onProfile} type="button" variant="ghost">Meu perfil</Button>
       </section>
 
-      <section className="lobby-stats">
-        <article className="stat-card">
-          <span>Equipes</span>
-          <strong>{times.length}</strong>
-        </article>
-
-        <article className="stat-card">
-          <span>Atletas</span>
-          <strong>{totalAtletas}</strong>
-        </article>
-
-        <article className="stat-card">
-          <span>Modalidades</span>
-          <strong>{modalidades}</strong>
-        </article>
+      <section className="kpi-grid athlete-kpis">
+        <KpiCard icon={Users} label="Equipes" value={times.length} detail="Administradas por você" />
+        <KpiCard icon={UserRound} label="Atletas" value={totalAtletas} detail="Atletas únicos aprovados" />
+        <KpiCard icon={Trophy} label="Modalidades" value={modalidades} detail="Nas suas equipes" />
       </section>
+      {feedback && <p className={`form-feedback form-feedback--${feedback.type}`} role={feedback.type === "error" ? "alert" : "status"}>{feedback.text}</p>}
 
       <section className="dashboard-grid--lobby">
         <form
@@ -103,6 +104,8 @@ export function CoachLobby({
             Nome da equipe
 
             <input
+              required
+              maxLength={191}
               placeholder="Ex: ETEC Araras Sub-18"
               value={form.name}
               onChange={(event) =>
@@ -144,6 +147,7 @@ export function CoachLobby({
         </form>
 
         <div className="team-card-grid">
+          {!times.length && <EmptyState title="Nenhuma equipe criada" text="Use o formulário para começar a gerenciar sua primeira equipe." />}
           {times.map((time) => (
             <article
               className="team-card"

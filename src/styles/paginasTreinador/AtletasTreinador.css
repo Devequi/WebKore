@@ -164,17 +164,11 @@
 
 .athletes-layout .athlete-profile-header > div:last-child { min-width: 0; }
 
-.athletes-layout .athlete-profile-panel .kpi-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.6rem; }
 
-.athletes-layout .athlete-profile-panel .kpi-card-largo { display: flex; grid-column: auto; min-width: 0; }
 
-.athletes-layout .athlete-profile-panel .kpi-card { display: flex; flex-direction: column; align-items: flex-start; width: 100%; min-width: 0; min-height: 112px; gap: 0.5rem; padding: 0.75rem 0.5rem; }
 
-.athletes-layout .athlete-profile-panel .kpi-card__icon { width: 32px; height: 32px; flex-basis: 32px; }
 
-.athletes-layout .athlete-profile-panel .kpi-card p { font-size: 0.75rem; overflow-wrap: normal; word-break: normal; }
 
-.athletes-layout .athlete-profile-panel .kpi-card strong { font-size: 1.4rem; line-height: 1.2; }
 
 .athletes-layout .athlete-profile-panel .inline-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
@@ -191,10 +185,6 @@
   .athletes-layout .athlete-card { min-height: 90px; font-size: 1rem; padding: 1rem; }
   .athletes-layout .athlete-card__identity span,
   .athletes-layout .athlete-card small { font-size: 0.85rem; }
-  .athletes-layout .athlete-profile-panel .kpi-card { min-height: 144px; padding: 1rem; gap: 0.65rem; }
-  .athletes-layout .athlete-profile-panel .kpi-card__icon { width: 40px; height: 40px; flex-basis: 40px; }
-  .athletes-layout .athlete-profile-panel .kpi-card p { font-size: 0.95rem; }
-  .athletes-layout .athlete-profile-panel .kpi-card strong { font-size: 1.9rem; }
   .athletes-layout .athlete-dashboard__toggle h2 { font-size: 1.3rem; }
   .athletes-layout .team-evolution__area-plot { height: clamp(360px, 45vh, 560px); }
 }

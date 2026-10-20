@@ -103,8 +103,8 @@ export function toClientTraining(training, team) {
           ratings: Object.fromEntries(
             criteria.map((name, index) => [
               name,
-              record.evaluation?.[qualitativeFields[index]] ?? 5
-            ])
+              record.evaluation?.[qualitativeFields[index]]
+            ]).filter(([, value]) => Number.isFinite(value))
           )
         }
       ])

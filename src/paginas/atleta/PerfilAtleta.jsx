@@ -3,14 +3,23 @@ import { useEffect, useRef, useState } from "react";
 import { Avatar } from "../../componentes/ui/Avatar.jsx";
 import { Button } from "../../componentes/ui/Botao.jsx";
 import { BirthDateField } from "../../componentes/ui/CampoNascimento.jsx";
-import { getAthleteTeams } from "../../utils/selectors.js";
+import { getAthleteTeams, getAthleteTrainings } from "../../utils/selectors.js";
+import { athletePerformance, scoreLabel } from "../../utils/athletePerformance.js";
+import { formatDate, percent } from "../../utils/formatters.js";
+import { formatAge, isDateOnly, validateBirthDate } from "../../../shared/birthDate.js";
+import { useTodayDate } from "../../hooks/useTodayDate.js";
 import "../../styles/paginasAtleta/AthleteProfile.css";
+import "../../styles/paginasAtleta/AthleteExperience.css";
 
-export function AthleteProfile({ actions, athleteId, state }) {
+export function AthleteProfile({ actions, athleteId, state, team }) {
   const athlete = state.users.find((user) => user.id === athleteId);
   const teams = getAthleteTeams(state, athleteId);
+  const today = useTodayDate();
+  const membership = state.memberships.find((item) => item.athleteId === athleteId && item.teamId === team?.id && item.status === "approved");
+  const trainings = team ? getAthleteTrainings(state, team.id, athleteId) : [];
+  const performance = athletePerformance(trainings, athleteId);
   const dialogRef = useRef(null);
-  const [form, setForm] = useState({ name: athlete.name, email: athlete.email, photo: athlete.photo, birthDate: athlete.birthDate || "" });
+  const [form, setForm] = useState({ name: athlete?.name || "", email: athlete?.email || "", photo: athlete?.photo || "", birthDate: athlete?.birthDate || "" });
   const [feedback, setFeedback] = useState(null);
   const [saving, setSaving] = useState(false);
   const [leaving, setLeaving] = useState(false);
@@ -28,7 +37,11 @@ export function AthleteProfile({ actions, athleteId, state }) {
     setFeedback(null);
     try {
       const { birthDate, ...fields } = form;
-      await actions.updateAthlete({ athleteId, patch: { ...fields, ...(birthDate ? { birthDate } : {}) } });
+      if (!fields.name.trim() || fields.name.length > 191) throw new Error("Informe um nome válido com até 191 caracteres.");
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email.trim()) || fields.email.length > 191) throw new Error("Informe um e-mail válido com até 191 caracteres.");
+      if (birthDate) validateBirthDate(birthDate, today);
+      if (athlete?.birthDate && !birthDate) throw new Error("Informe a data de nascimento.");
+      await actions.updateAthlete({ athleteId, patch: { ...fields, name: fields.name.trim(), email: fields.email.trim().toLowerCase(), ...(birthDate ? { birthDate } : {}) } });
       setFeedback({ type: "success", text: "Perfil atualizado." });
     } catch (error) {
       setFeedback({ type: "error", text: error.message || "Não foi possível salvar o perfil." });
@@ -60,23 +73,57 @@ export function AthleteProfile({ actions, athleteId, state }) {
     }
   }
 
+  if (!athlete) return <p className="empty-content" role="status">Perfil indisponível. Atualize o painel para tentar novamente.</p>;
+
   return (
-    <section className="panel settings-panel">
+    <div className="page-stack athlete-experience">
+    <section className="panel">
       <div className="athlete-profile-header">
         <Avatar name={athlete.name} photo={athlete.photo} size="lg" />
         <div>
           <span className="eyebrow">Atleta</span>
           <h2>{athlete.name}</h2>
-          <p>Perfil do atleta</p>
+          <p>{team?.name || "Sem equipe selecionada"} · {formatAge(athlete.birthDate, today)}</p>
         </div>
       </div>
 
+      <dl className="athlete-facts">
+        <div><dt>Nome completo</dt><dd>{athlete.name}</dd></div>
+        <div><dt>Identificação</dt><dd>{athlete.id}</dd></div>
+        <div><dt>Data de nascimento</dt><dd>{isDateOnly(athlete.birthDate) ? formatDate(athlete.birthDate) : "Não informada"}</dd></div>
+        <div><dt>Idade</dt><dd>{formatAge(athlete.birthDate, today)}</dd></div>
+        <div><dt>E-mail</dt><dd>{athlete.email}</dd></div>
+        <div><dt>Função</dt><dd>Atleta</dd></div>
+      </dl>
+    </section>
+
+    <section className="panel">
+      <div className="section-heading"><div><span className="eyebrow">Equipe atual</span><h2>Resumo esportivo</h2></div></div>
+      {team ? <dl className="athlete-facts">
+        <div><dt>Equipe</dt><dd>{team.name}</dd></div>
+        <div><dt>Modalidade</dt><dd>{team.modality}</dd></div>
+        {membership?.createdAt && isDateOnly(String(membership.createdAt).slice(0, 10)) && <div><dt>Vínculo criado em</dt><dd>{formatDate(String(membership.createdAt).slice(0, 10))}</dd></div>}
+        {membership?.number != null && <div><dt>Número</dt><dd>{membership.number}</dd></div>}
+        {membership?.position && <div><dt>Posição</dt><dd>{membership.position}</dd></div>}
+        <div><dt>Treinos registrados</dt><dd>{trainings.length}</dd></div>
+        <div><dt>Presença</dt><dd>{performance.presenceAverage === null ? "Sem registros" : percent(performance.presenceAverage)}</dd></div>
+        <div><dt>Média das avaliações</dt><dd>{scoreLabel(performance.averageScore)}</dd></div>
+      </dl> : <p className="empty-content">Você ainda não tem uma equipe selecionada. Acesse Equipes para visualizar seus vínculos.</p>}
+    </section>
+
+    <section className="panel settings-panel">
+      <div className="section-heading"><div><span className="eyebrow">Informações pessoais</span><h2>Editar perfil</h2></div></div>
+      {feedback && <p className={`form-feedback form-feedback--${feedback.type}`} role={feedback.type === "error" ? "alert" : "status"}>{feedback.text}</p>}
+
       <div className="settings-grid">
-        <form className="settings-form" onSubmit={salvarPerfil}>
+        <form className="settings-form" onSubmit={salvarPerfil} aria-busy={saving}>
+          <fieldset disabled={saving} className="athlete-profile-fields">
           <label>
             Nome completo
             <input
               required
+              maxLength={191}
+              autoComplete="name"
               onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
               value={form.name}
             />
@@ -93,6 +140,8 @@ export function AthleteProfile({ actions, athleteId, state }) {
             E-mail
             <input
               required
+              maxLength={191}
+              autoComplete="email"
               onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
               type="email"
               value={form.email}
@@ -106,6 +155,7 @@ export function AthleteProfile({ actions, athleteId, state }) {
           <Button disabled={saving} icon={Save} type="submit">
             {saving ? "Salvando..." : "Salvar perfil"}
           </Button>
+          </fieldset>
         </form>
 
         <div className="linked-teams">
@@ -136,11 +186,6 @@ export function AthleteProfile({ actions, athleteId, state }) {
           )}
         </div>
       </div>
-      {feedback && (
-        <p className={`form-feedback form-feedback--${feedback.type}`} role="status">
-          {feedback.text}
-        </p>
-      )}
 
       <dialog
         aria-labelledby="leave-team-title"
@@ -180,6 +225,7 @@ export function AthleteProfile({ actions, athleteId, state }) {
           </div>
 
           <div className="confirm-dialog__actions">
+            {feedback?.type === "error" && <p className="form-feedback" role="alert">{feedback.text}</p>}
             <Button disabled={leaving} onClick={fecharConfirmacao} type="button" variant="ghost">
               Cancelar
             </Button>
@@ -190,5 +236,6 @@ export function AthleteProfile({ actions, athleteId, state }) {
         </div>
       </dialog>
     </section>
+    </div>
   );
 }

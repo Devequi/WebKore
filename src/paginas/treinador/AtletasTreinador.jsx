@@ -1,7 +1,10 @@
-import { ChevronDown, History, Save, Search, Trash2, UserRoundCheck, X } from "lucide-react";
-import { useEffect, useId, useRef, useState } from "react";
+import { Activity, CalendarDays, Save, Search, Trash2, Trophy, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useTodayDate } from "../../hooks/useTodayDate.js";
 import { formatAge } from "../../../shared/birthDate.js";
+import { TrainingHistory } from "../../componentes/charts/HistoricoTreinos.jsx";
+import { athletePerformance, scoreLabel } from "../../utils/athletePerformance.js";
+import { getTeamCriteria } from "../../../shared/criteria.js";
 import { AthleteDashboard } from "../../componentes/charts/DashboardAtleta.jsx";
 import { Avatar } from "../../componentes/ui/Avatar.jsx";
 import { Button } from "../../componentes/ui/Botao.jsx";
@@ -14,10 +17,8 @@ import "../../styles/paginasTreinador/AtletasTreinador.css";
 
 import {
   getApprovedAthletes,
-  getAthleteEvolution,
   getAthleteStats,
-  getAthleteTrainings,
-  getRecordAverage
+  getAthleteTrainings
 } from "../../utils/selectors.js";
 
 export function AthletesPage({
@@ -51,14 +52,6 @@ export function AthletesPage({
       )
     : null;
 
-  const evolucao = atletaSelecionado
-    ? getAthleteEvolution(
-        state,
-        team.id,
-        atletaSelecionado.id
-      )
-    : [];
-
   const treinos = atletaSelecionado
     ? getAthleteTrainings(
         state,
@@ -72,8 +65,7 @@ export function AthletesPage({
     position: atletaSelecionado?.position ?? ""
   });
   const [feedback, setFeedback] = useState(null);
-  const [historicoAberto, setHistoricoAberto] = useState(false);
-  const historicoId = useId();
+  const performance = athletePerformance(treinos, atletaSelecionado?.id);
 
   useEffect(() => {
     if (atletaSelecionado) {
@@ -185,24 +177,24 @@ export function AthletesPage({
             </div>
           </div>
 
-          <div className="kpi-grid kpi-grid--compact">
+          <div className="kpi-grid athlete-kpis">
             <KpiCard
-              icon={UserRoundCheck}
+              icon={Activity}
               label="Presença"
               value={percent(stats.presenceAverage)}
             />
 
             <KpiCard
-              icon={UserRoundCheck}
+              icon={CalendarDays}
               label="Treinos"
               value={stats.trainingsCount}
             />
 
             <div className="kpi-card-largo">
               <KpiCard
-                icon={UserRoundCheck}
+                icon={Trophy}
                 label="Desempenho"
-                value={percent(stats.averageScore * 10)}
+                value={scoreLabel(performance.averageScore)}
               />
             </div>
           </div>
@@ -279,52 +271,8 @@ export function AthletesPage({
           )}
         </section>
 
-        <AthleteDashboard
-          data={evolucao}
-          stats={stats}
-          athleteId={atletaSelecionado.id}
-        />
-
-        <details
-          className="panel athlete-dashboard athlete-history"
-          open={historicoAberto}
-          onToggle={(event) => setHistoricoAberto(event.currentTarget.open)}
-        >
-          <summary className="athlete-dashboard__toggle" aria-expanded={historicoAberto} aria-controls={historicoId}>
-            <h2 className="athlete-history__title"><History size={20} aria-hidden="true" /><span>Histórico Completo do Atleta</span></h2>
-            <ChevronDown size={20} aria-hidden="true" />
-          </summary>
-
-          <div className="athlete-dashboard__content timeline" id={historicoId}>
-            {treinos.map((treino) => {
-              const dadosAtleta =
-                treino.athletes[atletaSelecionado.id];
-
-              return (
-                <article key={treino.id}>
-                  <strong>
-                    {formatDate(treino.date)}
-                  </strong>
-
-                  <span>{treino.type}</span>
-
-                  <p>{treino.description}</p>
-
-                  <small>
-                    {dadosAtleta.present
-                      ? "Presente"
-                      : "Ausente"}{" "}
-                    · média{" "}
-                    {Math.round(
-                      getRecordAverage(dadosAtleta) * 10
-                    )}
-                    %
-                  </small>
-                </article>
-              );
-            })}
-          </div>
-        </details>
+        <AthleteDashboard key={team.id + atletaSelecionado.id} performance={performance} criteria={getTeamCriteria(team, "qualitative")} />
+        <TrainingHistory key={team.id + atletaSelecionado.id} trainings={treinos} athleteId={atletaSelecionado.id} />
       </section>
     </div>
   );

@@ -38,7 +38,7 @@ export function getTeamTrainings(state, teamId) {
 }
 
 export function getAthleteTrainings(state, teamId, athleteId) {
-  return getTeamTrainings(state, teamId).filter((training) => Boolean(training.athletes[athleteId]));
+  return getTeamTrainings(state, teamId).filter((training) => Boolean(training.athletes?.[athleteId]));
 }
 
 export function getRecordAverage(record) {
@@ -49,10 +49,11 @@ export function getTeamStats(state, teamId) {
   const athletes = getApprovedAthletes(state, teamId);
   const trainings = getTeamTrainings(state, teamId);
   const presenceValues = trainings.flatMap((training) =>
-    Object.values(training.athletes).map((record) => (record.present ? 100 : 0))
+    Object.values(training.athletes || {}).filter((record) => typeof record.present === "boolean").map((record) => (record.present ? 100 : 0))
   );
-  const ratingValues = trainings.flatMap((training) => Object.values(training.athletes).map(getRecordAverage));
+  const ratingValues = trainings.flatMap((training) => Object.values(training.athletes || {}).filter((record) => Object.values(record.ratings || {}).some(Number.isFinite)).map(getRecordAverage));
   const bestAthlete = athletes
+    .filter((athlete) => getAthleteStats(state, teamId, athlete.id).evaluationCount > 0)
     .map((athlete) => ({
       ...athlete,
       score: getAthleteStats(state, teamId, athlete.id).averageScore
@@ -73,10 +74,11 @@ export function getAthleteStats(state, teamId, athleteId) {
   const trainings = getAthleteTrainings(state, teamId, athleteId);
   const records = trainings.map((training) => training.athletes[athleteId]);
   const presenceAverage = average(records.map((record) => (record.present ? 100 : 0)));
-  const averageScore = average(records.filter((record) => record.present).map(getRecordAverage));
+  const averageScore = average(records.filter((record) => Object.values(record.ratings || {}).some(Number.isFinite)).map(getRecordAverage));
 
   return {
     trainingsCount: trainings.length,
+    evaluationCount: records.filter((record) => Object.values(record.ratings || {}).some(Number.isFinite)).length,
     presenceAverage,
     averageScore
   };

@@ -21,7 +21,7 @@ export function AppShell({
   }, [activeView]);
 
   return (
-    <div className="app-shell">
+    <div className={currentUser.role === "coach" ? "app-shell coach-experience" : "app-shell"}>
       <aside className="sidebar">
         <button className="brand" onClick={onLogoClick} type="button">
           <img src="/icons/logoWK.png" alt="WebKore" />
@@ -54,7 +54,7 @@ export function AppShell({
             <Avatar name={currentUser.name} photo={currentUser.photo} />
             <div>
               <strong title={currentUser.name}>{currentUser.name}</strong>
-              <span>{currentUser.role === "coach" ? "Treinadora" : "Atleta"}</span>
+              <span>{currentUser.role === "coach" ? "Treinador" : "Atleta"}</span>
             </div>
           </div>
           <Button icon={LogOut} onClick={onLogout} type="button" variant="ghost">

@@ -1,0 +1,46 @@
+/* Padrões administrativos: mesmos tokens, superfícies e métricas da experiência do atleta. */
+.coach-experience { --athlete-gap: 1.25rem; }
+.app-shell.coach-experience { gap: 0; }
+.coach-experience .panel, .coach-experience .team-card, .coach-experience .create-team-form {
+  padding: clamp(1rem, 2vw, 1.5rem); border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow);
+}
+.coach-experience .panel:hover, .coach-experience .team-card:hover { transform: none; }
+.coach-experience .coach-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.coach-experience .kpi-card { border-radius: var(--radius-lg); }
+.coach-experience .coach-settings .settings-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+.coach-experience .settings-form { gap: 1rem; max-width: none; }
+.coach-experience .athlete-profile-fields > .button { justify-self: start; }
+.coach-experience .section-heading h2 { font-size: var(--text-xl); }
+.coach-experience .coach-profile-teams { margin-top: 1.25rem; }
+.coach-experience .team-info, .coach-experience .team-card__actions { flex-wrap: wrap; gap: .75rem; }
+.coach-experience .team-info > div { min-width: 0; }
+.coach-experience .team-info p { overflow-wrap: anywhere; font-size: var(--text-sm); }
+.coach-experience .team-card h2, .coach-experience .lobby-hero h1 { color: var(--ink); background: none; -webkit-text-fill-color: currentColor; overflow-wrap: anywhere; }
+.coach-experience .team-card h2 { font-size: var(--text-xl); }
+.coach-experience .team-card__actions .button { border-radius: var(--radius); }
+.coach-experience .modality-badge { color: var(--primary); background: var(--primary-soft); font-weight: 600; border-radius: var(--radius-sm); }
+.coach-experience .athlete-card, .coach-experience .training-card, .coach-experience .training-athlete { border-color: var(--line); border-radius: var(--radius); background: var(--surface-strong); }
+.coach-experience .athlete-card__identity { min-width: 0; }
+.coach-experience .athlete-card__identity strong { overflow-wrap: anywhere; }
+.coach-experience .training-card__summary { align-items: start; gap: 1rem; }
+.coach-experience .training-card__summary > div { min-width: 0; }
+.coach-experience .training-card__summary > div > span { overflow-wrap: anywhere; line-height: 1.6; }
+.coach-experience .training-card__summary > span { flex-shrink: 0; }
+.coach-experience .inline-form, .coach-experience .training-editor { min-width: 0; }
+.coach-experience .privacy-box { border-radius: var(--radius); }
+.coach-lobby > .kpi-grid { margin-bottom: 1.25rem; }
+.coach-lobby .dashboard-grid--lobby { grid-template-columns: minmax(240px, .7fr) minmax(0, 1.5fr); gap: 1.25rem; }
+.coach-lobby .team-card-grid { grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); }
+.coach-lobby .create-team-form { position: static; }
+@media (max-width: 1200px) { .coach-experience .coach-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 900px) {
+  .coach-experience .coach-settings .settings-grid, .coach-lobby .dashboard-grid--lobby { grid-template-columns: minmax(0, 1fr); }
+  .coach-experience .coach-settings .criteria-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 700px) {
+  .coach-experience .coach-kpis { grid-template-columns: minmax(0, 1fr); }
+  .coach-experience .athlete-profile-fields > .button { justify-self: stretch; }
+  .coach-experience .settings-actions .button { width: 100%; }
+  .coach-experience .training-athlete__head { flex-wrap: wrap; }
+  .coach-experience .coach-settings .criterion-row, .coach-experience .coach-settings .criterion-add-form { grid-template-columns: minmax(0, 1fr); }
+}

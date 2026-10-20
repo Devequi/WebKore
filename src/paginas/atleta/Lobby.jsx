@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { Plus, UserRound } from "lucide-react";
 import { PublicHeader } from "../../componentes/layout/CabecalhoPublico.jsx";
 import { Button } from "../../componentes/ui/Botao.jsx";
 import { EmptyState } from "../../componentes/ui/EstadoVazio.jsx";
@@ -8,6 +8,7 @@ export function AthleteLobby({
   currentUser,
   onLogout,
   onOpenTeam,
+  onProfile,
   onSearch,
   state,
   teams = []
@@ -29,6 +30,7 @@ export function AthleteLobby({
         </div>
 
         <div className="lobby-actions">
+          <Button icon={UserRound} onClick={onProfile} type="button" variant="ghost">Meu perfil</Button>
           <Button
             icon={Plus}
             onClick={onSearch}

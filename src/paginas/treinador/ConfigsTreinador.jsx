@@ -11,6 +11,7 @@ import {
 
 import { useEffect, useState } from "react";
 import { Button } from "../../componentes/ui/Botao.jsx";
+import { CoachProfileOverview } from "./PerfilTreinador.jsx";
 import { downloadTeamReport } from "../../services/reports.js";
 import "../../styles/paginasTreinador/ConfigsTreinador.css";
 
@@ -27,7 +28,8 @@ export function SettingsPage({
   currentUser,
   onLogout,
   state,
-  team
+  team,
+  view = "team"
 }) {
   const [formConta, setFormConta] = useState({
     name: currentUser.name,
@@ -44,6 +46,8 @@ export function SettingsPage({
   const [nomeQualitativo, setNomeQualitativo] = useState("");
   const [mensagem, setMensagem] = useState(null);
   const [criteriosAbertos, setCriteriosAbertos] = useState(true);
+  const [savingAccount, setSavingAccount] = useState(false);
+  const [savingTeam, setSavingTeam] = useState(false);
 
   useEffect(() => {
     setFormConta({
@@ -62,13 +66,18 @@ export function SettingsPage({
 
   async function salvarConta(event) {
     event.preventDefault();
-
+    if (savingAccount) return;
+    setSavingAccount(true);
+    setMensagem(null);
     try {
+      if (!formConta.name.trim() || formConta.name.length > 191) throw new Error("Informe um nome válido com até 191 caracteres.");
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formConta.email.trim())) throw new Error("Informe um e-mail válido.");
+      if (formConta.password && (formConta.password.length < 6 || new TextEncoder().encode(formConta.password).length > 72)) throw new Error("A nova senha deve ter pelo menos 6 caracteres e no máximo 72 bytes.");
       await actions.updateUser({
         userId: currentUser.id,
         patch: {
-          name: formConta.name,
-          email: formConta.email,
+          name: formConta.name.trim(),
+          email: formConta.email.trim().toLowerCase(),
           ...(formConta.password ? { password: formConta.password } : {})
         }
       });
@@ -76,6 +85,8 @@ export function SettingsPage({
       setMensagem({ area: "account", type: "success", text: "Conta atualizada." });
     } catch (error) {
       setMensagem({ area: "account", type: "error", text: error.message || "Não foi possível atualizar a conta." });
+    } finally {
+      setSavingAccount(false);
     }
   }
 
@@ -83,8 +94,11 @@ export function SettingsPage({
     event.preventDefault();
 
     if (!team) return;
-
+    if (savingTeam) return;
+    setSavingTeam(true);
+    setMensagem(null);
     try {
+      if (!formTime.name.trim()) throw new Error("Informe o nome da equipe.");
       await actions.updateTeam({
         teamId: team.id,
         patch: formTime
@@ -92,6 +106,8 @@ export function SettingsPage({
       setMensagem({ area: "team", type: "success", text: "Equipe atualizada." });
     } catch (error) {
       setMensagem({ area: "team", type: "error", text: error.message || "Não foi possível atualizar a equipe." });
+    } finally {
+      setSavingTeam(false);
     }
   }
 
@@ -190,21 +206,22 @@ export function SettingsPage({
 
   function feedbackPara(area) {
     return mensagem?.area === area ? (
-      <p className={`form-feedback form-feedback--${mensagem.type}`} role="status">
+      <p className={`form-feedback form-feedback--${mensagem.type}`} role={mensagem.type === "error" ? "alert" : "status"}>
         {mensagem.text}
       </p>
     ) : null;
   }
 
   return (
-    <div className="page-stack">
+    <div className="page-stack coach-experience coach-settings">
+      {view === "profile" && <CoachProfileOverview currentUser={currentUser} state={state} />}
       {!team && feedbackPara("team")}
-      {team && (
+      {view === "team" && team && (
         <section className="panel settings-panel">
           <div className="section-heading">
             <div>
               <span className="eyebrow">Equipe</span>
-              <h2>Configuracoes da equipe</h2>
+              <h2>Configurações da equipe</h2>
             </div>
           </div>
 
@@ -212,7 +229,9 @@ export function SettingsPage({
             <form
               className="settings-form"
               onSubmit={salvarTime}
+              aria-busy={savingTeam}
             >
+              <fieldset className="athlete-profile-fields" disabled={savingTeam}>
               <label>
                 Nome da equipe
 
@@ -224,6 +243,7 @@ export function SettingsPage({
                     }))
                   }
                   required
+                  maxLength={191}
                   value={formTime.name}
                 />
               </label>
@@ -252,14 +272,15 @@ export function SettingsPage({
                 icon={Save}
                 type="submit"
               >
-                Salvar equipe
+                {savingTeam ? "Salvando..." : "Salvar equipe"}
               </Button>
+              </fieldset>
             </form>
 
             <div className="privacy-box">
               <ShieldCheck size={28} />
 
-              <strong>Codigo de acesso</strong>
+              <strong>Código de acesso</strong>
 
               <p>{team.code}</p>
 
@@ -270,7 +291,7 @@ export function SettingsPage({
                   type="button"
                   variant="secondary"
                 >
-                  Copiar codigo
+                  Copiar código
                 </Button>
 
                 <Button
@@ -281,6 +302,7 @@ export function SettingsPage({
                 >
                   Excluir equipe
                 </Button>
+                <Button icon={RefreshCw} onClick={() => downloadTeamReport(state, team)} type="button" variant="secondary">Exportar relatório</Button>
               </div>
             </div>
           </div>
@@ -288,12 +310,13 @@ export function SettingsPage({
         </section>
       )}
 
-      {team && (
+      {view === "team" && !team && <p className="empty-content">Selecione ou crie uma equipe para ajustar suas configurações.</p>}
+      {view === "team" && team && (
         <section className="panel settings-panel criteria-panel">
           <div className="section-heading">
             <div>
-              <span className="eyebrow">Criterios</span>
-              <h2>Avaliacao do treino</h2>
+              <span className="eyebrow">Critérios</span>
+              <h2>Avaliação do treino</h2>
             </div>
             <button
               aria-controls="trainer-criteria-content"
@@ -344,11 +367,11 @@ export function SettingsPage({
         </section>
       )}
 
-      <section className="panel settings-panel">
+      {view === "profile" && <section className="panel settings-panel">
         <div className="section-heading">
           <div>
             <span className="eyebrow">Conta</span>
-            <h2>Configuracoes da conta</h2>
+            <h2>Editar perfil</h2>
           </div>
         </div>
 
@@ -356,7 +379,9 @@ export function SettingsPage({
           <form
             className="settings-form"
             onSubmit={salvarConta}
+            aria-busy={savingAccount}
           >
+            <fieldset className="athlete-profile-fields" disabled={savingAccount}>
             <label>
               Nome completo
 
@@ -368,6 +393,8 @@ export function SettingsPage({
                   }))
                 }
                 required
+                maxLength={191}
+                autoComplete="name"
                 value={formConta.name}
               />
             </label>
@@ -383,6 +410,8 @@ export function SettingsPage({
                   }))
                 }
                 required
+                maxLength={191}
+                autoComplete="email"
                 type="email"
                 value={formConta.email}
               />
@@ -393,6 +422,7 @@ export function SettingsPage({
 
               <input
                 minLength="6"
+                autoComplete="new-password"
                 onChange={(event) =>
                   setFormConta((current) => ({
                     ...current,
@@ -409,8 +439,9 @@ export function SettingsPage({
               icon={Save}
               type="submit"
             >
-              Salvar conta
+              {savingAccount ? "Salvando..." : "Salvar conta"}
             </Button>
+            </fieldset>
           </form>
 
           <div className="privacy-box">
@@ -428,7 +459,7 @@ export function SettingsPage({
                 type="button"
                 variant="secondary"
               >
-                Exportar relatorio
+                Exportar relatório
               </Button>
 
               <Button
@@ -452,7 +483,7 @@ export function SettingsPage({
           </div>
         </div>
         {feedbackPara("account")}
-      </section>
+      </section>}
     </div>
   );
 }

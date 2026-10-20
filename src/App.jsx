@@ -9,6 +9,8 @@ import { RequestsPage } from "./paginas/treinador/SolicitacoesTreinador.jsx";
 import { LoginPage } from "./paginas/PaginaLogin.jsx";
 import { useWebKoreData } from "./hooks/useWebKoreData.js";
 import { getAthleteTeams, getCoachTeams } from "./utils/selectors.js";
+import "./styles/experience.css";
+import "./styles/paginasTreinador/CoachExperience.css";
 
 const AthleteDashboard = lazy(() => import("./paginas/atleta/PainelAtleta.jsx").then((page) => ({ default: page.AthleteDashboard })));
 const AthletesPage = lazy(() => import("./paginas/treinador/AtletasTreinador.jsx").then((page) => ({ default: page.AthletesPage })));
@@ -21,6 +23,7 @@ const coachTabs = [
   { id: "coach-athletes", label: "Atletas", icon: Users },
   { id: "coach-requests", label: "Solicitações", icon: ShieldCheck },
   { id: "coach-trainings", label: "Treinos", icon: ClipboardList },
+  { id: "coach-profile", label: "Perfil", icon: Activity },
   { id: "coach-settings", label: "Configurações", icon: Settings }
 ];
 
@@ -29,6 +32,13 @@ const athleteTabs = [
   { id: "athlete-lobby", label: "Equipes", icon: Users },
   { id: "athlete-profile", label: "Perfil", icon: Activity }
 ];
+
+function LoadingState({ message = "Carregando página..." }) {
+  return <div className="page-stack athlete-loading" role="status" aria-busy="true">
+    <p>{message}</p><div className="athlete-loading__cards" aria-hidden="true"><span /><span /><span /></div>
+    <div className="athlete-loading__panel" aria-hidden="true" />
+  </div>;
+}
 
 export function App() {
   const [state, actions] = useWebKoreData();
@@ -44,7 +54,7 @@ export function App() {
   const currentUser = state.users.find((user) => user.id === session.userId);
 
   function withNotice(content) {
-    return <>{state.sessionMessage && <p className="form-feedback" role="status">{state.sessionMessage} <button type="button" onClick={() => actions.refresh().catch(() => undefined)}>Atualizar painel</button></p>}<Suspense fallback={<p role="status">Carregando página...</p>}>{content}</Suspense></>;
+    return <>{state.sessionMessage && <p className="form-feedback" role="status">{state.sessionMessage} <button type="button" onClick={() => actions.refresh().catch(() => undefined)}>Atualizar painel</button></p>}<Suspense fallback={<LoadingState />}>{content}</Suspense></>;
   }
 
   useEffect(() => {
@@ -75,7 +85,7 @@ export function App() {
     setActiveView("login");
   }
 
-  if (state.loadingSession) return <main className="auth-page"><p role="status">Restaurando sessão...</p></main>;
+  if (state.loadingSession) return <main className="auth-page"><LoadingState message="Restaurando sessão..." /></main>;
 
   if (!state.session || !currentUser || activeView === "login") {
     return <LoginPage onLogin={handleLogin} onRegister={handleRegister} notice={state.sessionMessage} />;
@@ -90,6 +100,7 @@ export function App() {
         onOpenTeam={openTeam}
         state={state}
         teams={coachTeams}
+        onProfile={() => setActiveView("coach-profile")}
       />
     );
   }
@@ -106,6 +117,7 @@ export function App() {
         }}
         state={state}
         teams={athleteTeams}
+        onProfile={() => setActiveView("athlete-profile")}
       />
     );
   }
@@ -139,7 +151,10 @@ export function App() {
         <TrainingsPage actions={actions} state={state} team={activeTeam} />
       )}
       {session.role === "coach" && activeView === "coach-settings" && (
-        <SettingsPage actions={actions} currentUser={currentUser} onLogout={logout} state={state} team={activeTeam} />
+        <SettingsPage key="team" actions={actions} currentUser={currentUser} onLogout={logout} state={state} team={activeTeam} />
+      )}
+      {session.role === "coach" && activeView === "coach-profile" && (
+        <SettingsPage key={session.userId} view="profile" actions={actions} currentUser={currentUser} onLogout={logout} state={state} team={activeTeam} />
       )}
       {session.role === "athlete" && activeView === "athlete-home" && (
         <AthleteDashboard athleteId={session.userId} state={state} team={activeTeam} />
@@ -148,7 +163,7 @@ export function App() {
         <TeamSearch actions={actions} athleteId={session.userId} state={state} />
       )}
       {session.role === "athlete" && activeView === "athlete-profile" && (
-        <AthleteProfile actions={actions} athleteId={session.userId} state={state} />
+        <AthleteProfile key={session.userId} actions={actions} athleteId={session.userId} state={state} team={activeTeam} />
       )}
     </AppShell>
   );
