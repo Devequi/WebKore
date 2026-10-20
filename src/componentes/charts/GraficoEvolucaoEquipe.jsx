@@ -58,15 +58,15 @@ function DesktopTeamChart({ observations }) {
               </linearGradient>)}
             </defs>
             <CartesianGrid vertical={false} stroke="var(--line)" strokeDasharray="3 5" />
-            <XAxis dataKey="trainingId" tickFormatter={(id) => dates.get(id)} tick={{ fill: "var(--muted)", fontSize: 11 }}
+            <XAxis dataKey="trainingId" tickFormatter={(id) => dates.get(id)} tick={{ fill: "var(--muted)", fontSize: 13 }}
               minTickGap={24} interval="preserveStartEnd" tickMargin={9} height={36} tickLine={false} axisLine={false} />
             {series.map((item) => <YAxis key={item.key} yAxisId={item.key} orientation={item.key === "presenca" ? "right" : "left"}
               domain={[0, item.maximum]} ticks={item.ticks}
               tickFormatter={(value) => item.key === "presenca" ? `${presenceFormat.format(value)}%` : scoreFormat.format(value)}
-              width={46} tick={{ fill: item.color, fontSize: 11 }} tickLine={false} axisLine={false} />)}
+              width={46} tick={{ fill: item.color, fontSize: 13 }} tickLine={false} axisLine={false} />)}
             <Tooltip content={<TeamTooltip />} cursor={{ stroke: "var(--line-strong)" }} isAnimationActive={false}
               wrapperStyle={{ outline: "none", zIndex: 2 }} />
-            <Legend iconType="plainline" wrapperStyle={{ color: "var(--ink)", fontSize: "0.8rem" }} />
+            <Legend iconType="plainline" wrapperStyle={{ color: "var(--ink)", fontSize: "0.9rem" }} />
             {series.map((item) => <Area key={item.key} type="monotone" dataKey={item.key} yAxisId={item.key} name={item.name}
               stroke={item.color} strokeWidth={2} fill={`url(#${gradientId}-${item.key})`}
               dot={observations.length === 1 ? { r: 3, fill: item.color, strokeWidth: 0 } : false}

@@ -27,7 +27,7 @@ export function AppShell({
           <img src="/icons/logoWK.png" alt="WebKore" />
           <div>
             <strong>WebKore</strong>
-            <span>{team?.name || "Gestão esportiva"}</span>
+            <span title={team?.name}>{team?.name || "Gestão esportiva"}</span>
           </div>
         </button>
 
@@ -53,7 +53,7 @@ export function AppShell({
           <div className="profile-chip">
             <Avatar name={currentUser.name} photo={currentUser.photo} />
             <div>
-              <strong>{currentUser.name}</strong>
+              <strong title={currentUser.name}>{currentUser.name}</strong>
               <span>{currentUser.role === "coach" ? "Treinadora" : "Atleta"}</span>
             </div>
           </div>

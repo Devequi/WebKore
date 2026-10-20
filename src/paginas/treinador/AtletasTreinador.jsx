@@ -1,5 +1,5 @@
-import { ChevronDown, History, Save, Trash2, UserRoundCheck } from "lucide-react";
-import { useEffect, useId, useState } from "react";
+import { ChevronDown, History, Save, Search, Trash2, UserRoundCheck, X } from "lucide-react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useTodayDate } from "../../hooks/useTodayDate.js";
 import { formatAge } from "../../../shared/birthDate.js";
 import { AthleteDashboard } from "../../componentes/charts/DashboardAtleta.jsx";
@@ -9,6 +9,7 @@ import { KpiCard } from "../../componentes/ui/CartaoKpi.jsx";
 import { EmptyState } from "../../componentes/ui/EstadoVazio.jsx";
 import { formatDate, percent } from "../../utils/formatters.js";
 import { runUiAction } from "../../utils/runUiAction.js";
+import { filterAthletesByName } from "../../utils/athleteSearch.js";
 import "../../styles/paginasTreinador/AtletasTreinador.css";
 
 import {
@@ -28,6 +29,14 @@ export function AthletesPage({
 }) {
   const today = useTodayDate();
   const atletas = team ? getApprovedAthletes(state, team.id) : [];
+  const [busca, setBusca] = useState("");
+  const buscaRef = useRef(null);
+  const mostrarBusca = atletas.length > 5;
+  const atletasVisiveis = mostrarBusca ? filterAthletesByName(atletas, busca) : atletas;
+
+  useEffect(() => {
+    setBusca("");
+  }, [team?.id, mostrarBusca]);
 
   const atletaSelecionado =
     atletas.find(
@@ -95,11 +104,25 @@ export function AthletesPage({
         <div className="section-heading">
           <div>
             <h2>Elenco</h2>
+            <p className="roster-count">{atletas.length} {atletas.length === 1 ? "atleta" : "atletas"}</p>
           </div>
         </div>
 
+        {mostrarBusca && <div className="search-input roster-search">
+          <Search size={18} aria-hidden="true" />
+          <input ref={buscaRef} type="search" aria-label="Buscar atleta pelo nome" placeholder="Buscar atleta pelo nome..."
+            value={busca} onChange={(event) => setBusca(event.target.value)} />
+          {busca && <button type="button" className="roster-search__clear" aria-label="Limpar pesquisa"
+            onClick={() => { setBusca(""); buscaRef.current?.focus(); }}><X size={18} aria-hidden="true" /></button>}
+        </div>}
+
+        {atletasVisiveis.length === 0 && <div className="roster-search__empty" role="status">
+          <strong>Nenhum atleta encontrado.</strong>
+          <p>Tente pesquisar por outro nome.</p>
+        </div>}
+
         <div className="athlete-list">
-          {atletas.map((atleta) => {
+          {atletasVisiveis.map((atleta) => {
             const statsAtleta = getAthleteStats(
               state,
               team.id,

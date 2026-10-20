@@ -2,36 +2,13 @@
    TEAM HOME PAGE - Página inicial da equipe
    ============================================ */
 
-.dashboard-grid--lobby {
-  display: grid;
-  gap: 1rem;
-}
-
-.topbar {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.5rem 0;
-  flex-wrap: wrap;
-}
-
-.topbar h1 {
-  font-size: clamp(1.7rem, 6vw, 3rem);
-  line-height: 1;
-}
-
-.kpi-grid {
+.team-home .kpi-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 0.8rem;
 }
 
-.kpi-grid--compact {
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-}
-
-.kpi-card {
+.team-home .kpi-card {
   display: flex;
   gap: 0.85rem;
   min-height: 118px;
@@ -42,7 +19,7 @@
   box-shadow: var(--shadow);
 }
 
-.kpi-card__icon {
+.team-home .kpi-card__icon {
   display: grid;
   place-items: center;
   width: 42px;
@@ -53,12 +30,12 @@
   background: var(--surface-strong);
 }
 
-.kpi-card p,
-.kpi-card span {
+.team-home .kpi-card p,
+.team-home .kpi-card span {
   color: var(--muted);
 }
 
-.kpi-card strong {
+.team-home .kpi-card strong {
   display: block;
   margin: 0.1rem 0;
   font-size: clamp(1.4rem, 4vw, 2rem);
@@ -103,19 +80,20 @@
 
   .team-home .kpi-card {
     display: grid;
-    grid-template-columns: 28px minmax(0, 1fr);
-    grid-template-rows: 28px auto auto;
+    grid-template-columns: 36px minmax(0, 1fr);
+    grid-template-rows: 44px auto auto;
     align-content: start;
-    gap: 0.25rem 0.5rem;
-    min-height: 115px;
-    padding: 1rem;
+    gap: 0.35rem 0.65rem;
+    min-height: 156px;
+    padding: 1.25rem;
   }
 
   .team-home .kpi-card__icon {
     grid-column: 1;
     grid-row: 1;
-    width: 28px;
-    height: 28px;
+    width: 36px;
+    height: 36px;
+    align-self: center;
   }
 
   .team-home .kpi-card > div:last-child { display: contents; }
@@ -124,7 +102,7 @@
     grid-column: 2;
     grid-row: 1;
     align-self: center;
-    font-size: 0.8rem;
+    font-size: 0.95rem;
     line-height: 1.25;
   }
 
@@ -133,14 +111,15 @@
     grid-row: 2;
     min-width: 0;
     margin: 0;
-    font-size: 1.6rem;
+    font-size: 2rem;
     line-height: 1.2;
   }
+  .team-home .team-home__highlight-name { font-size: 1.5rem; }
 
   .team-home .kpi-card > div:last-child > span {
     grid-column: 1 / -1;
     grid-row: 3;
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     line-height: 1.4;
   }
 
@@ -152,104 +131,55 @@
 
   .team-home .team-evolution { align-self: stretch; }
 
-  .team-home > .dashboard-grid > .panel { padding: 1rem; }
+  .team-home > .dashboard-grid > .panel { padding: 1.25rem; }
+  .team-home .team-evolution__area-plot { height: clamp(340px, calc(100dvh - 470px), 600px); }
+  .team-home .team-evolution__hint { font-size: 0.9rem; }
+  .team-home .last-training-panel { align-self: stretch; }
+  .team-home .last-training-panel__stats { margin-top: auto; padding-top: 1.25rem; }
+  .team-home .last-training-panel__stats > div { padding-top: 1.15rem; padding-bottom: 1.15rem; }
+  .team-home .last-training-panel__stats > div:last-child { padding-bottom: 0; }
+  .team-home .last-training-panel__stats dt { font-size: 0.95rem; }
+  .team-home .last-training-panel__stats dd { font-size: 1.75rem; }
+  .team-home .last-training-panel__stats .last-training-panel__missing { font-size: 0.95rem; }
+  .team-home .last-training-panel__type { font-size: 1.4rem; }
+  .team-home .last-training-panel__description { font-size: 1rem; }
 
 }
 
 @media (max-width: 640px) {
-  .dashboard-grid--lobby {
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
-  }
 
-  .topbar {
-    padding: 0.5rem 0;
-    gap: 0.75rem;
-  }
-
-  .topbar h1 {
-    font-size: clamp(1.3rem, 5vw, 2rem);
-  }
-
-.kpi-grid {
+.team-home .kpi-grid {
     grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
     gap: 0.6rem;
   }
 
-  .kpi-card {
+  .team-home .kpi-card {
     min-height: 100px;
     padding: 0.75rem;
   }
 
-  .kpi-card strong {
+  .team-home .kpi-card strong {
     font-size: clamp(1rem, 3vw, 1.5rem);
   }
 
 }
 
 @media (min-width: 641px) and (max-width: 1024px) {
-  .dashboard-grid--lobby {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
 
-  .topbar {
-    padding: 0.75rem 0;
-  }
-
-  .topbar h1 {
-    font-size: clamp(1.5rem, 5vw, 2.5rem);
-  }
-
-  .kpi-grid {
+  .team-home .kpi-grid {
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   }
 
-  .kpi-card {
+  .team-home .kpi-card {
     min-height: 110px;
   }
 
 }
 
-@media (min-width: 780px) {
-  .dashboard-grid--lobby {
-    grid-template-columns: 320px minmax(0, 1fr);
-    gap: 1.2rem;
-  }
-
-  .topbar {
-    padding: 1rem 0;
-  }
-
-  .topbar h1 {
-    font-size: clamp(1.7rem, 6vw, 2.8rem);
-  }
-
-  .kpi-card {
-    min-height: 120px;
-  }
-
-}
-
 @media (min-width: 1060px) {
-  .topbar {
-    padding: 1.4rem 0;
-  }
 
-  .kpi-grid {
+  .team-home .kpi-grid {
     gap: 1rem;
-  }
-
-}
-
-@media (min-width: 1280px) {
-  .kpi-card {
-    min-height: 130px;
-    padding: 1.2rem;
-  }
-
-  .topbar h1 {
-    font-size: 3rem;
   }
 
 }

@@ -69,6 +69,8 @@
   box-sizing: border-box;
 }
 
+html { scrollbar-gutter: stable; }
+
 body {
   min-width: 320px;
   margin: 0;
@@ -85,6 +87,7 @@ button,
 input,
 select,
 textarea {
+  font: inherit;
   width: 100%;
   min-height: 48px;
   border: 1px solid var(--line);
@@ -530,6 +533,7 @@ button:focus-visible {
 }
 
 .sidebar {
+  min-width: 0;
   position: sticky;
   top: 0;
   z-index: 5;
@@ -594,7 +598,9 @@ button:focus-visible {
   display: grid;
   align-content: start;
   gap: 1rem;
-  width: min(1220px, 100%);
+  width: 100%;
+  max-width: 1280px;
+  min-width: 0;
   margin: 0 auto;
   padding: 1rem;
 }
@@ -682,6 +688,7 @@ button:focus-visible {
 
 .page-stack {
   display: grid;
+  align-content: start;
   gap: 1rem;
   min-width: 0;
 }
@@ -1387,6 +1394,15 @@ button:focus-visible {
   min-width: 0;
 }
 
+.brand > div,
+.profile-chip > div:last-child { flex: 1; min-width: 0; }
+.brand strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.button > svg, .nav-item > svg { flex-shrink: 0; }
+button.button > span { color: inherit; }
+.sidebar .brand span { font-size: 0.8rem; }
+input, select, textarea { min-width: 0; max-width: 100%; font-weight: 400; }
+summary:focus-visible { outline: 2px solid var(--primary); outline-offset: 4px; border-radius: var(--radius-sm); }
+
 .brand span,
 .profile-chip span {
   overflow: hidden;
@@ -1417,6 +1433,7 @@ button:focus-visible {
     position: sticky;
     top: 0;
     height: 100vh;
+    height: 100dvh;
     grid-template-rows: auto minmax(0, 1fr) auto;
     align-content: stretch;
     border-right: 1px solid var(--line);
@@ -2108,8 +2125,9 @@ label {
   }
 
   .main-content {
-    width: min(1280px, 100%);
-    padding: 1.6rem 2rem;
+    width: 100%;
+    max-width: 1680px;
+    padding: 1.5rem;
   }
 }
 

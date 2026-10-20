@@ -21,7 +21,7 @@ export function RequestsPage({ actions, state, team }) {
 
   if (!team) {
     return (
-      <section className="panel">
+      <section className="panel requests-panel">
         <div className="section-heading">
           <div>
             <h2>Solicitações pendentes</h2>
@@ -36,7 +36,7 @@ export function RequestsPage({ actions, state, team }) {
   const atletasPendentes = getPendingAthletes(state, team.id);
 
   return (
-    <section className="panel">
+    <section className="panel requests-panel">
       <div className="section-heading">
         <div>
           <h2>Solicitações pendentes</h2>

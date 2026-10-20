@@ -113,8 +113,17 @@
 .training-form {
   display: grid;
   gap: 1rem;
-  max-width: 40rem;
+  min-width: 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
+
+.training-create-panel { width: min(100%, 48rem); justify-self: start; }
+.training-form > label { min-width: 0; }
+.training-form > label:nth-child(3),
+.training-form > .form-hint,
+.training-form > .form-feedback { grid-column: 1 / -1; }
+.training-form input, .training-form select { height: 46px; }
+.training-form .button { width: auto; }
 
 .training-form .button {
   justify-self: start;
@@ -194,6 +203,8 @@
   place-items: center;
   width: 32px;
   height: 32px;
+  min-height: 32px;
+  padding: 0;
   border: 0;
   border-radius: 8px;
   color: var(--primary);
@@ -231,6 +242,7 @@
 
 /* Media Queries */
 @media (max-width: 640px) {
+  .training-form { grid-template-columns: minmax(0, 1fr); }
   .tabs-header {
     gap: 0.3rem;
     margin-bottom: 1rem;
@@ -271,6 +283,7 @@
   .metric-stepper button {
     width: 40px;
     height: 40px;
+    min-height: 40px;
   }
 
   .rating-grid {

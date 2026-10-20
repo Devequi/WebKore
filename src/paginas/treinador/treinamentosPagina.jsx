@@ -141,7 +141,7 @@ export function TrainingsPage({ actions, state, team }) {
       </div>
 
       {aba === "add" && (
-        <section className="panel" id="training-add-panel" ref={formularioRef} role="tabpanel">
+        <section className="panel training-create-panel" id="training-add-panel" ref={formularioRef} role="tabpanel">
           <div className="section-heading">
             <div>
               <h2>Novo treino</h2>

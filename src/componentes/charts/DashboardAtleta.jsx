@@ -48,16 +48,16 @@ function AthleteAreaChart({ data }) {
           <stop offset="100%" stopColor={item.color} stopOpacity={0.03} />
         </linearGradient>)}</defs>
         <CartesianGrid vertical={false} stroke="var(--line)" strokeDasharray="3 5" />
-        <XAxis dataKey="name" tick={{ fill: "var(--muted)", fontSize: 11 }} minTickGap={24}
+        <XAxis dataKey="name" tick={{ fill: "var(--muted)", fontSize: 13 }} minTickGap={24}
           interval="preserveStartEnd" tickMargin={9} height={36} tickLine={false} axisLine={false} />
         <YAxis yAxisId="desempenho" domain={[0, 10]} ticks={[0, 5, 10]} tickFormatter={(value) => scoreFormat.format(value)}
-          width={42} tick={{ fill: series[0].color, fontSize: 11 }} tickLine={false} axisLine={false} />
+          width={42} tick={{ fill: series[0].color, fontSize: 13 }} tickLine={false} axisLine={false} />
         <YAxis yAxisId="presenca" orientation="right" domain={[0, 100]} ticks={[0, 50, 100]}
           tickFormatter={(value) => `${presenceFormat.format(value)}%`} width={46}
-          tick={{ fill: series[1].color, fontSize: 11 }} tickLine={false} axisLine={false} />
+          tick={{ fill: series[1].color, fontSize: 13 }} tickLine={false} axisLine={false} />
         <Tooltip content={<AthleteTooltip />} cursor={{ stroke: "var(--line-strong)" }} isAnimationActive={false}
           wrapperStyle={{ outline: "none", zIndex: 2 }} />
-        <Legend iconType="plainline" wrapperStyle={{ color: "var(--ink)", fontSize: "0.8rem" }} />
+        <Legend iconType="plainline" wrapperStyle={{ color: "var(--ink)", fontSize: "0.9rem" }} />
         {series.map((item) => <Area key={item.key} type="monotone" dataKey={item.key} yAxisId={item.key} name={item.label}
           stroke={item.color} strokeWidth={2} fill={`url(#${gradientId}-${item.key})`}
           dot={data.length === 1 ? { r: 3, fill: item.color, strokeWidth: 0 } : false} activeDot={{ r: 4 }}
