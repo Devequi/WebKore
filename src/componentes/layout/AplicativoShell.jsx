@@ -84,10 +84,6 @@ export function AppShell({
             >
               Sair
             </Button>
-            <div className="status-pill">
-              <span className={navigator.onLine ? "status-dot status-dot--online" : "status-dot"} />
-              {navigator.onLine ? "Online" : "Offline"}
-            </div>
           </div>
         </header>
         {children}

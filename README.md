@@ -17,9 +17,7 @@ O projeto utiliza React no frontend, Express no backend e MySQL com Prisma para 
 - JavaScript
 - Recharts
 - Lucide React
-- PWA
-- Service Worker
-- LocalStorage para cache, token e suporte ao modo offline
+- LocalStorage para o token de autenticação
 
 ### Backend
 
@@ -39,14 +37,21 @@ equipes, vínculos, treinos e avaliações. A API é a fonte dos dados das sess�
 autenticadas no servidor. JWT é enviado como Bearer; `/auth/me` restaura a sessão.
 O backend limita equipes e registros conforme a conta e o perfil autenticados.
 
-Dados locais antigos ficam separados dos dados da API. Senhas locais antigas são
-convertidas em hashes bcrypt, sem apagar contas ou históricos. Durante falha de
-rede, contas locais podem continuar no modo local; uma sessão API previamente
-autenticada pode consultar seu último cache enquanto o token não expirar.
-O aviso na interface identifica esse modo. Alterações na API exigem conexão.
-A fila local permanece armazenada e não é enviada automaticamente ao servidor.
-Não há migração automática de contas locais para o banco. As contas demo iniciais
-sem credencial precisam de cadastro ou do seed configurado pelo responsável.
+O sistema depende da API para cadastro, login, restauração de sessão e operações
+esportivas. Falhas de conexão são exibidas ao usuário; não há fallback de login,
+cadastro ou gravação local. O token continua no localStorage para permitir nova
+consulta autenticada após recarregar a página. As consultas usam `no-store`.
+
+Bases locais e filas legadas permanecem intactas no navegador para recuperação
+manual, sem serem carregadas ou sincronizadas pela aplicação. Somente as cópias
+antigas de consultas da API e os metadados redundantes de sessão são removidos.
+As demonstrações explícitas por seed no MySQL continuam disponíveis.
+
+O build não contém manifest, instalação ou suporte offline. `public/sw.js` é
+exclusivamente um worker de desativação na URL antiga: limpa os caches próprios,
+desregistra-se e atualiza as páginas antigas do WebKore. O frontend nunca o registra.
+Veja o [relatório da auditoria](Documentação/auditoria-geral.md) para implantação
+e validação da transição de instalações anteriores.
 
 O backend possui o seguinte fluxo:
 
@@ -124,13 +129,14 @@ Participação=8, Trabalho em equipe=7.
 
 ### Comandos de verificação
 
-- `npm run build`: build do frontend e geração dos arquivos PWA.
-- `npm test`: autenticação, storage/cache, contratos, notas e proteção do seed, sem banco.
+- `npm run build`: build do frontend convencional, com páginas carregadas sob demanda.
+- `npm run test:build`: verifica o build e a ausência de artefatos ativos do PWA.
+- `npm test`: sessão conectada, transição PWA, nascimento, contratos, CSV, notas e proteção do seed, sem banco.
 - `npm run test:integration -- 7`: integração com o MySQL configurado; cria fixtures
   exclusivas e remove somente seus IDs no finally. Não execute em produção.
 - `npx prisma validate`: validação do schema.
 - `npm run prisma:generate`: geração do client, sem aplicar migrations.
 
-Não há lint configurado. Veja os resultados e as limitações da revisão em
-[Documentação/revisao-tecnica.md](Documentação/revisao-tecnica.md) e o relatório
-atualizado em [Documentação/correcao-pendencias.md](Documentação/correcao-pendencias.md).
+Não há lint configurado. O relatório atual de problemas, correções, arquivos,
+testes e implantação está em [Documentação/auditoria-geral.md](Documentação/auditoria-geral.md).
+As revisões anteriores foram mantidas como histórico.

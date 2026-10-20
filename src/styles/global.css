@@ -677,56 +677,8 @@ button:focus-visible {
   }
 }
 
-.status-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-sm);
-  min-height: 36px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 0.4rem 0.65rem;
-  color: var(--muted);
-  background: var(--surface-strong);
-  font-size: var(--text-sm);
-  font-weight: 800;
-  white-space: nowrap;
-  transition: var(--transition);
-}
 
-@media (max-width: 640px) {
-  .status-pill {
-    min-height: 32px;
-    padding: 0.3rem 0.5rem;
-    font-size: 0.7rem;
-  }
-}
 
-.status-pill:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-}
-
-.status-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--coral);
-  animation: pulse 2s ease-in-out infinite;
-}
-
-.status-dot--online {
-  background: var(--primary);
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.6;
-  }
-}
 
 .page-stack {
   display: grid;
@@ -809,6 +761,11 @@ button:focus-visible {
   color: var(--muted);
 }
 
+.kpi-card > div:last-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .kpi-card strong {
   display: block;
   margin: 0.1rem 0;
@@ -856,7 +813,6 @@ button:focus-visible {
 
 .chart-box {
   width: 100%;
-  height: 290px;
 }
 
 .last-training {
@@ -1657,16 +1613,6 @@ a {
   letter-spacing: -0.03em;
 }
 
-.status-pill {
-  border-color: rgba(75, 143, 255, 0.12);
-  background: rgba(7, 11, 17, 0.72);
-}
-
-.status-dot--online {
-  background: var(--primary);
-  animation: pulse 2s ease-in-out infinite;
-}
-
 .metric-stepper {
   border-color: rgba(135, 151, 173, 0.12);
   background: rgba(7, 11, 17, 0.62);
@@ -2123,22 +2069,6 @@ label {
 .privacy-box,
 .sync-box {
   background: #10161e;
-}
-
-.status-pill {
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #10161e;
-}
-
-.status-dot,
-.status-dot--online {
-  animation: none;
-}
-
-.status-dot--online {
-  background: #5b8def;
-  box-shadow: none;
 }
 
 .form-feedback {

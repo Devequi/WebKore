@@ -4,6 +4,7 @@ import { KpiCard } from "../../componentes/ui/CartaoKpi.jsx";
 import { EmptyState } from "../../componentes/ui/EstadoVazio.jsx";
 import { formatDate, percent } from "../../utils/formatters.js";
 import { getTeamEvolution, getTeamStats } from "../../utils/selectors.js";
+import { getLastTrainingStats } from "../../utils/lastTraining.js";
 import "../../styles/paginasTreinador/PrincipalTreinador.css";
 
 export function TeamHome({ state, team }) {
@@ -17,9 +18,11 @@ export function TeamHome({ state, team }) {
 
   const stats = getTeamStats(state, team.id);
   const evolucao = getTeamEvolution(state, team.id);
+  const lastTraining = stats.lastTraining;
+  const lastStats = getLastTrainingStats(lastTraining);
 
   return (
-    <div className="page-stack">
+    <div className="page-stack team-home">
       <section className="kpi-grid">
         <KpiCard
           icon={Users}
@@ -45,7 +48,7 @@ export function TeamHome({ state, team }) {
         <KpiCard
           icon={Star}
           label="Destaque"
-          value={stats.bestAthlete?.name || "-"}
+          value={<span className="team-home__highlight-name" title={stats.bestAthlete?.name}>{stats.bestAthlete?.name || "-"}</span>}
           detail="Maior média geral"
         />
       </section>
@@ -53,53 +56,44 @@ export function TeamHome({ state, team }) {
       <div className="dashboard-grid">
         <TeamEvolutionChart
           data={evolucao}
+          averages={{ desempenho: stats.averageScore, presenca: stats.presenceAverage }}
           title="Evolução média da equipe"
         />
 
-        <section className="panel">
+        <section className="panel last-training-panel" aria-label="Último treino">
           <div className="section-heading">
             <div>
               <span className="eyebrow">Último treino</span>
 
               <h2>
-                {stats.lastTraining
-                  ? formatDate(stats.lastTraining.date)
+                {lastTraining
+                  ? <time dateTime={lastTraining.date}>{formatDate(lastTraining.date)}</time>
                   : "Sem treino"}
               </h2>
             </div>
           </div>
 
-          {stats.lastTraining ? (
-            <div className="last-training">
-              <strong>{stats.lastTraining.type}</strong>
+          {lastTraining ? (
+            <div className="last-training-panel__body">
+              {lastTraining.type && <strong className="last-training-panel__type">{lastTraining.type}</strong>}
+              {lastTraining.description?.trim() && <p className="last-training-panel__description">{lastTraining.description}</p>}
 
-              <p>{stats.lastTraining.description}</p>
-
-              <dl>
+              <dl className="last-training-panel__stats">
                 <div>
                   <dt>Participantes</dt>
 
-                  <dd>
-                    {
-                      Object.values(
-                        stats.lastTraining.athletes
-                      ).filter((registro) => registro.present).length
-                    }{" "}
-                    de{" "}
-                    {
-                      Object.values(
-                        stats.lastTraining.athletes
-                      ).length
-                    }
+                  <dd className={lastStats.recordCount ? undefined : "last-training-panel__missing"}>
+                    {lastStats.recordCount ? `${lastStats.presentCount} de ${lastStats.recordCount}` : "Sem registros"}
                   </dd>
                 </div>
 
                 <div>
-                  <dt>Média técnica</dt>
-
-                  <dd>
-                    {Math.round(stats.averageScore * 10)}%
-                  </dd>
+                  <dt>Presença</dt>
+                  <dd>{lastStats.presenceAverage === null ? "—" : percent(lastStats.presenceAverage)}</dd>
+                </div>
+                <div>
+                  <dt title="Média das avaliações qualitativas deste treino">Média técnica</dt>
+                  <dd className={lastStats.averageScore === null ? "last-training-panel__missing" : undefined}>{lastStats.averageScore === null ? "Sem avaliações" : `${lastStats.averageScore.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}/10`}</dd>
                 </div>
               </dl>
             </div>
