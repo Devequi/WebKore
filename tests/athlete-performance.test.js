@@ -1,10 +1,39 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { athletePerformance, filterEvolution, ratingEntries, scoreLabel } from "../src/utils/athletePerformance.js";
+import { athletePerformance, evolutionPlot, filterEvolution, ratingEntries, scoreLabel } from "../src/utils/athletePerformance.js";
 import { toClientTraining } from "../server/src/lib/serializadores.js";
 import { getAthleteStats, getAthleteTrainings } from "../src/utils/selectors.js";
 
 const training = (id, date, ratings, present = true) => ({ id, teamId: "t", date, athletes: { a: { present, ratings } } });
+
+test("gráfico ignora faltas entre avaliações e mantém presença, histórico e nota zero", () => {
+  const trainings = [training("first", "2026-10-01", { Técnica: 0 }),
+    training("absent", "2026-10-02", {}, false), training("last", "2026-10-03", { Técnica: 8 })];
+  const result = athletePerformance(trainings, "a");
+  const plot = evolutionPlot(result.observations, result.criteria);
+  assert.deepEqual(plot.data.map(point => point.trainingId), ["first", "last"]);
+  assert.deepEqual(plot.data.map(point => point.score0), [0, 8]);
+  assert.equal(result.averageScore, 4);
+  assert.equal(result.evaluationCount, 2);
+  assert.equal(Math.round(result.presenceAverage), 67);
+  assert.equal(result.observations.length, 3);
+  assert.equal(getAthleteTrainings({ trainings }, "t", "a").length, 3);
+  assert.equal(trainings[1].athletes.a.present, false);
+});
+
+test("faltas não geram pontos mesmo com notas salvas; presença sem avaliação mantém lacuna", () => {
+  const result = athletePerformance([
+    training("absent", "2026-10-01", { Técnica: 9 }, false),
+    training("unrated", "2026-10-02", {}),
+    training("rated", "2026-10-03", { Técnica: 7 })
+  ], "a");
+  const plot = evolutionPlot(result.observations, ["Técnica"]);
+  assert.deepEqual(plot.data.map(point => point.trainingId), ["unrated", "rated"]);
+  assert.deepEqual(plot.data.map(point => point.score0), [null, 7]);
+  const absentOnly = athletePerformance([training("only", "2026-10-01", {}, false)], "a");
+  assert.deepEqual(evolutionPlot(absentOnly.observations, ["Técnica"]).data, []);
+  assert.equal(absentOnly.presenceAverage, 0);
+});
 test("serialização não inventa notas quando a avaliação ou um critério não existe", () => {
   const team = { qualitativeCriteria: ["Técnica", "Físico"] };
   const result = toClientTraining({ records: [{ athleteId: "a" }, { athleteId: "b", evaluation: { technique: 0 } }] }, team);

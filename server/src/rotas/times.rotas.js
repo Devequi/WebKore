@@ -315,25 +315,21 @@ teamsRouter.delete("/:teamId", async (request, response) => {
 teamsRouter.patch("/:teamId/athletes/:athleteId", async (request, response) => {
   try {
     const { athleteId, teamId } = request.params;
-    let data;
-    try { data = membershipPatch(request.body); }
-    catch (error) { throw new HttpError(400, error.message); }
+    const team = await prisma.team.findUnique({ where: { id: teamId } });
 
     const canEdit =
       request.user.role === "ATHLETE"
         ? request.user.id === athleteId
-        : Boolean(
-            await prisma.team.findFirst({
-              where: {
-                id: teamId,
-                coachId: request.user.id
-              }
-            })
-          );
+        : team?.coachId === request.user.id;
 
     if (!canEdit) {
       return response.status(403).json({ message: "Voce nao tem permissao para editar este atleta." });
     }
+
+    if (!team) throw new HttpError(404, "Equipe nao encontrada.");
+    let data;
+    try { data = membershipPatch(request.body, team.modality); }
+    catch (error) { throw new HttpError(400, error.message); }
 
     const membership = await prisma.membership.update({
       where: {

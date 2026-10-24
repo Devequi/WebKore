@@ -11,6 +11,8 @@ let EvolutionChart;
 let PerformanceSummary;
 let TeamHome;
 let SettingsPage;
+let PositionField;
+let AthletesPage;
 before(async () => {
   server = await createServer({ configFile: false, plugins: [react()], appType: "custom",
     server: { middlewareMode: true, hmr: false, watch: null } });
@@ -18,10 +20,37 @@ before(async () => {
   ({ PerformanceSummary } = await server.ssrLoadModule("/src/componentes/ui/ResumoDesempenho.jsx"));
   ({ TeamHome } = await server.ssrLoadModule("/src/paginas/treinador/PrincipalTreinador.jsx"));
   ({ SettingsPage } = await server.ssrLoadModule("/src/paginas/treinador/ConfigsTreinador.jsx"));
+  ({ PositionField } = await server.ssrLoadModule("/src/componentes/ui/CampoPosicao.jsx"));
+  ({ AthletesPage } = await server.ssrLoadModule("/src/paginas/treinador/AtletasTreinador.jsx"));
 });
 after(async () => { await server?.close(); });
 
 const render = (component, props) => renderToStaticMarkup(createElement(component, props));
+test("posição usa select de quatro opções, carrega seleção salva e preserva valor antigo no aviso", () => {
+  const props = { modality: " FÚTSAL ", value: "Pivô", onChange() {} };
+  const html = render(PositionField, props);
+  assert.doesNotMatch(html, /<input/);
+  assert.match(html, /<option value="Pivô" selected="">Pivô<\/option>/);
+  assert.deepEqual([...html.matchAll(/<option value="([^"]+)"/g)].map((match) => match[1]), ["Goleiro", "Fixo", "Pivô", "Ala"]);
+  const legacy = render(PositionField, { ...props, value: "Ponteiro" });
+  assert.match(legacy, /Posição atual: “Ponteiro”/);
+  assert.match(legacy, /preservado até salvar/);
+  assert.match(legacy, /aria-invalid="true"/);
+  assert.doesNotMatch(legacy, /<option value="Ponteiro"/);
+  assert.match(render(PositionField, { ...props, modality: "Vôlei", value: "Ponteiro" }), /<input[^>]+value="Ponteiro"/);
+});
+
+test("perfil bloqueia salvar posição incompatível sem alterar cards de indicadores", () => {
+  const team = { id: "t", modality: "Futsal" };
+  const state = { users: [{ id: "a", name: "Atleta" }], trainings: [], memberships: [
+    { athleteId: "a", teamId: "t", status: "approved", position: "Ponteiro" }
+  ] };
+  const html = render(AthletesPage, { team, state, actions: {}, selectedAthleteId: "a" });
+  assert.match(html, /<button[^>]+disabled=""[^>]*>[\s\S]*?<span>Salvar<\/span>/);
+  for (const label of ["Presença", "Treinos", "Desempenho"]) assert.ok(html.includes(label));
+  const free = render(AthletesPage, { team: { ...team, modality: "Vôlei" }, state, actions: {} });
+  assert.doesNotMatch(free, /disabled=""/);
+});
 test("gráfico distingue nenhum treino de treinos sem notas e lista critérios configurados", () => {
   const empty = render(EvolutionChart, { data: [], criteria: ["Critério sem notas"] });
   assert.match(empty, /Nenhum treino registrado/);

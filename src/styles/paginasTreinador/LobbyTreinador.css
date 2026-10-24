@@ -1,8 +1,36 @@
-.coach-lobby { background: var(--bg); min-height: 100dvh; }
-.coach-lobby .lobby-hero { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.25rem; }
+.lobby-page.coach-lobby {
+  --lobby-content-width: 1120px;
+  background: var(--bg);
+  min-height: 100dvh;
+  padding: clamp(1rem, 3vw, 2rem) clamp(1rem, 4vw, 3rem) 3rem;
+}
+
+/* Todos os blocos compartilham o mesmo alinhamento, inclusive os indicadores. */
+.coach-lobby > :is(.public-header, .lobby-hero, .kpi-grid, .dashboard-grid--lobby, .form-feedback) {
+  width: min(var(--lobby-content-width), 100%);
+  min-width: 0;
+  margin-inline: auto;
+}
+.coach-lobby > .public-header { margin-bottom: 1.5rem; }
+.coach-lobby > .lobby-hero { margin-top: 0; margin-bottom: 1.5rem; }
+.coach-lobby .lobby-hero > div { min-width: 0; }
+.coach-lobby .lobby-hero h1 { line-height: 1.2; }
+.coach-lobby .lobby-hero p { margin-top: .65rem; }
+.coach-lobby > .kpi-grid { margin-bottom: 1.5rem; }
+.coach-lobby .athlete-kpis .kpi-card { min-height: 124px; }
+.coach-lobby > .dashboard-grid--lobby {
+  grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+  gap: 1.5rem;
+}
+.coach-lobby .dashboard-grid--lobby > * { min-width: 0; }
+.coach-lobby .team-card-grid { align-items: start; }
+.coach-lobby .create-team-form > label { min-width: 0; }
+.coach-lobby .team-card__actions { margin-top: .25rem; }
+
+.coach-lobby .lobby-hero { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; }
 .coach-lobby .lobby-hero h1 { font-size: clamp(1.5rem, 4vw, 2.5rem); }
 .coach-lobby .lobby-hero p { color: var(--muted-strong); max-width: 600px; font-size: var(--text-sm); line-height: 1.6; }
-.coach-lobby .dashboard-grid--lobby { display: grid; gap: 1.25rem; align-items: start; }
+.coach-lobby .dashboard-grid--lobby { display: grid; align-items: start; }
 .coach-lobby .create-team-form { display: grid; gap: 1rem; }
 .coach-lobby .create-team-form h2 { font-size: var(--text-xl); }
 .coach-lobby .team-card { display: grid; align-content: start; gap: 1rem; min-width: 0; }
@@ -14,3 +42,15 @@
 .coach-lobby .team-info p { overflow-wrap: anywhere; }
 .coach-lobby .team-card__actions { display: flex; flex-wrap: wrap; gap: .75rem; }
 .coach-lobby .team-card__actions .button { flex: 1 1 auto; justify-content: center; }
+
+@media (max-width: 900px) {
+  .coach-lobby > .dashboard-grid--lobby { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .coach-lobby > .public-header { margin-bottom: 1rem; }
+  .coach-lobby > .lobby-hero { align-items: stretch; flex-direction: column; }
+  .coach-lobby .lobby-hero > .button { align-self: start; }
+  .coach-lobby > .athlete-kpis { grid-template-columns: minmax(0, 1fr); }
+  .coach-lobby .athlete-kpis .kpi-card { min-height: 104px; }
+}

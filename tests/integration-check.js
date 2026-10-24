@@ -158,11 +158,26 @@ try {
       membership = await api.updateMembership(team.id, athlete.user.id, { number: null });
       assert.equal(membership.number, null);
       assert.equal(membership.position, "Pivô");
-      membership = await api.updateMembership(team.id, athlete.user.id, { position: "" });
-      assert.equal(membership.position, null);
+      for (const position of ["Ponteiro", "", null, "Pivo"]) {
+        await request(`/teams/${team.id}/athletes/${athlete.user.id}`, "PATCH", { position }, validToken, 400);
+      }
+      assert.equal((await api.me()).state.memberships.find((item) => item.teamId === team.id && item.athleteId === athlete.user.id).position, "Pivô");
+      assert.equal((await prisma.membership.findUnique({ where: { teamId_athleteId: { teamId: team.id, athleteId: athlete.user.id } } })).position, "Pivô");
       team = await api.updateTeam(team.id, { modality: " VOLEI " });
       assert.equal(team.modality, "Vôlei");
       assert.equal((await prisma.team.findUnique({ where: { id: team.id } })).modality, "Vôlei");
+      membership = await api.updateMembership(team.id, athlete.user.id, { position: "Ponteiro" });
+      assert.equal(membership.position, "Ponteiro");
+      team = await api.updateTeam(team.id, { modality: " FÚTSAL " });
+      membership = await api.updateMembership(team.id, athlete.user.id, { number: 8 });
+      assert.equal(membership.position, "Ponteiro");
+      await request(`/teams/${team.id}/athletes/${athlete.user.id}`, "PATCH", { position: "Ponteiro" }, validToken, 400);
+      membership = await api.updateMembership(team.id, athlete.user.id, { position: "Fixo" });
+      assert.equal(membership.position, "Fixo");
+      assert.equal((await api.me()).state.memberships.find((item) => item.teamId === team.id && item.athleteId === athlete.user.id).position, "Fixo");
+      team = await api.updateTeam(team.id, { modality: "Vôlei" });
+      membership = await api.updateMembership(team.id, athlete.user.id, { position: "" });
+      assert.equal(membership.position, null);
       await api.respondRequest(team.id, athlete.user.id, "rejected");
       assert.equal((await request("/teams/join", "POST", { code: team.code }, athlete.token, 201)).status, "pending");
       assert.equal((await request("/teams/join", "POST", { code: team.code }, athlete.token, 201)).status, "pending");

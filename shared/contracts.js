@@ -1,8 +1,10 @@
+import { positionError } from "./positions.js";
+
 export function normalizeTeamCode(value) {
   return typeof value === "string" ? value.trim().toUpperCase() : null;
 }
 
-export function membershipPatch(patch) {
+export function membershipPatch(patch, modality) {
   const data = {};
   if (patch.number !== undefined) {
     const value = patch.number;
@@ -16,6 +18,8 @@ export function membershipPatch(patch) {
   if (patch.position !== undefined) {
     if (patch.position !== null && (typeof patch.position !== "string" || patch.position.length > 191)) throw new Error("Posição inválida.");
     data.position = patch.position?.trim() || null;
+    const error = positionError(modality, data.position);
+    if (error) throw new Error(error);
   }
   return data;
 }

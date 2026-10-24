@@ -8,6 +8,8 @@ import { getTeamCriteria } from "../../../shared/criteria.js";
 import { AthleteDashboard } from "../../componentes/charts/DashboardAtleta.jsx";
 import { Avatar } from "../../componentes/ui/Avatar.jsx";
 import { Button } from "../../componentes/ui/Botao.jsx";
+import { PositionField } from "../../componentes/ui/CampoPosicao.jsx";
+import { positionError } from "../../../shared/positions.js";
 import { KpiCard } from "../../componentes/ui/CartaoKpi.jsx";
 import { EmptyState } from "../../componentes/ui/EstadoVazio.jsx";
 import { formatDate, percent } from "../../utils/formatters.js";
@@ -74,7 +76,7 @@ export function AthletesPage({
         position: atletaSelecionado.position ?? ""
       });
     }
-  }, [atletaSelecionado?.id, atletaSelecionado?.number, atletaSelecionado?.position]);
+  }, [team?.id, atletaSelecionado?.id, atletaSelecionado?.number, atletaSelecionado?.position]);
 
   if (!team) {
     return (
@@ -214,10 +216,7 @@ export function AthletesPage({
               />
             </label>
 
-            <label>
-              Posição
-
-              <input
+            <PositionField modality={team.modality}
                 onChange={(event) =>
                   setEditando((current) => ({
                     ...current,
@@ -226,10 +225,10 @@ export function AthletesPage({
                 }
                 value={editando.position}
               />
-            </label>
 
             <Button
               icon={Save}
+              disabled={Boolean(positionError(team.modality, editando.position))}
               onClick={() =>
                 runUiAction(
                   () => actions.updateAthlete({
@@ -248,7 +247,11 @@ export function AthletesPage({
 
             <Button
               icon={Trash2}
-              onClick={() =>
+              onClick={() => {
+                if (!window.confirm(
+                  `Remover ${atletaSelecionado.name} da equipe ${team.name}?\n\nO atleta perderá o acesso à equipe. O histórico de treinos e avaliações será preservado.`
+                )) return;
+
                 runUiAction(
                   () => actions.removeAthlete({
                     athleteId: atletaSelecionado.id,
@@ -256,8 +259,8 @@ export function AthletesPage({
                   }),
                   (error) => setFeedback({ type: "error", text: error.message || "Não foi possível remover o atleta." }),
                   () => setFeedback({ type: "success", text: "Atleta removido da equipe." })
-                )
-              }
+                );
+              }}
               type="button"
               variant="danger"
             >
@@ -271,8 +274,8 @@ export function AthletesPage({
           )}
         </section>
 
-        <AthleteDashboard key={team.id + atletaSelecionado.id} performance={performance} criteria={getTeamCriteria(team, "qualitative")} />
-        <TrainingHistory key={team.id + atletaSelecionado.id} trainings={treinos} athleteId={atletaSelecionado.id} />
+        <AthleteDashboard key={`evolution:${team.id}:${atletaSelecionado.id}`} performance={performance} criteria={getTeamCriteria(team, "qualitative")} />
+        <TrainingHistory key={`history:${team.id}:${atletaSelecionado.id}`} trainings={treinos} athleteId={atletaSelecionado.id} />
       </section>
     </div>
   );

@@ -12,6 +12,7 @@ export function ratingEntries(record) {
 export function athletePerformance(trainings, athleteId) {
   const observations = trainings.filter((training) => isDateOnly(training.date) && training.athletes?.[athleteId])
     .map((training) => ({ trainingId: training.id, date: training.date, title: training.title || null, type: training.type || null,
+      present: training.athletes[athleteId].present,
       ratings: Object.fromEntries(ratingEntries(training.athletes[athleteId])) }))
     .sort((a, b) => a.date.localeCompare(b.date) || a.trainingId.localeCompare(b.trainingId));
   const evaluated = observations.filter((point) => Object.keys(point.ratings).length);
@@ -35,7 +36,8 @@ export function athletePerformance(trainings, athleteId) {
 // Chaves internas evitam tratar pontos nos nomes dos critérios como caminhos de objeto.
 export function evolutionPlot(points, criteria) {
   const series = criteria.map((name, index) => ({ name, key: `score${index}` }));
-  const data = points.filter((point) => isDateOnly(point.date))
+  // Faltas não ocupam pontos no gráfico; continuam no histórico e na frequência.
+  const data = points.filter((point) => isDateOnly(point.date) && point.present !== false)
     .slice().sort((a, b) => a.date.localeCompare(b.date) || a.trainingId.localeCompare(b.trainingId))
     .map((point) => ({ trainingId: point.trainingId, date: point.date, title: point.title, type: point.type,
       ...Object.fromEntries(series.map((item) => {

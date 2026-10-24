@@ -174,6 +174,11 @@
 
 .athletes-layout .inline-form > label { min-width: 0; }
 
+.position-field__select { position: relative; display: block; min-width: 0; }
+.position-field__select select { appearance: none; padding-right: 2.5rem; text-overflow: ellipsis; }
+.position-field__select svg { position: absolute; right: 0.85rem; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--muted); }
+.position-field__error { color: var(--muted); font-weight: 400; overflow-wrap: anywhere; }
+
 .athletes-layout .inline-form > .button { width: 100%; }
 
 @media (min-width: 1025px) {
