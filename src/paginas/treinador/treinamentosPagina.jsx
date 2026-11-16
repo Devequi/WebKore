@@ -2,6 +2,7 @@ import { TrainingReview } from "../../componentes/ui/RevisaoTreino.jsx";
 import { CalendarPlus, ChevronDown, Trash2 } from "lucide-react";
 import { useRef, useState } from "react";
 import { Button } from "../../componentes/ui/Botao.jsx";
+import { useConfirmation } from "../../componentes/ui/Confirmacao.jsx";
 import { EmptyState } from "../../componentes/ui/EstadoVazio.jsx";
 import { formatDate } from "../../utils/formatters.js";
 import { isPanelSurfaceClick } from "../../utils/panelInteraction.js";
@@ -12,7 +13,7 @@ import {
 } from "../../utils/selectors.js";
 import "../../styles/paginasTreinador/treinamentosPagina.css";
 
-export function TrainingsPage({ actions, state, team }) {
+export function TrainingsPage({ actions, state, team, initialTrainingId }) {
   const formularioRef = useRef(null);
   const dataRef = useRef(null);
   const [form, setForm] = useState({
@@ -21,10 +22,11 @@ export function TrainingsPage({ actions, state, team }) {
     description: ""
   });
   const [drafts, setDrafts] = useState({});
-  const [treinoAberto, setTreinoAberto] = useState(null);
-  const [aba, setAba] = useState("add");
+  const [treinoAberto, setTreinoAberto] = useState(initialTrainingId || null);
+  const [aba, setAba] = useState(initialTrainingId ? "history" : "add");
   const [feedback, setFeedback] = useState(null);
   const [saving, setSaving] = useState(false);
+  const { confirmAction, confirmation } = useConfirmation();
 
   function abrirFormulario() {
     setAba("add");
@@ -82,20 +84,21 @@ export function TrainingsPage({ actions, state, team }) {
   }
 
   async function deletarTreino(trainingId) {
-    if (confirm("Tem certeza que quer deletar este treino?")) {
-      try {
-        await actions.deleteTraining({
-          trainingId
-        });
-      } catch (error) {
-        alert(error.message || "Nao foi possivel deletar o treino.");
-      }
+    if (!await confirmAction({ title: "Excluir treino?", label: "Excluir treino",
+      description: "O treino e seus registros serão removidos." })) return;
+    try {
+      await actions.deleteTraining({ trainingId });
+    } catch (error) {
+      setFeedback({ type: "error", text: error.message || "Não foi possível excluir o treino." });
     }
   }
 
 
   return (
     <div className="page-stack">
+      {confirmation}
+      {aba === "history" && feedback && <p className={`form-feedback form-feedback--${feedback.type}`}
+        role={feedback.type === "error" ? "alert" : "status"}>{feedback.text}</p>}
       <div aria-label="Visualização dos treinos" className="tabs-header" role="tablist">
         <button
           aria-controls="training-add-panel"

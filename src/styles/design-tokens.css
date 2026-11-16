@@ -32,6 +32,10 @@
   --primary-glow: rgb(var(--accent-rgb) / .18);
   --on-primary: var(--bg);
   --focus-ring: 0 0 0 3px rgb(var(--accent-rgb) / .30);
+  --control-height: 44px;
+  --control-radius: 8px;
+  --content-gap: .75rem;
+  --panel-inset: clamp(.85rem, 2vw, 1.25rem);
   --backdrop: rgb(var(--navy-rgb) / .88);
 
   /* Compatibility aliases keep existing component contracts intact. */

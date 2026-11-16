@@ -6,7 +6,8 @@ export function getLastTrainingStats(training) {
   const records = Object.values(training?.athletes || {});
   const scores = records.flatMap((record) => {
     const entries = ratingEntries(record);
-    return entries.length ? [recordScore(record)] : [];
+    const score = entries.length ? recordScore(record) : null;
+    return Number.isFinite(score) ? [score] : [];
   });
   const presentCount = records.filter((record) => record?.present === true).length;
   return {

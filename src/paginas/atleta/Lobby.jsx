@@ -6,6 +6,7 @@ import "../../styles/paginasAtleta/Lobby.css";
 import "../../styles/LobbyLayout.css";
 
 export function AthleteLobby({
+  header,
   currentUser,
   onLogout,
   onOpenTeam,
@@ -16,7 +17,7 @@ export function AthleteLobby({
 }) {
   return (
     <main className="lobby-page team-lobby athlete-lobby">
-      <PublicHeader onLogout={onLogout} />
+      {header || <PublicHeader onLogout={onLogout} />}
 
       <section className="lobby-hero">
         <div>

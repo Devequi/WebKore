@@ -1,6 +1,8 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { Activity, BarChart3, ClipboardList, Home, Settings, ShieldCheck, Users } from "lucide-react";
 import { AppShell } from "./componentes/layout/AplicativoShell.jsx";
+import { MobileNavigation, useCompactNavigation } from "./componentes/layout/NavegacaoMobile.jsx";
+import { Button } from "./componentes/ui/Botao.jsx";
 import { AthleteLobby } from "./paginas/atleta/Lobby.jsx";
 import { AthleteProfile } from "./paginas/atleta/PerfilAtleta.jsx";
 import { TeamSearch } from "./paginas/atleta/PesquisaTime.jsx";
@@ -44,10 +46,12 @@ function LoadingState({ message = "Carregando página..." }) {
 
 export function App() {
   const [state, actions] = useWebKoreData();
+  const compact = useCompactNavigation();
   const session = state.session || { role: "", userId: "" };
   const [activeView, setActiveView] = useState("login");
   const [selectedTeamId, setSelectedTeamId] = useState("");
   const [selectedAthleteId, setSelectedAthleteId] = useState("");
+  const [selectedTrainingId, setSelectedTrainingId] = useState("");
 
   const coachTeams = useMemo(() => getCoachTeams(state, session.userId), [state, session.userId]);
   const athleteTeams = useMemo(() => getAthleteTeams(state, session.userId), [state, session.userId]);
@@ -56,7 +60,9 @@ export function App() {
   const currentUser = state.users.find((user) => user.id === session.userId);
 
   function withNotice(content) {
-    return <>{state.sessionMessage && <p className="form-feedback" role="status">{state.sessionMessage} <button type="button" onClick={() => actions.refresh().catch(() => undefined)}>Atualizar painel</button></p>}<Suspense fallback={<LoadingState />}>{content}</Suspense></>;
+    return <>{state.sessionMessage && <div className="form-feedback session-notice" role="status">
+      <span>{state.sessionMessage}</span><Button type="button" variant="ghost" onClick={() => actions.refresh().catch(() => undefined)}>Atualizar painel</Button>
+    </div>}{content}</>;
   }
 
   useEffect(() => {
@@ -77,6 +83,7 @@ export function App() {
 
   function openTeam(teamId) {
     setSelectedTeamId(teamId);
+    setSelectedTrainingId("");
     setActiveView(session.role === "coach" ? "coach-home" : "athlete-home");
   }
 
@@ -85,6 +92,16 @@ export function App() {
     setSelectedTeamId("");
     setSelectedAthleteId("");
     setActiveView("login");
+  }
+
+  function navigate(view) {
+    if (view !== activeView) setSelectedTrainingId("");
+    setActiveView(view);
+  }
+
+  function lobbyHeader(tabs) {
+    return compact ? <MobileNavigation tabs={tabs} activeView={activeView} onNavigate={navigate}
+      onLogoClick={() => window.scrollTo({ top: 0, behavior: "instant" })} onLogout={logout} /> : null;
   }
 
   if (state.loadingSession) return <main className="auth-page"><LoadingState message="Restaurando sessão..." /></main>;
@@ -96,6 +113,7 @@ export function App() {
   if (session.role === "coach" && activeView === "coach-lobby") {
     return withNotice(
       <CoachLobby
+        header={lobbyHeader(coachTabs)}
         actions={actions}
         currentUser={currentUser}
         onLogout={logout}
@@ -110,6 +128,7 @@ export function App() {
   if (session.role === "athlete" && activeView === "athlete-lobby") {
     return withNotice(
       <AthleteLobby
+        header={lobbyHeader(athleteTabs)}
         currentUser={currentUser}
         onLogout={logout}
         onOpenTeam={openTeam}
@@ -132,11 +151,15 @@ export function App() {
       currentUser={currentUser}
       onLogoClick={() => setActiveView(session.role === "coach" ? "coach-lobby" : "athlete-lobby")}
       onLogout={logout}
-      setActiveView={setActiveView}
+      setActiveView={navigate}
       tabs={tabs}
       team={activeTeam}
-    >
-      {session.role === "coach" && activeView === "coach-home" && <TeamHome state={state} team={activeTeam} />}
+    ><Suspense fallback={<LoadingState />}>
+      {session.role === "coach" && activeView === "coach-home" && <TeamHome state={state} team={activeTeam}
+        onOpenTraining={(trainingId) => {
+          setSelectedTrainingId(trainingId);
+          setActiveView("coach-trainings");
+        }} />}
       {session.role === "coach" && activeView === "coach-athletes" && (
         <AthletesPage
           actions={actions}
@@ -150,7 +173,7 @@ export function App() {
         <RequestsPage actions={actions} state={state} team={activeTeam} />
       )}
       {session.role === "coach" && activeView === "coach-trainings" && (
-        <TrainingsPage actions={actions} state={state} team={activeTeam} />
+        <TrainingsPage actions={actions} state={state} team={activeTeam} initialTrainingId={selectedTrainingId} />
       )}
       {session.role === "coach" && activeView === "coach-evaluations" && (
         <EvaluationSettingsPage actions={actions} currentUser={currentUser} state={state} team={activeTeam} />
@@ -170,6 +193,6 @@ export function App() {
       {session.role === "athlete" && activeView === "athlete-profile" && (
         <AthleteProfile key={session.userId} actions={actions} athleteId={session.userId} state={state} team={activeTeam} />
       )}
-    </AppShell>
+    </Suspense></AppShell>
   );
 }

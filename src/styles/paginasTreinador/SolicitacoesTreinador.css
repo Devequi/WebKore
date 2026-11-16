@@ -1,11 +1,11 @@
 /* Requests use local selectors so loading this page cannot restyle other pages. */
-.requests-panel .request-list { display: grid; gap: 1rem; }
+.requests-panel .request-list { display: grid; gap: var(--content-gap); }
 .requests-panel .request-card {
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr) auto;
   align-items: center;
   gap: 0.75rem;
-  padding: 1rem;
+  padding: var(--panel-inset);
   min-width: 0;
 }
 .requests-panel .request-card > .avatar + div { display: grid; min-width: 0; }
@@ -20,5 +20,5 @@
 @media (max-width: 640px) {
   .requests-panel .request-card { grid-template-columns: 44px minmax(0, 1fr); padding: 0.75rem; }
   .requests-panel .request-card__actions { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .requests-panel .request-card .button { width: 100%; }
+  .requests-panel .request-card .button { width: 100%; min-width: 0; padding-inline: .55rem; }
 }

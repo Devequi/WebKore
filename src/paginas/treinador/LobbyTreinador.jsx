@@ -8,6 +8,7 @@ import "../../styles/paginasTreinador/LobbyTreinador.css";
 import "../../styles/LobbyLayout.css";
 
 export function CoachLobby({
+  header,
   actions,
   currentUser,
   onLogout,
@@ -88,7 +89,7 @@ export function CoachLobby({
 
   return (
     <main className="lobby-page team-lobby coach-lobby coach-experience">
-      <PublicHeader onLogout={onLogout} />
+      {header || <PublicHeader onLogout={onLogout} />}
 
       <section className="lobby-hero">
         <div>

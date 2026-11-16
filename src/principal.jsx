@@ -2,6 +2,7 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App.jsx";
 import "./styles/global.css";
+import "./styles/UiConsistency.css";
 import { ErrorFallback } from "./componentes/ErrorFallback.jsx";
 import { retireLegacyPwa } from "./services/retirePwa.js";
 import { removeLegacyApiCache } from "./services/storage.js";

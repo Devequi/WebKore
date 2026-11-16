@@ -10,6 +10,7 @@ import { getTeamCriteria } from "../../../shared/criteria.js";
 import { AthleteDashboard } from "../../componentes/charts/DashboardAtleta.jsx";
 import { Avatar } from "../../componentes/ui/Avatar.jsx";
 import { Button } from "../../componentes/ui/Botao.jsx";
+import { useConfirmation } from "../../componentes/ui/Confirmacao.jsx";
 import { PositionField } from "../../componentes/ui/CampoPosicao.jsx";
 import { positionError } from "../../../shared/positions.js";
 import { KpiCard } from "../../componentes/ui/CartaoKpi.jsx";
@@ -33,6 +34,7 @@ export function AthletesPage({
   team
 }) {
   const today = useTodayDate();
+  const { confirmAction, confirmation } = useConfirmation();
   const atletas = team ? getApprovedAthletes(state, team.id) : [];
   const [busca, setBusca] = useState("");
   const buscaRef = useRef(null);
@@ -96,6 +98,7 @@ export function AthletesPage({
 
   return (
     <div className="dashboard-grid athletes-layout">
+      {confirmation}
       <section className="panel roster-panel">
         <div className="section-heading">
           <div>
@@ -250,10 +253,9 @@ export function AthletesPage({
 
             <Button
               icon={Trash2}
-              onClick={() => {
-                if (!window.confirm(
-                  `Remover ${atletaSelecionado.name} da equipe ${team.name}?\n\nO atleta perderá o acesso à equipe. O histórico de treinos e avaliações será preservado.`
-                )) return;
+              onClick={async () => {
+                if (!await confirmAction({ title: "Remover atleta?", label: "Remover atleta",
+                  description: `${atletaSelecionado.name} perderá o acesso à equipe ${team.name}. O histórico de treinos e avaliações será preservado.` })) return;
 
                 runUiAction(
                   () => actions.removeAthlete({

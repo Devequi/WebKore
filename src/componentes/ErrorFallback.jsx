@@ -1,5 +1,6 @@
 import React from "react";
 import { clearSession } from "../services/session.js";
+import { Button } from "./ui/Botao.jsx";
 
 export class ErrorFallback extends React.Component {
   state = { error: null };
@@ -13,8 +14,10 @@ export class ErrorFallback extends React.Component {
         <h1>WebKore encontrou um erro ao abrir</h1>
         <p>Não foi possível carregar esta página.</p>
         <p>Seus dados foram preservados. Tente novamente ou volte à tela de login.</p>
-        <button onClick={() => window.location.reload()} type="button">Tentar novamente</button>
-        <button onClick={() => { clearSession(); window.location.reload(); }} type="button">Voltar ao login</button>
+        <div className="runtime-error__actions">
+          <Button onClick={() => window.location.reload()} type="button">Tentar novamente</Button>
+          <Button variant="ghost" onClick={() => { clearSession(); window.location.reload(); }} type="button">Voltar ao login</Button>
+        </div>
       </main>
     );
   }

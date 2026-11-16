@@ -2,6 +2,7 @@ import { LogOut, Users } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { Avatar } from "../ui/Avatar.jsx";
 import { Button } from "../ui/Botao.jsx";
+import { MobileNavigation, NavigationItems, useCompactNavigation } from "./NavegacaoMobile.jsx";
 
 export function AppShell({
   activeView,
@@ -14,15 +15,20 @@ export function AppShell({
   team
 }) {
   const navRef = useRef(null);
+  const coach = currentUser.role === "coach";
+  const mobile = useCompactNavigation();
+  const shellClassName = coach ? "app-shell coach-experience" : "app-shell";
+  const selectedView = activeView === "athlete-search" ? "athlete-lobby" : activeView;
 
   useEffect(() => {
-    const activeItem = navRef.current?.querySelector('[aria-current="page"]');
-    activeItem?.scrollIntoView({ block: "nearest", inline: "nearest" });
-  }, [activeView]);
+    if (mobile) return;
+    navRef.current?.querySelector('[aria-current="page"]')?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }, [selectedView, mobile]);
 
   return (
-    <div className={currentUser.role === "coach" ? "app-shell coach-experience" : "app-shell"}>
-      <aside className="sidebar">
+    <div className={activeView === "coach-home" ? `${shellClassName} app-shell--coach-home` : shellClassName}>
+      {mobile ? <MobileNavigation tabs={tabs} activeView={selectedView} onNavigate={setActiveView}
+        onLogoClick={onLogoClick} onLogout={onLogout} /> : <aside className="sidebar">
         <button className="brand" onClick={onLogoClick} type="button">
           <img src="/icons/logoWK.png" alt="WebKore" />
           <div>
@@ -31,23 +37,7 @@ export function AppShell({
           </div>
         </button>
 
-        <nav className="nav-list" aria-label="Navegação principal" ref={navRef}>
-          {tabs.map((item) => {
-            const Icon = item.icon;
-            return (
-              <button
-                aria-current={activeView === item.id ? "page" : undefined}
-                className={activeView === item.id ? "nav-item nav-item--active" : "nav-item"}
-                key={item.id}
-                onClick={() => setActiveView(item.id)}
-                type="button"
-              >
-                <Icon size={18} />
-                <span>{item.label}</span>
-              </button>
-            );
-          })}
-        </nav>
+        <NavigationItems tabs={tabs} activeView={selectedView} onNavigate={setActiveView} navRef={navRef} />
 
         <div className="sidebar__footer">
           <div className="profile-chip">
@@ -61,7 +51,7 @@ export function AppShell({
             Sair
           </Button>
         </div>
-      </aside>
+      </aside>}
 
       <main className="main-content">
         <header className="topbar">
@@ -73,7 +63,7 @@ export function AppShell({
             <Button icon={Users} onClick={onLogoClick} type="button" variant="ghost">
               Equipes
             </Button>
-            <Button
+            {!mobile && <Button
               aria-label="Sair"
               className="topbar__logout"
               icon={LogOut}
@@ -83,7 +73,7 @@ export function AppShell({
               variant="ghost"
             >
               Sair
-            </Button>
+            </Button>}
           </div>
         </header>
         {children}

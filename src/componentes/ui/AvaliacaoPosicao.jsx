@@ -1,30 +1,28 @@
 import "../../styles/PositionEvaluation.css";
 import { useEffect, useState } from "react";
-import { Activity } from "lucide-react";
+import { Crosshair, Goal, Send, Shield, ShieldCheck } from "lucide-react";
 import { Button } from "./Botao.jsx";
 import { KpiCard } from "./CartaoKpi.jsx";
-import { aggregateGoalkeeperStats, goalkeeperFields, MIN_RANKING_EVALUATIONS, profileFor, criteriaFor, criterionKinds, evaluationProfiles, PROFILE_VERSION, validateTypedCriteria, validateGoalkeeperStats, validateProfile, weightedEvaluation, arithmeticEvaluation, initialRatings } from "../../../shared/evaluations.js";
+import { CollapsiblePanel } from "./PainelRetratil.jsx";
+import { aggregateGoalkeeperStats, goalkeeperFields, profileFor, criteriaFor, criterionKinds, evaluationProfiles, PROFILE_VERSION, validateTypedCriteria, validateGoalkeeperStats, weightedEvaluation, arithmeticEvaluation, initialRatings } from "../../../shared/evaluations.js";
 import { scoreLabel } from "../../utils/athletePerformance.js";
 
-export function GoalkeeperSummary({ records }) {
-  if (!records.some((record) => record?.role === "GOALKEEPER" && record.goalkeeperStats)) return null;
+export function GoalkeeperSummary({ records, compact = false }) {
   const stats = aggregateGoalkeeperStats(records);
   const rate = (value) => value === null ? "Sem dados" : `${value.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%`;
-  return <section className="kpi-grid" aria-label="Indicadores dos goleiros">
-    {[["Defesas", stats.saves ?? "Sem dados"], ["Gols sofridos", stats.goalsConceded ?? "Sem dados"],
-      ["Eficiência defensiva", rate(stats.defensiveEfficiency)], ["Precisão das reposições", rate(stats.distributionAccuracy)],
-      ["Eficiência das saídas", rate(stats.exitEfficiency)]].map(([label, value]) => <KpiCard key={label} icon={Activity} label={label} value={value} detail="Estatísticas observadas de goleiros" />)}
+  const indicators = [
+    ["Defesas", stats.saves, Shield], ["Gols sofridos", stats.goalsConceded, Goal],
+    ["Eficiência defensiva", stats.defensiveEfficiency, ShieldCheck, rate],
+    ["Precisão das reposições", stats.distributionAccuracy, Send, rate],
+    ["Eficiência das saídas", stats.exitEfficiency, Crosshair, rate]
+  ];
+  const visible = compact ? indicators.filter(([, value]) => value !== null) : indicators;
+  if (!visible.length || !records.some((record) => record?.role === "GOALKEEPER" && record.goalkeeperStats)) return null;
+  const metrics = <section className={compact ? "team-home__metrics" : "keeper-metrics"} aria-label="Estatísticas observadas dos goleiros">
+    {visible.map(([label, value, Icon, format]) => <KpiCard key={label} icon={Icon} label={label}
+      value={format ? format(value) : value ?? "Sem dados"} />)}
   </section>;
-}
-export function PositionRankings({ rankings }) {
-  return <section className="panel best-athlete-panel"><div className="section-heading"><h2>Melhores médias por função</h2></div>
-    <p className="athlete-note">Mínimo de {MIN_RANKING_EVALUATIONS} avaliações técnicas específicas. Empates: mais avaliações e identificador estável.</p>
-    {[["OUTFIELD", "Melhor jogador de linha"], ["GOALKEEPER", "Melhor goleiro"]].map(([role, title]) => <div key={role} className="page-stack">
-      <h3>{title}</h3>{rankings?.[role]?.length ? <ol>{rankings[role].map((athlete) => <li key={athlete.id}>
-        {athlete.name} · {role === "GOALKEEPER" ? "Goleiro" : "Linha"} · {scoreLabel(athlete.score)} · {athlete.evaluationCount} avaliações
-      </li>)}</ol> : <p className="empty-content">Ainda não há atletas com avaliações suficientes nesta função.</p>}
-    </div>)}
-  </section>;
+  return compact ? metrics : <CollapsiblePanel title="Estatísticas de goleiro">{metrics}</CollapsiblePanel>;
 }
 export function PositionEvaluationEditor({ record, team, onSave, hideRatings = false, draftStats, draftMetrics, onDraftChange }) {
   const profile = record.criteriaSnapshot?.length ? record.criteriaSnapshot : profileFor({ ...team, modality: record.modality || team.modality }, record.role, record.position);

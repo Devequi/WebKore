@@ -12,6 +12,7 @@ import {
 
 import { useEffect, useState } from "react";
 import { Button } from "../../componentes/ui/Botao.jsx";
+import { useConfirmation } from "../../componentes/ui/Confirmacao.jsx";
 import { CollapsiblePanel } from "../../componentes/ui/PainelRetratil.jsx";
 import { CoachProfileOverview } from "./PerfilTreinador.jsx";
 import { downloadTeamReport } from "../../services/reports.js";
@@ -49,6 +50,7 @@ export function SettingsPage({
   const [mensagem, setMensagem] = useState(null);
   const [savingAccount, setSavingAccount] = useState(false);
   const [savingTeam, setSavingTeam] = useState(false);
+  const { confirmAction, confirmation } = useConfirmation();
 
   useEffect(() => {
     setFormConta({
@@ -113,13 +115,8 @@ export function SettingsPage({
   }
 
   async function excluirConta() {
-    if (
-      !confirm(
-        "Excluir sua conta tambem remove todas as equipes criadas por voce. Deseja continuar?"
-      )
-    ) {
-      return;
-    }
+    if (!await confirmAction({ title: "Excluir conta?", label: "Excluir conta",
+      description: "A exclusão da conta também remove todas as equipes que você criou." })) return;
 
     try {
       await actions.deleteUser({
@@ -134,13 +131,8 @@ export function SettingsPage({
   async function excluirTime() {
     if (!team) return;
 
-    if (
-      !confirm(
-        `Excluir "${team.name}" remove atletas vinculados, solicitacoes e treinos desta equipe. Deseja continuar?`
-      )
-    ) {
-      return;
-    }
+    if (!await confirmAction({ title: "Excluir equipe?", label: "Excluir equipe",
+      description: `A exclusão de ${team.name} remove os vínculos de atletas, as solicitações e os treinos da equipe.` })) return;
 
     try {
       await actions.deleteTeam({
@@ -215,6 +207,7 @@ export function SettingsPage({
 
   return (
     <div className="page-stack coach-experience coach-settings">
+      {confirmation}
       {view === "profile" && <CoachProfileOverview currentUser={currentUser} state={state} />}
       {!team && feedbackPara("team")}
       {view === "team" && team && (

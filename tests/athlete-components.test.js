@@ -139,9 +139,9 @@ test("dashboard do treinador usa gráfico compartilhado e distingue equipe sem n
   assert.match(html, /Desempenho da equipe/);
   assert.match(html, /Sem avaliação/);
   assert.doesNotMatch(html, /Destaque da equipe/);
-  assert.match(html, /Melhor atleta/);
-  assert.match(html, /Ainda não há dados suficientes para definir o melhor atleta/);
-  assert.match(html, /Sem destaque definido para este treino/);
+  assert.match(html, /Melhores médias do histórico/);
+  assert.match(html, /Ainda não há avaliações suficientes/);
+  assert.doesNotMatch(html, /Melhores do treino/);
 });
 
 test("último treino mostra destaque da sessão e melhor atleta ocupa um card independente", () => {
@@ -156,19 +156,21 @@ test("último treino mostra destaque da sessão e melhor atleta ocupa um card in
   const latest = html.split(/class="panel collapsible-panel[^\"]* last-training-panel"/)[1].split('</section>')[0];
   assert.match(latest, /02\/10\/2026/);
   assert.match(latest, /Treino recente/);
-  assert.match(latest, /Destaque do treino<\/span><strong>Bruno · 9,0\/10<\/strong>/);
+  assert.match(latest, /Melhores do treino/);
+  assert.match(latest, /<span>Bruno<\/span><strong>9,0\/10<\/strong>/);
   assert.match(latest, /8,5\/10/);
   assert.doesNotMatch(latest, /Destaque da equipe|Melhor atleta|<strong>Ana<\/strong>/);
   const best = html.split('class="panel best-athlete-panel"')[1].split('</section>')[0];
-  assert.match(best, /<strong>Ana<\/strong>/);
+  assert.match(best, /<span>Ana<\/span>/);
   assert.match(best, /Ala/);
   assert.match(best, /9,0\/10/);
-  assert.equal((html.match(/class="kpi-card"/g) || []).length, 4);
+  const summary = html.split('aria-label="Resumo da equipe"')[1].split("</section>")[0];
+  assert.equal((summary.match(/class="kpi-card"/g) || []).length, 4);
   assert.match(html, /Desempenho médio<\/p><strong>7,3\/10/);
   assert.equal((html.match(/>Período<select/g) || []).length, 1);
   assert.match(html, /class="team-home__grid"/);
   const headingControls = [...html.matchAll(/<button[^>]*class="collapsible-panel__heading-toggle"[\s\S]*?<\/button>/g)].map((match) => match[0]);
-  assert.equal(headingControls.length, 3);
+  assert.equal(headingControls.length, 2);
   for (const control of headingControls) {
     assert.match(control, /aria-expanded="true"/);
     assert.match(control, /aria-controls="[^"]+"/);
@@ -176,8 +178,9 @@ test("último treino mostra destaque da sessão e melhor atleta ocupa um card in
   }
   assert.doesNotMatch(html, /Retrair|Expandir|collapsible-panel__toggle"/);
   const empty = render(TeamHome, { team, state: { ...state, trainings: [{ id: "3", date: "2026-10-03", teamId: "t", athletes: { a: null } }] } });
-  assert.match(empty, /Sem destaque definido para este treino/);
-  assert.match(empty, /Ainda não há dados suficientes/);
+  assert.match(empty, /Não avaliado/);
+  assert.doesNotMatch(empty, /Melhores do treino/);
+  assert.match(empty, /Ainda não há avaliações suficientes/);
 });
 
 test("perfil do treinador usa dados reais, não exige nascimento e separa configurações da equipe", () => {
@@ -210,7 +213,7 @@ test("formulários de futsal exibem critérios e estatísticas da função autom
   assert.doesNotMatch(line, /Defesas realizadas|Estatísticas do goleiro/);
 });
 test("configuração exibe somente um dos dois perfis e separa tipos sem pesos", async () => {
-  const { PositionProfileSettings, PositionRankings } = await server.ssrLoadModule("/src/componentes/ui/AvaliacaoPosicao.jsx");
+  const { PositionProfileSettings } = await server.ssrLoadModule("/src/componentes/ui/AvaliacaoPosicao.jsx");
   const settings = render(PositionProfileSettings, { team: { modality: "Futsal" }, actions: {} });
   assert.match(settings, /Goleiro/);
   assert.match(settings, /Jogadores de Linha/);
@@ -220,10 +223,6 @@ test("configuração exibe somente um dos dois perfis e separa tipos sem pesos",
   assert.equal((settings.match(/<input/g) || []).length, 8);
   assert.doesNotMatch(settings, /Peso|%/);
   assert.match(settings, /Salvar perfis de avaliação/);
-  const ranks = render(PositionRankings, { rankings: { GOALKEEPER: [], OUTFIELD: [] } });
-  assert.match(ranks, /Melhor goleiro/);
-  assert.match(ranks, /Melhor jogador de linha/);
-  assert.equal((ranks.match(/Ainda não há atletas/g) || []).length, 2);
 });
 
 test("revisão inicia em 5, mantém pendências explícitas e oculta avaliação de ausentes", async () => {
