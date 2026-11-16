@@ -1,3 +1,4 @@
+import { recordScore } from "../../shared/evaluations.js";
 import { average } from "./formatters.js";
 import { isDateOnly } from "../../shared/birthDate.js";
 
@@ -12,6 +13,8 @@ export function ratingEntries(record) {
 export function athletePerformance(trainings, athleteId) {
   const observations = trainings.filter((training) => isDateOnly(training.date) && training.athletes?.[athleteId])
     .map((training) => ({ trainingId: training.id, date: training.date, title: training.title || null, type: training.type || null,
+      evaluationSource: training.athletes[athleteId].evaluationSource,
+      finalScore: recordScore(training.athletes[athleteId]),
       present: training.athletes[athleteId].present,
       ratings: Object.fromEntries(ratingEntries(training.athletes[athleteId])) }))
     .sort((a, b) => a.date.localeCompare(b.date) || a.trainingId.localeCompare(b.trainingId));
@@ -26,7 +29,7 @@ export function athletePerformance(trainings, athleteId) {
   });
   const presence = trainings.map((training) => training.athletes?.[athleteId]?.present).filter((value) => typeof value === "boolean");
   return { observations, evaluated, criteria, summaries, evaluationCount: evaluated.length,
-    averageScore: evaluated.length ? average(evaluated.map((point) => average(Object.values(point.ratings)))) : null,
+    averageScore: evaluated.length ? average(evaluated.map((point) => point.finalScore)) : null,
     presenceAverage: presence.length ? average(presence.map((value) => value ? 100 : 0)) : null,
     best: [...summaries].sort((a, b) => b.average - a.average)[0],
     hasComparableEvaluations: summaries.some((item) => item.change !== null),

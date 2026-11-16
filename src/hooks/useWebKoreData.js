@@ -1,3 +1,4 @@
+import { normalizeModality } from "../../shared/criteria.js";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, ApiError, getAuthToken } from "../services/api.js";
 import { authenticate, clearSession, restoreSession } from "../services/session.js";
@@ -154,8 +155,9 @@ export function useWebKoreData() {
       teamId: team.id, date, type, description,
       records: getApprovedAthletes(state, team.id).map((athlete) => ({
         athleteId: athlete.id, present: true,
-        metrics: Object.fromEntries(getTeamCriteria(team, "objective").map((name) => [name, 0])),
-        ratings: Object.fromEntries(getTeamCriteria(team, "qualitative").slice(0, 4).map((name) => [name, 5]))
+        ...(normalizeModality(team.modality) === "Futsal" ? {} : {
+          metrics: Object.fromEntries(getTeamCriteria(team, "objective").map((name) => [name, 0])),
+        })
       }))
     })),
     updateTrainingAthlete: ({ trainingId, athleteId, patch }) => mutate(() => api.updateTrainingAthlete(trainingId, athleteId, patch)),

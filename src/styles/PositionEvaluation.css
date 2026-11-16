@@ -1,0 +1,23 @@
+.position-evaluation, .position-profiles { min-width: 0; }
+.position-evaluation fieldset, .position-profiles fieldset { min-width: 0; border: 0; padding: 0; margin: 0; display: grid; gap: 1rem; }
+.position-evaluation legend, .position-profiles legend { padding: 0; margin-bottom: 1rem; font-weight: 600; }
+.position-evaluation input[type="number"] { min-width: 0; width: 100%; padding: .6rem .75rem; }
+.position-evaluation summary { cursor: pointer; padding-block: .7rem; font-weight: 600; }
+.position-evaluation .rating-grid label span { overflow-wrap: anywhere; }
+.position-profiles .criterion-row { grid-template-columns: minmax(0, 1fr) auto; }
+.position-profiles .criterion-row input, .position-profiles .criterion-row label { min-width: 0; width: 100%; }
+@media (max-width: 640px) {
+  .position-profiles .criterion-row { grid-template-columns: minmax(0, 1fr); }
+  .position-evaluation .metric-grid, .position-evaluation .rating-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (min-width: 768px) { .coach-settings .position-profiles .criteria-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+.coach-settings .position-profiles .criterion-row { grid-template-columns: minmax(0,1fr) auto; }
+@media (max-width: 640px) { .coach-settings .position-profiles .criterion-row { grid-template-columns: minmax(0,1fr); } }
+
+.evaluation-profile-navigation { display: flex; flex-wrap: wrap; gap: 12px; }
+.evaluation-criterion-group { padding: 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-strong); }
+.evaluation-criterion-group .section-heading { gap: 12px; align-items: center; }
+.evaluation-criterion-group .form-hint { margin: 0; }
+.evaluation-criterion-group .button { white-space: normal; }
+@media(max-width: 640px) { .evaluation-profile-navigation .button { flex: 1 1 100%; } .evaluation-criterion-group { padding: 14px; } }

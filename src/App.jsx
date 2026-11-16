@@ -16,6 +16,7 @@ const AthleteDashboard = lazy(() => import("./paginas/atleta/PainelAtleta.jsx").
 const AthletesPage = lazy(() => import("./paginas/treinador/AtletasTreinador.jsx").then((page) => ({ default: page.AthletesPage })));
 const TeamHome = lazy(() => import("./paginas/treinador/PrincipalTreinador.jsx").then((page) => ({ default: page.TeamHome })));
 const TrainingsPage = lazy(() => import("./paginas/treinador/treinamentosPagina.jsx").then((page) => ({ default: page.TrainingsPage })));
+const EvaluationSettingsPage = lazy(() => import("./paginas/treinador/ConfigsTreinador.jsx").then((page) => ({ default: page.EvaluationSettingsPage })));
 const SettingsPage = lazy(() => import("./paginas/treinador/ConfigsTreinador.jsx").then((page) => ({ default: page.SettingsPage })));
 
 const coachTabs = [
@@ -23,6 +24,7 @@ const coachTabs = [
   { id: "coach-athletes", label: "Atletas", icon: Users },
   { id: "coach-requests", label: "Solicitações", icon: ShieldCheck },
   { id: "coach-trainings", label: "Treinos", icon: ClipboardList },
+  { id: "coach-evaluations", label: "Avaliação de Treinos", icon: BarChart3 },
   { id: "coach-profile", label: "Perfil", icon: Activity },
   { id: "coach-settings", label: "Configurações", icon: Settings }
 ];
@@ -149,6 +151,9 @@ export function App() {
       )}
       {session.role === "coach" && activeView === "coach-trainings" && (
         <TrainingsPage actions={actions} state={state} team={activeTeam} />
+      )}
+      {session.role === "coach" && activeView === "coach-evaluations" && (
+        <EvaluationSettingsPage actions={actions} currentUser={currentUser} state={state} team={activeTeam} />
       )}
       {session.role === "coach" && activeView === "coach-settings" && (
         <SettingsPage key="team" actions={actions} currentUser={currentUser} onLogout={logout} state={state} team={activeTeam} />

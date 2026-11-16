@@ -1,69 +1,4 @@
-:root {
-  --bg: #090d14;
-  --bg-soft: #0d131d;
-
-  --surface: #121923;
-  --surface-strong: #0a0f17;
-  --surface-hover: #182230;
-
-  --ink: #f3f6fa;
-  --muted: #8995a5;
-  --muted-strong: #b8c2cf;
-
-  --line: rgba(135, 151, 173, 0.14);
-  --line-strong: rgba(75, 143, 255, 0.28);
-
-  --primary: #4b8fff;
-  --primary-strong: #2867d8;
-  --primary-soft: rgba(75, 143, 255, 0.10);
-  --primary-glow: rgba(75, 143, 255, 0.20);
-
-  --blue: #7aa7ff;
-  --blue-soft: rgba(122, 167, 255, 0.12);
-
-  --coral: #ff6767;
-  --coral-soft: rgba(255, 103, 103, 0.12);
-
-  --amber: #ffc857;
-  --success: #4b8fff;
-  --warning: #ffc857;
-  --error: #ff6767;
-
-  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.16);
-  --shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
-  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.22);
-  --glow: 0 6px 20px rgba(0, 0, 0, 0.16);
-
-  --transition: all 180ms ease;
-
-  --font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-
-  --text-xs: 0.75rem;
-  --text-sm: 0.875rem;
-  --text-base: 1rem;
-  --text-lg: 1.125rem;
-  --text-xl: 1.25rem;
-  --text-2xl: 1.5rem;
-  --text-3xl: 1.875rem;
-  --text-4xl: 2.25rem;
-
-  --space-xs: 0.25rem;
-  --space-sm: 0.5rem;
-  --space-md: 1rem;
-  --space-lg: 1.5rem;
-  --space-xl: 2rem;
-
-  --radius-sm: 8px;
-  --radius: 14px;
-  --radius-lg: 22px;
-
-  color: var(--ink);
-  font-family: var(--font-family);
-  font-size: var(--text-base);
-  line-height: 1.5;
-  background: var(--bg);
-  color-scheme: dark;
-}
+@import "./design-tokens.css";
 
 * {
   box-sizing: border-box;
@@ -72,13 +7,10 @@
 html { scrollbar-gutter: stable; }
 
 body {
-  min-width: 320px;
+  min-width: 0;
   margin: 0;
   min-height: 100vh;
-  background:
-    radial-gradient(circle at 15% 0%, rgba(75, 143, 255, 0.08), transparent 26%),
-    radial-gradient(circle at 100% 20%, rgba(83, 168, 255, 0.06), transparent 24%),
-    linear-gradient(180deg, #0b1018 0%, #090d14 46%, #070a0f 100%);
+  background: var(--bg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -94,8 +26,8 @@ textarea {
   border-radius: 12px;
   padding: 0.78rem 0.9rem;
   color: var(--ink);
-  background: rgba(7, 11, 17, 0.78);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  background: rgb(var(--navy-rgb) / 0.78);
+  box-shadow: inset 0 1px 0 rgb(var(--ice-rgb) / 0.02);
   transition: var(--transition);
 }
 
@@ -159,7 +91,7 @@ textarea:focus,
 button:focus-visible {
   outline: 0;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(91, 141, 239, 0.4);
+  box-shadow: var(--focus-ring);
 }
 
 .auth-page,
@@ -196,7 +128,7 @@ button:focus-visible {
   border: 0;
   border-radius: 8px;
   padding: 0.72rem 1rem;
-  color: #fff;
+  color: var(--on-primary);
   background: var(--primary);
   font-weight: 800;
 }
@@ -296,7 +228,7 @@ button:focus-visible {
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   background:
-    linear-gradient(180deg, rgba(255,255,255,0.025), transparent 38%),
+    linear-gradient(180deg, rgb(var(--ice-rgb) / 0.025), transparent 38%),
     var(--surface);
   box-shadow: var(--glow);
   transition: var(--transition);
@@ -306,8 +238,8 @@ button:focus-visible {
 .panel:hover,
 .team-card:hover,
 .empty-state:hover {
-  border-color: rgba(122, 167, 255, 0.18);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  border-color: rgb(var(--accent-rgb) / 0.18);
+  box-shadow: 0 8px 24px rgb(var(--navy-rgb) / 0.2);
 }
 
 .team-card {
@@ -319,7 +251,7 @@ button:focus-visible {
 }
 
 .team-card:hover {
-  border-color: rgba(75, 143, 255, 0.34);
+  border-color: rgb(var(--accent-rgb) / 0.34);
   transform: translateY(-4px);
 }
 
@@ -349,13 +281,13 @@ button:focus-visible {
 .athlete-card:hover,
 .training-card:hover {
   border-color: var(--primary);
-  background: rgba(16, 185, 129, 0.05);
+  background: rgb(var(--positive-rgb) / 0.05);
 }
 
 .athlete-card--active {
-  border-color: rgba(75, 143, 255, 0.4);
+  border-color: rgb(var(--accent-rgb) / 0.4);
   background:
-    linear-gradient(90deg, rgba(75, 143, 255, 0.11), rgba(75, 143, 255, 0.025)),
+    linear-gradient(90deg, rgb(var(--accent-rgb) / 0.11), rgb(var(--accent-rgb) / 0.025)),
     var(--surface);
   box-shadow: inset 3px 0 0 var(--primary);
 }
@@ -394,13 +326,13 @@ button:focus-visible {
 }
 
 .button--primary {
-  color: #07101d;
-  background: linear-gradient(135deg, var(--primary), #78aaff);
+  color: var(--bg);
+  background: linear-gradient(135deg, var(--primary), var(--primary));
   box-shadow: none;
 }
 
 .button--primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #5b9cff, #91b8ff);
+  background: linear-gradient(135deg, var(--primary), var(--primary));
   box-shadow: none;
   transform: translateY(-1px);
 }
@@ -411,7 +343,7 @@ button:focus-visible {
 }
 
 .button--secondary:hover:not(:disabled) {
-  background: rgba(59, 130, 246, 0.25);
+  background: rgb(var(--accent-rgb) / 0.25);
 }
 
 .button--ghost {
@@ -431,7 +363,7 @@ button:focus-visible {
 }
 
 .button--danger:hover:not(:disabled) {
-  background: rgba(239, 68, 68, 0.25);
+  background: rgb(var(--ice-rgb) / 0.25);
 }
 
 .eyebrow {
@@ -454,10 +386,14 @@ button:focus-visible {
 }
 
 .form-feedback--success {
-  border-color: var(--primary);
-  color: var(--primary);
-  background: var(--primary-soft);
+  border-color: var(--success);
+  color: var(--success);
+  background: var(--success-soft);
 }
+
+.form-feedback::before { content: "Atenção · "; font-weight: 800; }
+.form-feedback--success::before { content: "Concluído · "; }
+.form-feedback--error { border-style: dashed; }
 
 .empty-content {
   padding: 1rem 0;
@@ -541,7 +477,7 @@ button:focus-visible {
   gap: 0.8rem;
   border-bottom: 1px solid var(--line);
   padding: 0.8rem;
-  background: rgba(9, 13, 20, 0.88);
+  background: rgb(var(--navy-rgb) / 0.88);
   backdrop-filter: blur(18px);
   transition: var(--transition);
 }
@@ -584,9 +520,9 @@ button:focus-visible {
 }
 
 .nav-item--active {
-  border-color: rgba(75, 143, 255, 0.22);
+  border-color: rgb(var(--accent-rgb) / 0.22);
   color: var(--primary);
-  background: linear-gradient(90deg, rgba(75, 143, 255, 0.12), rgba(75, 143, 255, 0.04));
+  background: linear-gradient(90deg, rgb(var(--accent-rgb) / 0.12), rgb(var(--accent-rgb) / 0.04));
   box-shadow: inset 3px 0 0 var(--primary);
 }
 
@@ -750,16 +686,16 @@ button:focus-visible {
   width: 44px;
   height: 44px;
   flex: 0 0 44px;
-  border: 1px solid rgba(75, 143, 255, 0.14);
+  border: 1px solid rgb(var(--accent-rgb) / 0.14);
   border-radius: 13px;
   color: var(--primary);
-  background: rgba(75, 143, 255, 0.08);
+  background: rgb(var(--accent-rgb) / 0.08);
   transition: var(--transition);
 }
 
 .kpi-card:hover .kpi-card__icon {
   background: var(--primary);
-  color: #fff;
+  color: var(--ink);
   transform: scale(1.1);
 }
 
@@ -924,10 +860,10 @@ button:focus-visible {
   width: 44px;
   height: 44px;
   flex: 0 0 44px;
-  border: 1px solid rgba(75, 143, 255, 0.24);
+  border: 1px solid rgb(var(--accent-rgb) / 0.24);
   border-radius: 14px;
-  color: #07101d;
-  background: linear-gradient(135deg, var(--primary), #7ba9ff);
+  color: var(--bg);
+  background: linear-gradient(135deg, var(--primary), var(--primary));
   font-weight: 950;
   font-size: var(--text-lg);
   transition: var(--transition);
@@ -1146,7 +1082,7 @@ button:focus-visible {
 
 .metric-stepper button:hover {
   background: var(--primary);
-  color: #fff;
+  color: var(--ink);
   transform: scale(1.05);
 }
 
@@ -1251,7 +1187,7 @@ button:focus-visible {
   width: 6px;
   height: calc(100% - 2rem);
   border-radius: 999px;
-  background: linear-gradient(180deg, var(--primary), rgba(75, 143, 255, 0.12));
+  background: linear-gradient(180deg, var(--primary), rgb(var(--accent-rgb) / 0.12));
 }
 
 .timeline small {
@@ -1304,7 +1240,7 @@ button:focus-visible {
 
 .linked-team:hover {
   border-color: var(--primary);
-  background: rgba(16, 185, 129, 0.05);
+  background: rgb(var(--positive-rgb) / 0.05);
 }
 
 /* Componentes de suporte */
@@ -1339,7 +1275,7 @@ button:focus-visible {
 
 .sync-box:hover {
   border-color: var(--primary);
-  background: rgba(16, 185, 129, 0.05);
+  background: rgb(var(--positive-rgb) / 0.05);
 }
 
 .privacy-box {
@@ -1566,7 +1502,7 @@ summary:focus-visible { outline: 2px solid var(--primary); outline-offset: 4px; 
 /* ===== WebKore visual refresh ===== */
 
 ::selection {
-  color: #07101d;
+  color: var(--bg);
   background: var(--primary);
 }
 
@@ -1596,7 +1532,7 @@ a {
 }
 
 .panel {
-  border-color: rgba(135, 151, 173, 0.12);
+  border-color: rgb(var(--ice-rgb) / 0.12);
 }
 
 .section-heading h2,
@@ -1622,8 +1558,8 @@ a {
 
 .team-card > span,
 .timeline small {
-  border: 1px solid rgba(75, 143, 255, 0.12);
-  background: rgba(75, 143, 255, 0.07);
+  border: 1px solid rgb(var(--accent-rgb) / 0.12);
+  background: rgb(var(--accent-rgb) / 0.07);
 }
 
 .last-training strong {
@@ -1631,12 +1567,12 @@ a {
 }
 
 .metric-stepper {
-  border-color: rgba(135, 151, 173, 0.12);
-  background: rgba(7, 11, 17, 0.62);
+  border-color: rgb(var(--ice-rgb) / 0.12);
+  background: rgb(var(--navy-rgb) / 0.62);
 }
 
 .metric-stepper button {
-  border: 1px solid rgba(75, 143, 255, 0.12);
+  border: 1px solid rgb(var(--accent-rgb) / 0.12);
 }
 
 .rating-grid input[type="range"] {
@@ -1646,13 +1582,13 @@ a {
 .search-input {
   min-height: 50px;
   border-radius: 14px;
-  background: rgba(7, 11, 17, 0.72);
+  background: rgb(var(--navy-rgb) / 0.72);
 }
 
 .privacy-box {
   background:
-    linear-gradient(135deg, rgba(75, 143, 255, 0.05), transparent 45%),
-    rgba(7, 11, 17, 0.68);
+    linear-gradient(135deg, rgb(var(--accent-rgb) / 0.05), transparent 45%),
+    rgb(var(--navy-rgb) / 0.68);
 }
 
 .auth-form {
@@ -1668,9 +1604,9 @@ a {
 @media (min-width: 1060px) {
   .sidebar {
     background:
-      linear-gradient(180deg, rgba(75, 143, 255, 0.025), transparent 22%),
-      rgba(8, 12, 18, 0.94);
-    box-shadow: 6px 0 18px rgba(0, 0, 0, 0.12);
+      linear-gradient(180deg, rgb(var(--accent-rgb) / 0.025), transparent 22%),
+      rgb(var(--navy-rgb) / 0.94);
+    box-shadow: 6px 0 18px rgb(var(--navy-rgb) / 0.12);
   }
 
   .sidebar .brand {
@@ -1710,47 +1646,13 @@ a {
 
 /* ===== Ajuste final: WebKore clean / esportivo ===== */
 
-:root {
-  --bg: #0c1016;
-  --bg-soft: #10151d;
-
-  --surface: #151b24;
-  --surface-strong: #10161e;
-  --surface-hover: #1a222d;
-
-  --ink: #edf1f7;
-  --muted: #8f9aaa;
-  --muted-strong: #b2bbc7;
-
-  --line: #252e3a;
-  --line-strong: #344255;
-
-  --primary: #5b8def;
-  --primary-strong: #4777d2;
-  --primary-soft: rgba(91, 141, 239, 0.10);
-
-  --blue: #5b8def;
-  --blue-soft: rgba(91, 141, 239, 0.10);
-
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.12);
-  --shadow: 0 6px 18px rgba(0, 0, 0, 0.14);
-  --shadow-lg: 0 10px 26px rgba(0, 0, 0, 0.16);
-  --glow: none;
-
-  --radius-sm: 6px;
-  --radius: 10px;
-  --radius-lg: 14px;
-}
-
 body {
   background: var(--bg);
 }
 
 .auth-page,
 .lobby-page {
-  background:
-    linear-gradient(180deg, rgba(91, 141, 239, 0.025), transparent 280px),
-    var(--bg);
+  background: var(--bg);
 }
 
 .auth-form,
@@ -1790,7 +1692,7 @@ body {
 }
 
 .team-card:hover {
-  border-color: #344255;
+  border-color: var(--line-strong);
   background: var(--surface-hover);
   box-shadow: var(--shadow);
   transform: translateY(-2px);
@@ -1803,8 +1705,8 @@ body {
 .team-card > span {
   border: 0;
   border-radius: 6px;
-  color: #9bb9f7;
-  background: #1c2940;
+  color: var(--primary);
+  background: var(--institutional);
 }
 
 .kpi-card {
@@ -1815,8 +1717,8 @@ body {
 }
 
 .kpi-card:hover {
-  border-color: #344255;
-  background: #171e28;
+  border-color: var(--line-strong);
+  background: var(--surface-hover);
   transform: none;
 }
 
@@ -1830,24 +1732,26 @@ body {
   flex-basis: 40px;
   border: 0;
   border-radius: 9px;
-  color: #8eb2fa;
-  background: #1c2940;
+  color: var(--primary);
+  background: var(--institutional);
 }
 
 .kpi-card:hover .kpi-card__icon {
-  color: #a9c4fb;
-  background: #22314c;
+  color: var(--primary);
+  background: var(--surface-hover);
   transform: none;
 }
 
 .kpi-card strong {
   font-size: clamp(1.35rem, 3vw, 1.8rem);
   letter-spacing: -0.03em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
 }
 
 .sidebar {
   border-color: var(--line);
-  background: #0f141c;
+  background: var(--navigation);
   backdrop-filter: none;
   box-shadow: none;
 }
@@ -1864,15 +1768,15 @@ body {
 
 .nav-item:hover {
   color: var(--ink);
-  background: #171e28;
+  background: var(--surface-hover);
   transform: none;
 }
 
 .nav-item--active {
-  border-color: transparent;
-  color: #a8c3fa;
-  background: #1a2639;
-  box-shadow: none;
+  border-color: var(--line-strong);
+  color: var(--primary);
+  background: var(--selected);
+  box-shadow: inset 3px 0 0 var(--primary);
 }
 
 .button {
@@ -1887,7 +1791,7 @@ body {
 }
 
 .button--primary {
-  color: #ffffff;
+  color: var(--on-primary);
   background: var(--primary);
   box-shadow: none;
 }
@@ -1899,12 +1803,13 @@ body {
 }
 
 .button--secondary {
-  color: #a8c3fa;
-  background: #1a2639;
+  color: var(--ink);
+  background: var(--institutional);
+  border-color: var(--line);
 }
 
 .button--secondary:hover:not(:disabled) {
-  background: #21304a;
+  background: var(--surface-hover);
 }
 
 .button--ghost {
@@ -1916,16 +1821,18 @@ body {
 .button--ghost:hover:not(:disabled) {
   color: var(--ink);
   border-color: var(--line-strong);
-  background: #171e28;
+  background: var(--surface-hover);
 }
 
 .button--danger {
-  color: #ff8b8b;
-  background: rgba(239, 68, 68, 0.09);
+  color: var(--error);
+  background: var(--coral-soft);
+  border-color: var(--error);
+  border-style: dashed;
 }
 
 .button--danger:hover:not(:disabled) {
-  background: rgba(239, 68, 68, 0.14);
+  background: var(--error-hover);
 }
 
 input,
@@ -1935,14 +1842,14 @@ textarea {
   border: 1px solid var(--line);
   border-radius: 8px;
   color: var(--ink);
-  background: #0f141b;
+  background: var(--surface-strong);
   box-shadow: none;
 }
 
 input:hover,
 select:hover,
 textarea:hover {
-  border-color: #3a4656;
+  border-color: var(--line-strong);
 }
 
 input:focus,
@@ -1950,8 +1857,8 @@ select:focus,
 textarea:focus,
 button:focus-visible {
   outline: none;
-  border-color: #527fcf;
-  box-shadow: 0 0 0 3px rgba(91, 141, 239, 0.4);
+  border-color: var(--primary);
+  box-shadow: var(--focus-ring);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1965,12 +1872,28 @@ button:focus-visible {
 }
 
 label {
-  color: #9ba6b5;
+  color: var(--muted);
   font-weight: 650;
 }
 
+input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="true"] {
+  border-color: var(--error);
+  border-style: dashed;
+}
+
+button:focus-visible, a:focus-visible, summary:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+
+input:disabled, select:disabled, textarea:disabled { opacity: .65; cursor: not-allowed; }
+input[type="checkbox"], input[type="range"], progress { accent-color: var(--primary); }
+input::placeholder, textarea::placeholder { opacity: 1; }
+a[href]:hover { color: var(--primary-strong); }
+.athlete-performance__value { color: var(--ink); font-variant-numeric: tabular-nums; }
+
 .eyebrow {
-  color: #7fa4ed;
+  color: var(--primary);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -1986,7 +1909,7 @@ label {
 .empty-state {
   border: 1px solid var(--line);
   border-radius: 10px;
-  background: #121820;
+  background: var(--surface);
   box-shadow: none;
   backdrop-filter: none;
 }
@@ -1996,26 +1919,26 @@ label {
 .training-card:hover,
 .linked-team:hover,
 .team-result:hover {
-  border-color: #344255;
-  background: #171e28;
+  border-color: var(--line-strong);
+  background: var(--surface-hover);
   box-shadow: none;
 }
 
 .athlete-card--active {
-  border-color: #466cae;
-  background: #19243a;
+  border-color: var(--primary);
+  background: var(--selected);
   box-shadow: inset 2px 0 0 var(--primary);
 }
 
 .athlete-card small {
-  color: #91aff0;
+  color: var(--primary);
 }
 
 .avatar {
   border: 0;
   border-radius: 10px;
-  color: #dce8ff;
-  background: #263a5d;
+  color: var(--ink);
+  background: var(--institutional);
   box-shadow: none;
 }
 
@@ -2037,36 +1960,36 @@ label {
   top: 0.8rem;
   width: 2px;
   height: calc(100% - 1.6rem);
-  background: #466cae;
+  background: var(--primary);
 }
 
 .timeline small {
   border: 0;
-  color: #9bb9f7;
-  background: #1a2639;
+  color: var(--primary);
+  background: var(--institutional);
 }
 
 .metric-stepper {
   border: 1px solid var(--line);
   border-radius: 9px;
-  background: #10161e;
+  background: var(--surface-strong);
 }
 
 .metric-stepper:hover {
-  border-color: #344255;
-  background: #121a24;
+  border-color: var(--line-strong);
+  background: var(--surface-hover);
 }
 
 .metric-stepper button {
   border: 0;
   border-radius: 6px;
-  color: #a8c3fa;
-  background: #1a2639;
+  color: var(--ink);
+  background: var(--institutional);
 }
 
 .metric-stepper button:hover {
-  color: #ffffff;
-  background: #315894;
+  color: var(--on-primary);
+  background: var(--primary);
   transform: none;
 }
 
@@ -2074,18 +1997,18 @@ label {
   min-height: 46px;
   border: 1px solid var(--line);
   border-radius: 9px;
-  background: #0f141b;
+  background: var(--surface-strong);
 }
 
 .search-input:hover,
 .search-input:focus-within {
-  border-color: #466cae;
-  background: #0f141b;
+  border-color: var(--primary);
+  background: var(--surface-strong);
 }
 
 .privacy-box,
 .sync-box {
-  background: #10161e;
+  background: var(--surface-strong);
 }
 
 .form-feedback {
@@ -2120,7 +2043,7 @@ label {
   }
 
   .sidebar {
-    background: #0e131a;
+    background: var(--navigation);
     box-shadow: none;
   }
 

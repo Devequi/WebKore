@@ -1,3 +1,4 @@
+import { goalkeeperFields, goalkeeperIndicators } from "../../../shared/evaluations.js";
 import { evaluationFromRatings, getTeamCriteria, normalizeModality, qualitativeFields } from "../../../shared/criteria.js";
 import { HttpError } from "./validacao.js";
 
@@ -8,12 +9,15 @@ const trainingTypeToApi = {
   Misto: "MIXED",
   PHYSICAL: "PHYSICAL",
   COLLECTIVE: "COLLECTIVE",
+  Partida: "MATCH",
+  MATCH: "MATCH",
   MIXED: "MIXED"
 };
 
 const trainingTypeToClient = {
   PHYSICAL: "Físico",
   COLLECTIVE: "Coletivo",
+  MATCH: "Partida",
   MIXED: "Misto"
 };
 
@@ -62,6 +66,7 @@ export function toClientTeam(team) {
     coachId: team.coachId,
     objectiveCriteria: getTeamCriteria(team, "objective"),
     qualitativeCriteria: getTeamCriteria(team, "qualitative"),
+    evaluationProfiles: team.evaluationProfiles || [],
     athletes: team.memberships
       ?.filter((membership) => membership.status === "APPROVED")
       .map((membership) => toPublicUser(membership.athlete, membership)),
@@ -99,8 +104,19 @@ export function toClientTraining(training, team) {
         {
           id: record.id,
           present: record.present,
+          modality: record.evaluation?.modality ?? record.modalitySnapshot ?? null,
+          position: record.evaluation?.position ?? record.positionSnapshot ?? null,
+          role: record.evaluation?.role ?? record.roleSnapshot ?? null,
+          evaluationSource: record.evaluation?.source || (record.evaluation ? "LEGACY" : null),
+          finalScore: record.evaluation?.finalScore ?? null,
+          measurementsInitialized: record.measurementsInitialized ?? false,
+          measurements: (record.measurements || []).map((item) => ({ criterionId: item.criterionId, name: item.name, kind: "QUANTITATIVE", role: item.role, value: item.value, order: item.order })),
+          criteriaSnapshot: record.evaluation?.criteria || [],
+          goalkeeperStats: record.goalkeeperStats ? Object.fromEntries(Object.keys(goalkeeperFields).map((key) => [key, record.goalkeeperStats[key] ?? null])) : null,
+          goalkeeperIndicators: record.goalkeeperStats ? goalkeeperIndicators(record.goalkeeperStats) : null,
           metrics: Object.fromEntries((record.metrics || []).map((metric) => [metric.name, metric.value])),
-          ratings: Object.fromEntries(
+          ratings: ["WEIGHTED", "AVERAGE"].includes(record.evaluation?.source)
+            ? Object.fromEntries((record.evaluation.criteria || []).map((item) => [item.name, item.score])) : Object.fromEntries(
             criteria.map((name, index) => [
               name,
               record.evaluation?.[qualitativeFields[index]]

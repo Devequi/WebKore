@@ -1,5 +1,6 @@
+import { criteriaFor, PROFILE_VERSION, validateTypedCriteria } from "../../../shared/evaluations.js";
 import { Router } from "express";
-import { randomBytes } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
 
 import { requireAuth } from "../intermediario/autenticacao.js";
 import { prisma } from "../lib/prisma.js";
@@ -58,14 +59,19 @@ teamsRouter.post("/", async (request, response) => {
     const normalizedName = text(name, "Nome da equipe");
     const code = `WK-TEAM-${randomBytes(8).toString("hex").toUpperCase()}`;
 
+    const teamId = randomUUID();
     const team = await prisma.team.create({
       data: {
+        id: teamId,
         name: normalizedName,
         modality,
         code,
         coachId: request.user.id,
         objectiveCriteria: metricCatalog[modality] || metricCatalog.Futsal,
-        qualitativeCriteria: defaultQualitativeCriteria
+        qualitativeCriteria: defaultQualitativeCriteria,
+        ...(modality === "Futsal" ? { evaluationProfiles: { create: ["GOALKEEPER", "OUTFIELD"].map((role) => ({
+          modality, role, schemaVersion: PROFILE_VERSION, criteria: { create: ["QUALITATIVE", "QUANTITATIVE"].flatMap((kind) => criteriaFor({ id: teamId, modality }, role, kind)) }
+        })) } } : {})
       }
     });
 
@@ -216,7 +222,7 @@ teamsRouter.patch(
 teamsRouter.patch("/:teamId", async (request, response) => {
   try {
     const { teamId } = request.params;
-    const { modality: rawModality, name, objectiveCriteria, qualitativeCriteria, expectedUpdatedAt } = request.body;
+    const { modality: rawModality, name, objectiveCriteria, qualitativeCriteria, evaluationProfiles, expectedUpdatedAt } = request.body;
     const modality = rawModality === undefined ? undefined : normalizeModality(rawModality);
 
     if (request.user.role !== "COACH") {
@@ -234,6 +240,18 @@ teamsRouter.patch("/:teamId", async (request, response) => {
       return response.status(404).json({ message: "Equipe nao encontrada." });
     }
 
+    let profiles;
+    if (evaluationProfiles !== undefined) {
+      try {
+        if (!Array.isArray(evaluationProfiles) || evaluationProfiles.length !== 2 ||
+            new Set(evaluationProfiles.map((profile) => profile?.role)).size !== 2 ||
+            evaluationProfiles.some((profile) => profile?.modality !== "Futsal" || !["GOALKEEPER", "OUTFIELD"].includes(profile.role)) ||
+            (modality || normalizeModality(team.modality)) !== "Futsal") throw new Error("Informe os dois perfis: Jogadores de Linha e Goleiros.");
+        profiles = evaluationProfiles.map((profile) => ({ role: profile.role, criteria: validateTypedCriteria(profile.criteria) }));
+        const ids = profiles.flatMap((profile) => profile.criteria.map((item) => item.id));
+        if (new Set(ids).size !== ids.length) throw new Error("Cada critério deve ter um identificador exclusivo.");
+      } catch (error) { throw new HttpError(400, error.message); }
+    }
     const data = {};
     if (name !== undefined && (typeof name !== "string" || !name.trim())) return response.status(400).json({ message: "Informe o nome da equipe." });
     if (modality !== undefined && (typeof modality !== "string" || !modality.trim())) return response.status(400).json({ message: "Informe a modalidade da equipe." });
@@ -270,6 +288,30 @@ teamsRouter.patch("/:teamId", async (request, response) => {
               where: { name: previousName, record: { training: { teamId } } },
               data: { name: nextName }
             });
+          }
+        }
+      }
+      for (const profile of profiles || []) {
+        const existingProfile = await transaction.evaluationProfile.findUnique({
+          where: { teamId_modality_role: { teamId, modality: "Futsal", role: profile.role } }, include: { criteria: true }
+        });
+        const used = await transaction.profileCriterion.findMany({ where: { id: { in: profile.criteria.map((item) => item.id) } }, include: { profile: true } });
+        if (used.some((item) => item.profile.teamId !== teamId || item.profile.role !== profile.role || item.profile.modality !== "Futsal" || item.kind !== profile.criteria.find((criterion) => criterion.id === item.id)?.kind)) {
+          throw new HttpError(400, "Um critério não pode ser transferido de perfil, equipe ou tipo.");
+        }
+        const saved = await transaction.evaluationProfile.upsert({
+          where: { teamId_modality_role: { teamId, modality: "Futsal", role: profile.role } },
+          create: { teamId, modality: "Futsal", role: profile.role, schemaVersion: PROFILE_VERSION },
+          update: { schemaVersion: PROFILE_VERSION, ...(existingProfile?.schemaVersion === 1 ? { legacyCriteria: existingProfile.criteria } : {}) }
+        });
+        // Soft removal keeps each ID tied to its original profile and type.
+        await transaction.profileCriterion.updateMany({ where: { profileId: saved.id, id: { notIn: profile.criteria.map((item) => item.id) } }, data: { archived: true } });
+        for (const item of profile.criteria) {
+          if (used.some((previous) => previous.id === item.id)) {
+            await transaction.profileCriterion.update({ where: { id: item.id }, data: { name: item.name, order: item.order, weight: item.weight, archived: false } });
+          } else {
+            // A concurrent attempt to reuse this ID in another team must conflict, never update its row.
+            await transaction.profileCriterion.create({ data: { ...item, profileId: saved.id } });
           }
         }
       }

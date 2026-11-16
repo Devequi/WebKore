@@ -1,11 +1,13 @@
 import bcrypt from "bcryptjs";
 import { Router } from "express";
 import jwt from "jsonwebtoken";
+import { positionRankings } from "../../../shared/evaluations.js";
+import { normalizeModality } from "../../../shared/criteria.js";
 
 import { requireAuth } from "../intermediario/autenticacao.js";
 import { prisma } from "../lib/prisma.js";
 import { getJwtSecret } from "../lib/environment.js";
-import { publicUserSelect, teamRelations, visibleRecords, visibleTeams, visibleTrainings } from "../lib/acesso.js";
+import { profileInclude, publicUserSelect, teamRelations, visibleRecords, visibleTeams, visibleTrainings } from "../lib/acesso.js";
 import { birthDate as validateBirthDate, email as validateEmail, HttpError, password as validatePassword, sendError, text } from "../lib/validacao.js";
 import {
   normalizeRole,
@@ -61,7 +63,7 @@ async function buildSessionPayload(userId) {
   const trainings = await prisma.training.findMany({
     where: visibleTrainings(user),
     include: {
-      team: true,
+      team: { include: profileInclude },
       records: visibleRecords(user)
     },
     orderBy: {
@@ -69,13 +71,21 @@ async function buildSessionPayload(userId) {
     }
   });
 
+  const clientTrainings = trainings.map((training) => toClientTraining(training, training.team));
+  const teamRankings = user.role === "COACH" ? Object.fromEntries(teams
+    .filter((team) => normalizeModality(team.modality) === "Futsal")
+    .map((team) => [team.id, positionRankings(
+      team.memberships.filter((membership) => membership.status === "APPROVED").map((membership) => toPublicUser(membership.athlete, membership)),
+      clientTrainings.filter((training) => training.teamId === team.id)
+    )])) : {};
   return {
     user: toPublicUser(user),
     state: {
       users: Array.from(visibleUserMap.values()),
       teams: teams.map(toClientTeam),
       memberships: memberships.map(toClientMembership),
-      trainings: trainings.map((training) => toClientTraining(training, training.team))
+      trainings: clientTrainings,
+      teamRankings
     }
   };
 }

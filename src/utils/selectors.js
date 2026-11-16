@@ -1,4 +1,7 @@
+import { recordScore, positionRankings } from "../../shared/evaluations.js";
+import { normalizeModality } from "../../shared/criteria.js";
 import { average } from "./formatters.js";
+import { getBestAthlete } from "./athleteHighlights.js";
 
 export function getCoachTeams(state, coachId) {
   return state.teams.filter((team) => team.coachId === coachId);
@@ -42,23 +45,19 @@ export function getAthleteTrainings(state, teamId, athleteId) {
 }
 
 export function getRecordAverage(record) {
-  return average(Object.values(record?.ratings || {}));
+  return recordScore(record) ?? 0;
 }
 
 export function getTeamStats(state, teamId) {
   const athletes = getApprovedAthletes(state, teamId);
   const trainings = getTeamTrainings(state, teamId);
   const presenceValues = trainings.flatMap((training) =>
-    Object.values(training.athletes || {}).filter((record) => typeof record.present === "boolean").map((record) => (record.present ? 100 : 0))
+    Object.values(training.athletes || {}).filter((record) => typeof record?.present === "boolean").map((record) => (record.present ? 100 : 0))
   );
-  const ratingValues = trainings.flatMap((training) => Object.values(training.athletes || {}).filter((record) => Object.values(record.ratings || {}).some(Number.isFinite)).map(getRecordAverage));
-  const bestAthlete = athletes
-    .filter((athlete) => getAthleteStats(state, teamId, athlete.id).evaluationCount > 0)
-    .map((athlete) => ({
-      ...athlete,
-      score: getAthleteStats(state, teamId, athlete.id).averageScore
-    }))
-    .sort((a, b) => b.score - a.score)[0];
+  const ratingValues = trainings.flatMap((training) => Object.values(training.athletes || {}).filter((record) => Object.values(record?.ratings || {}).some(Number.isFinite)).map(getRecordAverage));
+  const rankings = normalizeModality(state.teams?.find((team) => team.id === teamId)?.modality) === "Futsal"
+    ? state.teamRankings?.[teamId] ?? positionRankings(athletes, trainings) : null;
+  const bestAthlete = rankings ? null : getBestAthlete(athletes, trainings);
 
   return {
     athletesCount: athletes.length,
@@ -66,6 +65,7 @@ export function getTeamStats(state, teamId) {
     presenceAverage: average(presenceValues),
     averageScore: average(ratingValues),
     bestAthlete,
+    rankings,
     lastTraining: trainings[0]
   };
 }

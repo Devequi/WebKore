@@ -12,7 +12,7 @@
 .athletes-layout .roster-search { width: 100%; min-width: 0; gap: 0.5rem; margin-bottom: 1rem; }
 .athletes-layout .roster-search > svg { flex-shrink: 0; color: var(--muted); }
 .athletes-layout .roster-search input { width: 100%; min-width: 0; font-size: 0.875rem; }
-.athletes-layout .roster-search:focus-within { box-shadow: 0 0 0 2px rgba(75, 143, 255, 0.15); }
+.athletes-layout .roster-search:focus-within { box-shadow: 0 0 0 2px rgb(var(--accent-rgb) / 0.15); }
 .athletes-layout .roster-search input:focus { outline: none; box-shadow: none; }
 .athletes-layout .roster-search input::-webkit-search-cancel-button { appearance: none; }
 .athletes-layout .roster-search .roster-search__clear { display: grid; place-items: center; flex: 0 0 32px; width: 32px; height: 32px; padding: 0; border: 0; border-radius: 6px; color: var(--muted-strong); background: transparent; cursor: pointer; }

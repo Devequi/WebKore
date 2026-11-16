@@ -215,7 +215,7 @@
 
 .metric-stepper button:hover {
   background: var(--primary);
-  color: #fff;
+  color: var(--on-primary);
 }
 
 .rating-grid {
@@ -409,3 +409,7 @@
     gap: 0.85rem;
   }
 }
+.training-card { cursor: pointer; }
+.training-card__chevron { flex-shrink: 0; transition: transform 220ms ease; }
+.training-card__summary[aria-expanded="true"] .training-card__chevron { transform: rotate(180deg); }
+@media (prefers-reduced-motion: reduce) { .training-card__chevron { transition: none; } }

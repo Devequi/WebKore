@@ -14,9 +14,9 @@
 .requests-panel .request-card > .avatar + div span { color: var(--muted); font-size: 0.875rem; }
 .requests-panel .request-card__actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0; }
 .requests-panel .request-card .button { min-height: 44px; padding: 0.5rem 0.85rem; }
-.requests-panel .request-card__accept.button { border-color: #79a6ff; color: #fff; background: #365fae; }
-.requests-panel .request-card__accept.button:hover:not(:disabled) { border-color: #9bbcff; color: #fff; background: #4777d2; }
-.requests-panel .request-card__accept.button:focus-visible { border-color: #b8ceff; box-shadow: 0 0 0 3px rgba(91, 141, 239, 0.45); }
+.requests-panel .request-card__accept.button { border-color: var(--success); color: var(--success); background: var(--success-soft); }
+.requests-panel .request-card__accept.button:hover:not(:disabled) { border-color: var(--success); color: var(--success); background: var(--success-hover); }
+.requests-panel .request-card__accept.button:focus-visible { border-color: var(--primary); box-shadow: var(--focus-ring); }
 @media (max-width: 640px) {
   .requests-panel .request-card { grid-template-columns: 44px minmax(0, 1fr); padding: 0.75rem; }
   .requests-panel .request-card__actions { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }

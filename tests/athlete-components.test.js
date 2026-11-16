@@ -13,6 +13,10 @@ let TeamHome;
 let SettingsPage;
 let PositionField;
 let AthletesPage;
+let TrainingHistory;
+let TrainingsPage;
+let CoachLobby;
+let AthleteLobby;
 before(async () => {
   server = await createServer({ configFile: false, plugins: [react()], appType: "custom",
     server: { middlewareMode: true, hmr: false, watch: null } });
@@ -22,10 +26,53 @@ before(async () => {
   ({ SettingsPage } = await server.ssrLoadModule("/src/paginas/treinador/ConfigsTreinador.jsx"));
   ({ PositionField } = await server.ssrLoadModule("/src/componentes/ui/CampoPosicao.jsx"));
   ({ AthletesPage } = await server.ssrLoadModule("/src/paginas/treinador/AtletasTreinador.jsx"));
+  ({ TrainingHistory } = await server.ssrLoadModule("/src/componentes/charts/HistoricoTreinos.jsx"));
+  ({ TrainingsPage } = await server.ssrLoadModule("/src/paginas/treinador/treinamentosPagina.jsx"));
+  ({ CoachLobby } = await server.ssrLoadModule("/src/paginas/treinador/LobbyTreinador.jsx"));
+  ({ AthleteLobby } = await server.ssrLoadModule("/src/paginas/atleta/Lobby.jsx"));
 });
 after(async () => { await server?.close(); });
 
 const render = (component, props) => renderToStaticMarkup(createElement(component, props));
+
+test("lobbies compartilham estrutura ampla, separam criação/entrada e preservam ações por perfil", () => {
+  const currentUser = { id: "coach", name: "Treinador" };
+  const teams = [{ id: "t", name: "Equipe", coachId: "coach", code: "WK-TEST", modality: "Futsal" }];
+  const state = { users: [currentUser], memberships: [{ athleteId: "a", teamId: "t", status: "approved" }] };
+  const coach = render(CoachLobby, { teams, state, currentUser, actions: {} });
+  assert.match(coach, /team-lobby coach-lobby/);
+  assert.match(coach, /Minhas equipes/);
+  assert.match(coach, /class="lobby-create-panel" hidden=""/);
+  assert.match(coach, /Copiar/);
+  assert.match(coach, /Gerenciar/);
+  for (const label of ["Equipes", "Atletas", "Modalidades"]) assert.ok(coach.includes(`<p>${label}</p><strong>1</strong>`));
+  const athlete = render(AthleteLobby, { teams, state, currentUser });
+  assert.match(athlete, /team-lobby athlete-lobby/);
+  assert.match(athlete, /class="lobby-join"/);
+  assert.match(athlete, /Minhas equipes/);
+  assert.match(athlete, /Acessar dados/);
+  assert.doesNotMatch(athlete, /Gerenciar|Criar equipe|Copiar/);
+  assert.match(render(AthleteLobby, { teams: [], state, currentUser }), /Nenhuma equipe aprovada/);
+  assert.match(render(CoachLobby, { teams: [], state, currentUser, actions: {} }), /Nenhuma equipe criada/);
+});
+
+test("gráficos, resumo, histórico e critérios usam clique no card sem controles antigos", () => {
+  const team = { id: "t", name: "Equipe", modality: "Futsal", objectiveCriteria: [], qualitativeCriteria: [] };
+  const state = { teams: [team], users: [], memberships: [], trainings: [] };
+  const pages = [
+    render(EvolutionChart, {}),
+    render(PerformanceSummary, { performance: athletePerformance([], "a") }),
+    render(TrainingHistory, { trainings: [], athleteId: "a" }),
+    render(SettingsPage, { view: "evaluations", team, state, currentUser: { id: "c", name: "Treinador", email: "teste@example.invalid" }, actions: {} })
+  ];
+  for (const html of pages) {
+    assert.match(html, /collapsible-panel__heading-toggle/);
+    assert.match(html, /aria-expanded="true"/);
+    assert.doesNotMatch(html, /Retrair|Expandir|Recolher critérios|criteria-toggle|collapsible-panel__toggle"/);
+  }
+  const training = render(TrainingsPage, { team, state, actions: {} });
+  assert.doesNotMatch(training, /Retrair|Expandir/);
+});
 test("posição usa select de quatro opções, carrega seleção salva e preserva valor antigo no aviso", () => {
   const props = { modality: " FÚTSAL ", value: "Pivô", onChange() {} };
   const html = render(PositionField, props);
@@ -92,6 +139,45 @@ test("dashboard do treinador usa gráfico compartilhado e distingue equipe sem n
   assert.match(html, /Desempenho da equipe/);
   assert.match(html, /Sem avaliação/);
   assert.doesNotMatch(html, /Destaque da equipe/);
+  assert.match(html, /Melhor atleta/);
+  assert.match(html, /Ainda não há dados suficientes para definir o melhor atleta/);
+  assert.match(html, /Sem destaque definido para este treino/);
+});
+
+test("último treino mostra destaque da sessão e melhor atleta ocupa um card independente", () => {
+  const team = { id: "t", name: "Equipe" };
+  const state = { users: [{ id: "a", name: "Ana" }, { id: "b", name: "Bruno" }],
+    memberships: ["a", "b"].map((id) => ({ athleteId: id, teamId: "t", status: "approved", position: "Ala" })),
+    trainings: [
+      { id: "1", teamId: "t", date: "2026-10-01", athletes: { a: { ratings: { Técnica: 10 } }, b: { ratings: { Técnica: 2 } } } },
+      { id: "2", teamId: "t", date: "2026-10-02", type: "Coletivo", description: "Treino recente", athletes: { a: { present: true, ratings: { Técnica: 8 } }, b: { present: true, ratings: { Técnica: 9 } } } }
+    ] };
+  const html = render(TeamHome, { team, state });
+  const latest = html.split(/class="panel collapsible-panel[^\"]* last-training-panel"/)[1].split('</section>')[0];
+  assert.match(latest, /02\/10\/2026/);
+  assert.match(latest, /Treino recente/);
+  assert.match(latest, /Destaque do treino<\/span><strong>Bruno · 9,0\/10<\/strong>/);
+  assert.match(latest, /8,5\/10/);
+  assert.doesNotMatch(latest, /Destaque da equipe|Melhor atleta|<strong>Ana<\/strong>/);
+  const best = html.split('class="panel best-athlete-panel"')[1].split('</section>')[0];
+  assert.match(best, /<strong>Ana<\/strong>/);
+  assert.match(best, /Ala/);
+  assert.match(best, /9,0\/10/);
+  assert.equal((html.match(/class="kpi-card"/g) || []).length, 4);
+  assert.match(html, /Desempenho médio<\/p><strong>7,3\/10/);
+  assert.equal((html.match(/>Período<select/g) || []).length, 1);
+  assert.match(html, /class="team-home__grid"/);
+  const headingControls = [...html.matchAll(/<button[^>]*class="collapsible-panel__heading-toggle"[\s\S]*?<\/button>/g)].map((match) => match[0]);
+  assert.equal(headingControls.length, 3);
+  for (const control of headingControls) {
+    assert.match(control, /aria-expanded="true"/);
+    assert.match(control, /aria-controls="[^"]+"/);
+    assert.doesNotMatch(control, /<select|<input|<a\s/);
+  }
+  assert.doesNotMatch(html, /Retrair|Expandir|collapsible-panel__toggle"/);
+  const empty = render(TeamHome, { team, state: { ...state, trainings: [{ id: "3", date: "2026-10-03", teamId: "t", athletes: { a: null } }] } });
+  assert.match(empty, /Sem destaque definido para este treino/);
+  assert.match(empty, /Ainda não há dados suficientes/);
 });
 
 test("perfil do treinador usa dados reais, não exige nascimento e separa configurações da equipe", () => {
@@ -106,5 +192,55 @@ test("perfil do treinador usa dados reais, não exige nascimento e separa config
   const settings = render(SettingsPage, { currentUser, state, actions: {}, team: { ...state.teams[0], code: "WK-TEST", objectiveCriteria: [], qualitativeCriteria: [] } });
   assert.match(settings, /Salvar equipe/);
   assert.match(settings, /Excluir equipe/);
-  assert.doesNotMatch(settings, /Salvar conta/);
+  assert.doesNotMatch(settings, /Salvar conta|Critérios por posição|Novo critério/);
+});
+// UI uses the existing Vite SSR harness; position editors must never mix role-specific fields.
+test("formulários de futsal exibem critérios e estatísticas da função automaticamente", async () => {
+  const { PositionEvaluationEditor } = await server.ssrLoadModule("/src/componentes/ui/AvaliacaoPosicao.jsx");
+  const team = { modality: "Futsal", objectiveCriteria: ["Gols"] };
+  const keeper = render(PositionEvaluationEditor, { team, record: { role: "GOALKEEPER", position: "Goleiro", modality: "Futsal" }, onSave: async () => {} });
+  assert.match(keeper, /Reflexos/);
+  assert.doesNotMatch(keeper, /35%|Peso/);
+  assert.match(keeper, /value="5"/);
+  assert.match(keeper, /Estatísticas do goleiro \(opcionais\)/);
+  assert.doesNotMatch(keeper, /Disciplina tática|Estatísticas de linha/);
+  const line = render(PositionEvaluationEditor, { team, record: { role: "OUTFIELD", position: "Ala", modality: "Futsal" }, onSave: async () => {} });
+  assert.match(line, /Disciplina tática/);
+  assert.match(line, /Estatísticas de linha/);
+  assert.doesNotMatch(line, /Defesas realizadas|Estatísticas do goleiro/);
+});
+test("configuração exibe somente um dos dois perfis e separa tipos sem pesos", async () => {
+  const { PositionProfileSettings, PositionRankings } = await server.ssrLoadModule("/src/componentes/ui/AvaliacaoPosicao.jsx");
+  const settings = render(PositionProfileSettings, { team: { modality: "Futsal" }, actions: {} });
+  assert.match(settings, /Goleiro/);
+  assert.match(settings, /Jogadores de Linha/);
+  assert.match(settings, /Avaliações qualitativas/);
+  assert.match(settings, /Medidas quantitativas/);
+  assert.doesNotMatch(settings, /Quantidade: Defesas|value="Reflexos"/);
+  assert.equal((settings.match(/<input/g) || []).length, 8);
+  assert.doesNotMatch(settings, /Peso|%/);
+  assert.match(settings, /Salvar perfis de avaliação/);
+  const ranks = render(PositionRankings, { rankings: { GOALKEEPER: [], OUTFIELD: [] } });
+  assert.match(ranks, /Melhor goleiro/);
+  assert.match(ranks, /Melhor jogador de linha/);
+  assert.equal((ranks.match(/Ainda não há atletas/g) || []).length, 2);
+});
+
+test("revisão inicia em 5, mantém pendências explícitas e oculta avaliação de ausentes", async () => {
+  const { TrainingReview } = await server.ssrLoadModule("/src/componentes/ui/RevisaoTreino.jsx");
+  const team = { id: "t", name: "Equipe", modality: "Futsal" };
+  const props = { team, training: { id: "r", date: "2026-11-06", type: "Misto", athletes: {
+    a: { present: true, modality: "Futsal", role: "GOALKEEPER", position: "Goleiro", ratings: {} },
+    b: { present: false, modality: "Futsal", role: "OUTFIELD", position: "Ala", ratings: {} }
+  } }, athletes: [{ id: "a", name: "Ana", position: "Goleiro" }, { id: "b", name: "Bruno", position: "Ala" }], actions: {}, drafts: {}, setDrafts() {} };
+  const html = render(TrainingReview, props);
+  assert.equal((html.match(/value="5"/g) || []).length, 4);
+  assert.match(html, /Pendente de revisão/);
+  assert.match(html, /Revisei e confirmo estas notas/);
+  assert.match(html, /button[^>]*disabled/);
+  assert.doesNotMatch(html, /Finalização e ataque/);
+  props.training.athletes.a.present = false;
+  const absent = render(TrainingReview, props);
+  assert.doesNotMatch(absent, /type="number"/);
+  assert.match(absent, /Atleta ausente/);
 });

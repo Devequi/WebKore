@@ -8,10 +8,6 @@
 :is(.athlete-experience, .coach-experience) .collapsible-panel[data-collapsed="true"] { min-height: 0; }
 .collapsible-panel[data-collapsed="true"] > .section-heading { margin-bottom: 0; }
 .collapsible-panel__actions { display: flex; align-items: end; flex-wrap: wrap; gap: .75rem; min-width: 0; }
-.collapsible-panel__toggle { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; padding: .5rem .65rem; color: var(--muted-strong); background: var(--surface-strong); font-size: var(--text-xs); white-space: nowrap; }
-.collapsible-panel__toggle:hover { color: var(--ink); border-color: var(--line-strong); }
-.collapsible-panel__toggle svg { flex-shrink: 0; }
-.collapsible-panel__toggle[aria-expanded="true"] svg { transform: rotate(180deg); }
 .collapsible-panel > [hidden] { display: none; }
 :is(.athlete-experience, .coach-experience) .athlete-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
 .athlete-kpis .kpi-card { min-height: 132px; align-items: flex-start; padding: 1.15rem; }
@@ -58,10 +54,10 @@
 .athlete-training-heading time { font-size: var(--text-xs); color: var(--muted-strong); }
 .athlete-training-row strong { font-size: var(--text-sm); overflow-wrap: anywhere; }
 .athlete-training-row p { color: var(--muted-strong); font-size: var(--text-sm); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; }
-.athlete-badge { font-size: .7rem; font-weight: 500; padding: .25rem .5rem; border-radius: var(--radius-sm); background: var(--primary-soft); color: var(--blue); }
-.athlete-badge--absent { background: var(--coral-soft); color: var(--coral); }
-.athlete-training-dialog { width: min(640px, calc(100% - 2rem)); max-height: calc(100dvh - 2rem); overflow: auto; padding: 1.5rem; border: 1px solid var(--line-strong); border-radius: var(--radius-lg); color: var(--ink); background: var(--surface); }
-.athlete-training-dialog::backdrop { background: rgba(3, 6, 10, .8); }
+.athlete-badge { font-size: .7rem; font-weight: 600; padding: .25rem .5rem; border: 1px solid var(--success); border-radius: var(--radius-sm); background: var(--success-soft); color: var(--success); }
+.athlete-badge--absent { border-color: var(--error); border-style: dashed; background: var(--coral-soft); color: var(--error); }
+.athlete-training-dialog { width: min(640px, calc(100% - 2rem)); max-height: calc(100dvh - 2rem); overflow: auto; padding: 1.5rem; border: 1px solid var(--line-strong); border-radius: var(--radius-lg); color: var(--ink); background: var(--surface); box-shadow: var(--shadow-lg); }
+.athlete-training-dialog::backdrop { background: var(--backdrop); }
 .athlete-training-dialog p { overflow-wrap: anywhere; white-space: pre-wrap; }
 .athlete-training-dialog .athlete-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; }
 .athlete-profile-fields { display: grid; gap: 1rem; border: 0; padding: 0; margin: 0; min-width: 0; }

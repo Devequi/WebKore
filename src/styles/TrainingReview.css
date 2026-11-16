@@ -1,0 +1,30 @@
+.training-review { display: grid; gap: 24px; min-width: 0; cursor: default; }
+.training-review h3, .training-review h4 { margin: 0 0 12px; }
+.review-information, .review-participants, .review-individual, .review-summary { min-width: 0; padding: 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.review-facts { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; margin: 0; }
+.review-facts dt { color: var(--muted); font-size: var(--text-sm); }
+.review-facts dd { margin: 4px 0 0; overflow-wrap: anywhere; }
+.review-workspace { display: grid; grid-template-columns: minmax(220px,1fr) minmax(0,2fr); gap: 20px; align-items: start; }
+.review-participant-list { display: grid; gap: 10px; max-height: 600px; overflow-y: auto; }
+.review-participant { width: 100%; display: grid; gap: 5px; padding: 14px; text-align: left; background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius-sm); cursor: pointer; overflow-wrap: anywhere; }
+.review-participant span, .review-participant small { color: var(--muted); }
+.review-participant[aria-pressed="true"] { border-color: var(--primary); background: var(--primary-soft); }
+.review-participant:hover { border-color: var(--primary); }
+.review-individual .rating-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+.review-checkbox { display: flex; flex-direction: row; align-items: center; gap: 10px; }
+.review-checkbox input { width: 20px; height: 20px; min-height: 0; flex: 0 0 20px; accent-color: var(--primary); }
+.review-score { padding-block: 12px; border-block: 1px solid var(--line); }
+.review-score strong { color: var(--primary); }
+.review-statistics { margin-top: 20px; }
+.review-statistics summary { cursor: pointer; padding-block: 10px; }
+.review-summary ul { display: flex; flex-wrap: wrap; gap: 12px 28px; padding-left: 20px; }
+.position-profiles .position-criterion { display: flex; gap: 10px; }
+.position-criterion input { flex: 1; min-width: 0; }
+.training-form .training-description { grid-column: 1 / -1; }
+@media(max-width: 767px) { .review-workspace, .review-facts, .review-individual .rating-grid { grid-template-columns: minmax(0,1fr); } .review-information, .review-participants, .review-individual, .review-summary { padding: 14px; } .review-participant-list { max-height: 300px; } .review-summary .button { width: 100%; white-space: normal; } }
+
+.training-review .rating-grid input[type="number"] { min-height: 44px; padding: .65rem .75rem; }
+
+.review-measurements { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--line); }
+.review-measurements .metric-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+@media(max-width: 640px) { .review-measurements .metric-grid { grid-template-columns: minmax(0,1fr); } }

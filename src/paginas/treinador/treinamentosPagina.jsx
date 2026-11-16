@@ -1,10 +1,10 @@
-import { CalendarPlus, Minus, Plus, Trash2 } from "lucide-react";
+import { TrainingReview } from "../../componentes/ui/RevisaoTreino.jsx";
+import { CalendarPlus, ChevronDown, Trash2 } from "lucide-react";
 import { useRef, useState } from "react";
-import { Avatar } from "../../componentes/ui/Avatar.jsx";
 import { Button } from "../../componentes/ui/Botao.jsx";
 import { EmptyState } from "../../componentes/ui/EstadoVazio.jsx";
 import { formatDate } from "../../utils/formatters.js";
-import { runUiAction } from "../../utils/runUiAction.js";
+import { isPanelSurfaceClick } from "../../utils/panelInteraction.js";
 import { todayDateOnly } from "../../../shared/birthDate.js";
 import {
   getApprovedAthletes,
@@ -20,6 +20,7 @@ export function TrainingsPage({ actions, state, team }) {
     type: "Misto",
     description: ""
   });
+  const [drafts, setDrafts] = useState({});
   const [treinoAberto, setTreinoAberto] = useState(null);
   const [aba, setAba] = useState("add");
   const [feedback, setFeedback] = useState(null);
@@ -46,7 +47,6 @@ export function TrainingsPage({ actions, state, team }) {
 
   const treinos = getTeamTrainings(state, team.id);
   const atletas = getApprovedAthletes(state, team.id);
-  const criterios = team.objectiveCriteria || [];
 
   async function adicionarTreino(event) {
     event.preventDefault();
@@ -54,10 +54,11 @@ export function TrainingsPage({ actions, state, team }) {
     setFeedback(null);
 
     try {
-      await actions.addTraining({
+      const created = await actions.addTraining({
         team,
         ...form
       });
+      if (created?.id) { setTreinoAberto(created.id); setAba("history"); }
     } catch (error) {
       setFeedback({ type: "error", text: error.message || "Não foi possível cadastrar o treino." });
       setSaving(false);
@@ -92,27 +93,6 @@ export function TrainingsPage({ actions, state, team }) {
     }
   }
 
-  function mudarMetrica(
-    trainingId,
-    athleteId,
-    metric,
-    delta,
-    valorAtual
-  ) {
-    runUiAction(
-      () => actions.updateTrainingAthlete({
-        trainingId,
-        athleteId,
-        patch: {
-          expectedMetrics: { [metric]: valorAtual },
-          metrics: {
-            [metric]: Math.max(0, valorAtual + delta)
-          }
-        }
-      }),
-      (error) => alert(error.message || "Não foi possível atualizar a métrica.")
-    );
-  }
 
   return (
     <div className="page-stack">
@@ -144,7 +124,8 @@ export function TrainingsPage({ actions, state, team }) {
         <section className="panel training-create-panel" id="training-add-panel" ref={formularioRef} role="tabpanel">
           <div className="section-heading">
             <div>
-              <h2>Novo treino</h2>
+              <h2>Informações do treino</h2>
+              <p className="form-hint">Equipe: {team.name}. Após cadastrar, revise a presença e as notas dos participantes no histórico.</p>
             </div>
           </div>
 
@@ -185,6 +166,7 @@ export function TrainingsPage({ actions, state, team }) {
                 <option>Físico</option>
                 <option>Coletivo</option>
                 <option>Misto</option>
+                <option>Partida</option>
               </select>
             </label>
 
@@ -244,9 +226,11 @@ export function TrainingsPage({ actions, state, team }) {
                 <article
                   className="training-card"
                   key={treino.id}
+                  onClick={(event) => { if (isPanelSurfaceClick(event)) abrirFechar(treino.id); }}
                 >
                   <button
                     aria-expanded={treinoAberto === treino.id}
+                    aria-controls={`training-editor-${treino.id}`}
                     className="training-card__summary"
                     onClick={() => abrirFechar(treino.id)}
                     type="button"
@@ -262,15 +246,11 @@ export function TrainingsPage({ actions, state, team }) {
                       </span>
                     </div>
 
-                    <span>
-                      {treinoAberto === treino.id
-                        ? "Fechar"
-                        : "Abrir"}
-                    </span>
+                    <ChevronDown className="training-card__chevron" size={18} aria-hidden="true" />
                   </button>
 
                   {treinoAberto === treino.id && (
-                    <div className="training-editor">
+                    <div className="training-editor" id={`training-editor-${treino.id}`}>
                       <div className="training-delete">
                         <Button
                           icon={Trash2}
@@ -284,150 +264,8 @@ export function TrainingsPage({ actions, state, team }) {
                         </Button>
                       </div>
 
-                      {atletas.map((atleta) => {
-                        const dadosAtleta =
-                          treino.athletes[atleta.id];
-
-                        if (!dadosAtleta) return null;
-
-                        return (
-                          <section
-                            className="training-athlete"
-                            key={atleta.id}
-                          >
-                            <div className="training-athlete__head">
-                              <Avatar
-                                name={atleta.name}
-                                photo={atleta.photo}
-                              />
-
-                              <div>
-                                <strong>{atleta.name}</strong>
-                                <span>
-                                  Preenchimento por exceção
-                                </span>
-                              </div>
-
-                              <label className="switch">
-                                <input
-                                  checked={dadosAtleta.present}
-                                  onChange={(event) =>
-                                    runUiAction(
-                                      () => actions.updateTrainingAthlete({
-                                        trainingId: treino.id,
-                                        athleteId: atleta.id,
-                                        patch: {
-                                          present:
-                                            event.target.checked
-                                        }
-                                      }),
-                                      (error) => alert(error.message || "Não foi possível atualizar a presença.")
-                                    )
-                                  }
-                                  type="checkbox"
-                                />
-
-                                <span>
-                                  {dadosAtleta.present
-                                    ? "Presente"
-                                    : "Ausente"}
-                                </span>
-                              </label>
-                            </div>
-
-                            <div className="metric-grid">
-                              {criterios.map((metric) => (
-                                <div
-                                  className="metric-stepper"
-                                  key={metric}
-                                >
-                                  <span>{metric}</span>
-
-                                  <div>
-                                    <button
-                                      aria-label={`Diminuir ${metric}`}
-                                      onClick={() =>
-                                        mudarMetrica(
-                                          treino.id,
-                                          atleta.id,
-                                          metric,
-                                          -1,
-                                          dadosAtleta.metrics[
-                                            metric
-                                          ] || 0
-                                        )
-                                      }
-                                      type="button"
-                                    >
-                                      <Minus size={16} />
-                                    </button>
-
-                                    <strong>
-                                      {dadosAtleta.metrics[
-                                        metric
-                                      ] || 0}
-                                    </strong>
-
-                                    <button
-                                      aria-label={`Aumentar ${metric}`}
-                                      onClick={() =>
-                                        mudarMetrica(
-                                          treino.id,
-                                          atleta.id,
-                                          metric,
-                                          1,
-                                          dadosAtleta.metrics[
-                                            metric
-                                          ] || 0
-                                        )
-                                      }
-                                      type="button"
-                                    >
-                                      <Plus size={16} />
-                                    </button>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-
-                            <div className="rating-grid">
-                              {Object.entries(
-                                dadosAtleta.ratings
-                              ).map(([label, value]) => (
-                                <label key={label}>
-                                  <span>
-                                    {label}
-                                    <strong>{value}</strong>
-                                  </span>
-
-                                  <input
-                                    max="10"
-                                    min="0"
-                                    onChange={(event) =>
-                                      runUiAction(
-                                        () => actions.updateTrainingAthlete({
-                                          trainingId: treino.id,
-                                          athleteId: atleta.id,
-                                          patch: {
-                                            ratings: {
-                                              [label]: Number(
-                                                event.target.value
-                                              )
-                                            }
-                                          }
-                                        }),
-                                        (error) => alert(error.message || "Não foi possível atualizar a avaliação.")
-                                      )
-                                    }
-                                    type="range"
-                                    value={value}
-                                  />
-                                </label>
-                              ))}
-                            </div>
-                          </section>
-                        );
-                      })}
+                      <TrainingReview training={treino} athletes={atletas} team={team} actions={actions}
+                        drafts={drafts[treino.id] || {}} setDrafts={(update) => setDrafts((old) => ({ ...old, [treino.id]: update(old[treino.id] || {}) }))} />
                     </div>
                   )}
                 </article>

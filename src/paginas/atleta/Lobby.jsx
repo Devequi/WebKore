@@ -3,6 +3,7 @@ import { PublicHeader } from "../../componentes/layout/CabecalhoPublico.jsx";
 import { Button } from "../../componentes/ui/Botao.jsx";
 import { EmptyState } from "../../componentes/ui/EstadoVazio.jsx";
 import "../../styles/paginasAtleta/Lobby.css";
+import "../../styles/LobbyLayout.css";
 
 export function AthleteLobby({
   currentUser,
@@ -14,7 +15,7 @@ export function AthleteLobby({
   teams = []
 }) {
   return (
-    <main className="lobby-page">
+    <main className="lobby-page team-lobby athlete-lobby">
       <PublicHeader onLogout={onLogout} />
 
       <section className="lobby-hero">
@@ -31,6 +32,11 @@ export function AthleteLobby({
 
         <div className="lobby-actions">
           <Button icon={UserRound} onClick={onProfile} type="button" variant="ghost">Meu perfil</Button>
+        </div>
+      </section>
+
+      <section className="lobby-join" aria-labelledby="athlete-join-title">
+        <div><h2 id="athlete-join-title">Entrar em uma equipe</h2><p>Use o código enviado pelo treinador para solicitar sua entrada.</p></div>
           <Button
             icon={Plus}
             onClick={onSearch}
@@ -39,9 +45,10 @@ export function AthleteLobby({
             Entrar em um time
           </Button>
 
-        </div>
       </section>
 
+      <section className="lobby-teams" aria-labelledby="athlete-teams-title">
+      <div className="lobby-section-heading"><h2 id="athlete-teams-title">Minhas equipes</h2></div>
       {teams.length === 0 ? (
         <EmptyState
           title="Nenhuma equipe aprovada"
@@ -59,7 +66,7 @@ export function AthleteLobby({
                 className="team-card"
                 key={team.id}
               >
-                <span>
+                <span className="modality-badge">
                   {team.modality}
                 </span>
 
@@ -67,25 +74,25 @@ export function AthleteLobby({
                   {team.name}
                 </h2>
 
-                <p>
-                  Treinador: {treinador?.name || "Não informado"}
-                </p>
+                <div className="team-info">
+                  <div><strong>Treinador</strong><p>{treinador?.name || "Não informado"}</p></div>
+                  <div><strong>Código</strong><p>{team.code}</p></div>
+                </div>
 
-                <p>
-                  Código {team.code}
-                </p>
-
+                <div className="team-card__actions">
                 <Button
                   onClick={() => onOpenTeam(team.id)}
                   type="button"
                 >
                   Acessar dados
                 </Button>
+                </div>
               </article>
             );
           })}
         </div>
       )}
+      </section>
     </main>
   );
 }

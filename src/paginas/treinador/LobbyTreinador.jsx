@@ -1,10 +1,11 @@
 import { Clipboard, Plus, UserRound, Users, Trophy } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { PublicHeader } from "../../componentes/layout/CabecalhoPublico.jsx";
 import { Button } from "../../componentes/ui/Botao.jsx";
 import { KpiCard } from "../../componentes/ui/CartaoKpi.jsx";
 import { EmptyState } from "../../componentes/ui/EstadoVazio.jsx";
 import "../../styles/paginasTreinador/LobbyTreinador.css";
+import "../../styles/LobbyLayout.css";
 
 export function CoachLobby({
   actions,
@@ -16,11 +17,25 @@ export function CoachLobby({
   teams: times
 }) {
   const [creating, setCreating] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
+  const createPanelId = useId();
+  const createInputRef = useRef(null);
+  const createButtonRef = useRef(null);
   const [feedback, setFeedback] = useState(null);
   const [form, setForm] = useState({
     name: "",
     modality: "Futsal"
   });
+
+  useEffect(() => {
+    if (!showCreate) return;
+    createInputRef.current?.focus();
+    return () => createButtonRef.current?.focus();
+  }, [showCreate]);
+
+  function closeCreate() {
+    setShowCreate(false);
+  }
 
   async function criarTime(event) {
     event.preventDefault();
@@ -46,6 +61,7 @@ export function CoachLobby({
       modality: "Futsal"
     });
     setFeedback({ type: "success", text: "Equipe criada." });
+    closeCreate();
   }
 
   async function copiarCodigo(code) {
@@ -71,7 +87,7 @@ export function CoachLobby({
   ).size;
 
   return (
-    <main className="lobby-page coach-lobby coach-experience">
+    <main className="lobby-page team-lobby coach-lobby coach-experience">
       <PublicHeader onLogout={onLogout} />
 
       <section className="lobby-hero">
@@ -93,10 +109,19 @@ export function CoachLobby({
       </section>
       {feedback && <p className={`form-feedback form-feedback--${feedback.type}`} role={feedback.type === "error" ? "alert" : "status"}>{feedback.text}</p>}
 
-      <section className="dashboard-grid--lobby">
+      <section className="lobby-teams" aria-labelledby="coach-teams-title">
+        <div className="lobby-section-heading">
+          <h2 id="coach-teams-title">Minhas equipes</h2>
+          <Button ref={createButtonRef} icon={Plus} type="button" disabled={creating}
+            aria-expanded={showCreate} aria-controls={createPanelId} onClick={() => setShowCreate(true)}>
+            Criar equipe
+          </Button>
+        </div>
+        <div id={createPanelId} className="lobby-create-panel" hidden={!showCreate}>
         <form
           className="create-team-form"
           onSubmit={criarTime}
+          aria-busy={creating}
         >
           <h2>Criar equipe</h2>
 
@@ -104,6 +129,7 @@ export function CoachLobby({
             Nome da equipe
 
             <input
+              ref={createInputRef}
               required
               maxLength={191}
               placeholder="Ex: ETEC Araras Sub-18"
@@ -137,17 +163,19 @@ export function CoachLobby({
             </select>
           </label>
 
-          <Button
+          <div className="lobby-form-actions"><Button
             disabled={creating}
             icon={Plus}
             type="submit"
           >
             {creating ? "Criando..." : "Criar equipe"}
           </Button>
+          <Button type="button" variant="ghost" disabled={creating} onClick={closeCreate}>Cancelar</Button></div>
         </form>
+        </div>
 
         <div className="team-card-grid">
-          {!times.length && <EmptyState title="Nenhuma equipe criada" text="Use o formulário para começar a gerenciar sua primeira equipe." />}
+          {!times.length && <EmptyState title="Nenhuma equipe criada" text="Clique em Criar equipe para começar a gerenciar sua primeira equipe." />}
           {times.map((time) => (
             <article
               className="team-card"

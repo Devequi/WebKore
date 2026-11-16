@@ -22,6 +22,7 @@ enum TrainingType {
   PHYSICAL
   COLLECTIVE
   MIXED
+  MATCH
 }
 
 model User {
@@ -48,6 +49,7 @@ model Team {
   coachId     String
   coach       User         @relation("CoachTeams", fields: [coachId], references: [id])
   memberships Membership[]
+  evaluationProfiles EvaluationProfile[]
   trainings   Training[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
@@ -88,6 +90,12 @@ model TrainingRecord {
   training   Training     @relation(fields: [trainingId], references: [id], onDelete: Cascade)
   metrics    SportMetric[]
   evaluation Evaluation?
+  modalitySnapshot String?
+  positionSnapshot String?
+  roleSnapshot String?
+  goalkeeperStats GoalkeeperStats?
+  measurements TrainingMeasurement[]
+  measurementsInitialized Boolean @default(false)
 
   @@unique([trainingId, athleteId])
 }
@@ -99,6 +107,12 @@ model Evaluation {
   physicalCondition   Int            @default(5)
   participation       Int            @default(5)
   teamwork            Int            @default(5)
+  source              String @default("LEGACY")
+  modality            String?
+  position            String?
+  role                String?
+  finalScore          Float?
+  criteria            EvaluationCriterion[]
   record              TrainingRecord @relation(fields: [recordId], references: [id], onDelete: Cascade)
 }
 
@@ -110,4 +124,65 @@ model SportMetric {
   record   TrainingRecord @relation(fields: [recordId], references: [id], onDelete: Cascade)
 
   @@unique([recordId, name])
+}
+
+// Team configuration is mutable; evaluation criteria below are independent snapshots.
+model EvaluationProfile {
+  schemaVersion Int @default(1)
+  legacyCriteria Json?
+  id String @id @default(cuid())
+  teamId String
+  modality String
+  role String
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  criteria ProfileCriterion[]
+  @@unique([teamId, modality, role])
+}
+model ProfileCriterion {
+  archived Boolean @default(false)
+  kind String @default("QUALITATIVE")
+  id String @id @default(cuid())
+  profileId String
+  name String
+  weight Float
+  order Int
+  profile EvaluationProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  @@index([profileId, kind, archived])
+}
+model EvaluationCriterion {
+  criterionId String?
+  id String @id @default(cuid())
+  evaluationId String
+  name String
+  weight Float
+  score Float
+  order Int
+  evaluation Evaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+  @@unique([evaluationId, name])
+}
+model GoalkeeperStats {
+  id String @id @default(cuid())
+  recordId String @unique
+  saves Int?
+  goalsConceded Int?
+  shotsOnTarget Int?
+  difficultSaves Int?
+  accurateDistributions Int?
+  distributionAttempts Int?
+  successfulExits Int?
+  exitAttempts Int?
+  record TrainingRecord @relation(fields: [recordId], references: [id], onDelete: Cascade)
+}
+
+// Independent names and values survive changes/removal of the configured criterion.
+model TrainingMeasurement {
+  id String @id @default(cuid())
+  recordId String
+  criterionId String
+  name String
+  role String
+  value Int?
+  order Int
+  record TrainingRecord @relation(fields: [recordId], references: [id], onDelete: Cascade)
+  @@unique([recordId, criterionId])
 }

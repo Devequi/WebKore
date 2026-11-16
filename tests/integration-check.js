@@ -70,7 +70,7 @@ try {
   setAuthToken(validToken);
   console.log("Etapa 1: cadastro, login, sessão/reload, logout, novo login, Bearer, senha incorreta e tokens inválidos/expirados OK.");
   if (stage >= 2) {
-    let team = await api.createTeam({ name: `Equipe teste ${run}`, modality: "Futsal" });
+    let team = await api.createTeam({ name: `Equipe teste ${run}`, modality: "Futebol" });
     createdTeams.push(team.id);
     team = await api.updateTeam(team.id, { name: "Equipe alterada" });
     assert.equal((await api.me()).state.teams.find((item) => item.id === team.id).name, "Equipe alterada");
@@ -147,6 +147,7 @@ try {
       console.log("Etapa 3: perfis/status inválidos, IDs, notas, presença, campos obrigatórios, JSON e conflitos rejeitados com 400/404/409 OK.");
     }
     if (stage >= 4) {
+      team = await api.updateTeam(team.id, { modality: "Futsal" });
       await request("/teams/join", "POST", { code: ` ${team.code.toLowerCase()} ` }, athlete.token, 201);
       assert.equal((await request("/auth/me", "GET", undefined, athlete.token)).state.memberships.find((item) => item.teamId === team.id).status, "approved");
       await api.updateMembership(team.id, athlete.user.id, { number: "0", position: "Ala" });
@@ -205,7 +206,7 @@ try {
       await api.respondRequest(team.id, secondAthlete.user.id, "approved");
       const privateTraining = await api.createTraining({ teamId: team.id, date: "2026-09-30", type: "Coletivo", records: [
         { athleteId: athlete.user.id, ratings: { "Técnica nova": 0 }, present: true, metrics: { "Gols marcados": 2 } },
-        { athleteId: secondAthlete.user.id, ratings: { "Técnica nova": 9 }, present: false, metrics: { "Gols marcados": 8 } }
+        { athleteId: secondAthlete.user.id, ratings: { "Técnica nova": 9 }, present: true, metrics: { "Gols marcados": 8 } }
       ] });
       const foreignTeam = await request("/teams", "POST", { name: "Equipe privada outro treinador", modality: "Futsal" }, otherCoach.token, 201);
       createdTeams.push(foreignTeam.id);

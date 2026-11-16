@@ -1,13 +1,12 @@
 import { useEffect, useId, useState } from "react";
+import { Star } from "lucide-react";
 import { Area, AreaChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { formatDate } from "../../utils/formatters.js";
 import { evolutionPlot, filterEvolution, scoreLabel } from "../../utils/athletePerformance.js";
 import { useTodayDate } from "../../hooks/useTodayDate.js";
 import { CollapsiblePanel } from "../ui/PainelRetratil.jsx";
-import { chartGrid, chartLegend, chartMargin, chartTooltip, chartXAxis, EvaluationGradient } from "./chartAppearance.jsx";
+import { chartGrid, chartLegend, chartMargin, chartSeries, chartTooltip, chartXAxis, EvaluationGradient } from "./chartAppearance.jsx";
 import "../../styles/paginasTreinador/GraficoEvolucaoEquipe.css";
-
-const colors = ["#8884d8", "#82ca9d", "#ffc857", "#5b8def"];
 
 function EvaluationTooltip({ active, payload }) {
   const entries = payload?.filter((entry) => Number.isFinite(entry.value)) || [];
@@ -29,7 +28,10 @@ function emptyMessage(data, points, criterion) {
   return "Os treinos deste período ainda não possuem avaliações do treinador.";
 }
 
-export function EvolutionChart({ data = [], criteria = [], title = "Minha evolução" }) {
+export function EvolutionChart({ data = [], criteria: suppliedCriteria = [], title = "Minha evolução", headerFilters = false }) {
+  const hasWeighted = data.some((point) => ["WEIGHTED", "AVERAGE"].includes(point.evaluationSource));
+  const criteria = hasWeighted ? [...new Set(["Nota final", ...suppliedCriteria])] : suppliedCriteria;
+  if (hasWeighted) data = data.map((point) => ({ ...point, ratings: { ...point.ratings, "Nota final": ["WEIGHTED", "AVERAGE"].includes(point.evaluationSource) ? point.finalScore : null } }));
   const [period, setPeriod] = useState("all");
   // O contrato atual identifica os critérios pelos nomes únicos cadastrados na equipe.
   const [criterion, setCriterion] = useState("");
@@ -42,23 +44,23 @@ export function EvolutionChart({ data = [], criteria = [], title = "Minha evolu�
 
   const points = filterEvolution(data, period, today);
   const plot = evolutionPlot(points, criteria);
-  const visible = plot.series.map((item, index) => ({ ...item, color: colors[index % colors.length] }))
+  const visible = plot.series.map((item, index) => ({ ...item, ...chartSeries[index % chartSeries.length],
+    ...(selected ? { color: "var(--chart-primary)", dash: undefined } : {}) }))
     .filter((item) => !selected || item.name === selected);
   const evaluated = plot.data.filter((point) => visible.some((item) => Number.isFinite(point[item.key])));
   const dates = new Map(plot.data.map((point) => [point.trainingId, formatDate(point.date).slice(0, 5)]));
   const Chart = selected ? AreaChart : LineChart;
+  const periodControl = <label>Período<select value={period} onChange={(event) => setPeriod(event.target.value)}>
+    <option value="30">Últimos 30 dias</option><option value="90">Últimos 90 dias</option><option value="all">Todo o histórico</option>
+  </select></label>;
 
-  return <CollapsiblePanel title={title} eyebrow="Avaliações do treinador" className="chart-panel athlete-evolution"
-    headingClassName="athlete-evolution__heading" actions={<label className="athlete-evolution__selector">Visualização
+  return <CollapsiblePanel title={title} eyebrow={headerFilters ? <><Star size={18} aria-hidden="true" />Avaliações do treinador</> : "Avaliações do treinador"} className="chart-panel athlete-evolution"
+    headingClassName="athlete-evolution__heading" actions={<><label className="athlete-evolution__selector">Visualização
         <select value={selected} onChange={(event) => setCriterion(event.target.value)}>
           <option value="">Visão geral</option>{criteria.map((name) => <option key={name} value={name}>{name}</option>)}
         </select>
-      </label>}>
-    <div className="athlete-chart-filters">
-      <label>Período<select value={period} onChange={(event) => setPeriod(event.target.value)}>
-        <option value="30">Últimos 30 dias</option><option value="90">Últimos 90 dias</option><option value="all">Todo o histórico</option>
-      </select></label>
-    </div>
+      </label>{headerFilters && <div className="team-home__period">{periodControl}</div>}</>}>
+    {!headerFilters && <div className="athlete-chart-filters">{periodControl}</div>}
     {!evaluated.length ? <p className="empty-content" role="status">{emptyMessage(data, points, selected)}</p> : <>
       <p className="athlete-note">{evaluated.length === 1 ? "Uma avaliação disponível. Novos registros permitirão acompanhar a evolução." : "Notas de 0 a 10. Lacunas indicam treinos sem avaliação."}</p>
       <div className="team-evolution__area-plot" aria-label={`${title}: ${selected || "visão geral"}, notas de zero a dez. Use as setas para consultar os treinos.`}>
@@ -72,9 +74,9 @@ export function EvolutionChart({ data = [], criteria = [], title = "Minha evolu�
             <Legend {...chartLegend} />
             {visible.map((item) => {
               const Series = selected ? Area : Line;
-              return <Series key={item.name} dataKey={item.key} name={item.name} stroke={item.color} strokeWidth={2}
+              return <Series key={item.name} dataKey={item.key} name={item.name} stroke={item.color} strokeWidth={2} strokeDasharray={item.dash}
                 fill={selected ? `url(#${gradientId})` : "none"} type="linear"
-                dot={{ r: evaluated.length === 1 ? 4 : 3, fill: item.color, strokeWidth: 0 }} activeDot={{ r: 4 }}
+                dot={{ r: evaluated.length === 1 ? 4 : 3, fill: item.color, strokeWidth: 0 }} activeDot={{ r: 5, stroke: "var(--ink)", strokeWidth: 2 }}
                 connectNulls={false} isAnimationActive={false} />;
             })}
           </Chart>

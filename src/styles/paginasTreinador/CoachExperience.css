@@ -28,13 +28,9 @@
 .coach-experience .training-card__summary > span { flex-shrink: 0; }
 .coach-experience .inline-form, .coach-experience .training-editor { min-width: 0; }
 .coach-experience .privacy-box { border-radius: var(--radius); }
-.coach-lobby > .kpi-grid { margin-bottom: 1.25rem; }
-.coach-lobby .dashboard-grid--lobby { grid-template-columns: minmax(240px, .7fr) minmax(0, 1.5fr); gap: 1.25rem; }
-.coach-lobby .team-card-grid { grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); }
-.coach-lobby .create-team-form { position: static; }
 @media (max-width: 1200px) { .coach-experience .coach-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 900px) {
-  .coach-experience .coach-settings .settings-grid, .coach-lobby .dashboard-grid--lobby { grid-template-columns: minmax(0, 1fr); }
+  .coach-experience .coach-settings .settings-grid { grid-template-columns: minmax(0, 1fr); }
   .coach-experience .coach-settings .criteria-grid { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 700px) {
@@ -43,4 +39,18 @@
   .coach-experience .settings-actions .button { width: 100%; }
   .coach-experience .training-athlete__head { flex-wrap: wrap; }
   .coach-experience .coach-settings .criterion-row, .coach-experience .coach-settings .criterion-add-form { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (min-width: 1060px) {
+  .app-shell.coach-experience { grid-template-columns: 238px minmax(0, 1fr); }
+  .app-shell.coach-experience .topbar h1 { font-size: clamp(1.6rem, 2.8vw, 2.75rem); line-height: 1.25; }
+  .app-shell.coach-experience .sidebar { padding: 1.25rem 1rem; gap: 1.5rem; }
+  .app-shell.coach-experience .sidebar .brand { flex-direction: column; align-items: flex-start; gap: .35rem; padding: 0 .5rem 1rem; margin: 0; }
+  .app-shell.coach-experience .brand img { width: 64px; height: 36px; object-position: left center; }
+  .app-shell.coach-experience .brand strong { font-size: 1.125rem; line-height: 1.5; }
+  .app-shell.coach-experience .sidebar .brand span { color: var(--primary); font-size: .875rem; line-height: 1.6; }
+  .app-shell.coach-experience .nav-list { gap: .5rem; }
+  .app-shell.coach-experience .nav-item { min-height: 48px; justify-content: flex-start; }
+  .app-shell.coach-experience .nav-item:nth-child(5) { margin-top: .75rem; border-top: 1px solid var(--line); }
+  .app-shell.coach-experience .sidebar__footer { border-top: 1px solid var(--line); padding-top: 1rem; gap: .85rem; }
 }

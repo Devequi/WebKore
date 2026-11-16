@@ -1,3 +1,5 @@
+import { GoalkeeperSummary } from "../../componentes/ui/AvaliacaoPosicao.jsx";
+import { evaluationRole } from "../../../shared/evaluations.js";
 import { Activity, CalendarDays, Save, Search, Trash2, Trophy, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTodayDate } from "../../hooks/useTodayDate.js";
@@ -201,6 +203,7 @@ export function AthletesPage({
             </div>
           </div>
 
+          {evaluationRole(team.modality, atletaSelecionado.position) === "GOALKEEPER" && <GoalkeeperSummary records={state.trainings.filter((training) => training.teamId === team.id).map((training) => training.athletes?.[atletaSelecionado.id])} />}
           <div className="inline-form">
             <label>
               Número
@@ -274,7 +277,7 @@ export function AthletesPage({
           )}
         </section>
 
-        <AthleteDashboard key={`evolution:${team.id}:${atletaSelecionado.id}`} performance={performance} criteria={getTeamCriteria(team, "qualitative")} />
+        <AthleteDashboard key={`evolution:${team.id}:${atletaSelecionado.id}`} performance={performance} criteria={performance.criteria.length ? performance.criteria : getTeamCriteria(team, "qualitative")} />
         <TrainingHistory key={`history:${team.id}:${atletaSelecionado.id}`} trainings={treinos} athleteId={atletaSelecionado.id} />
       </section>
     </div>

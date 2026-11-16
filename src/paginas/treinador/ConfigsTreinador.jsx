@@ -1,5 +1,6 @@
+import { PositionProfileSettings } from "../../componentes/ui/AvaliacaoPosicao.jsx";
+import { normalizeModality } from "../../../shared/criteria.js";
 import {
-  ChevronDown,
   Clipboard,
   LogOut,
   Plus,
@@ -11,6 +12,7 @@ import {
 
 import { useEffect, useState } from "react";
 import { Button } from "../../componentes/ui/Botao.jsx";
+import { CollapsiblePanel } from "../../componentes/ui/PainelRetratil.jsx";
 import { CoachProfileOverview } from "./PerfilTreinador.jsx";
 import { downloadTeamReport } from "../../services/reports.js";
 import "../../styles/paginasTreinador/ConfigsTreinador.css";
@@ -45,7 +47,6 @@ export function SettingsPage({
   const [nomeObjetivo, setNomeObjetivo] = useState("");
   const [nomeQualitativo, setNomeQualitativo] = useState("");
   const [mensagem, setMensagem] = useState(null);
-  const [criteriosAbertos, setCriteriosAbertos] = useState(true);
   const [savingAccount, setSavingAccount] = useState(false);
   const [savingTeam, setSavingTeam] = useState(false);
 
@@ -310,33 +311,11 @@ export function SettingsPage({
         </section>
       )}
 
-      {view === "team" && !team && <p className="empty-content">Selecione ou crie uma equipe para ajustar suas configurações.</p>}
-      {view === "team" && team && (
-        <section className="panel settings-panel criteria-panel">
-          <div className="section-heading">
-            <div>
-              <span className="eyebrow">Critérios</span>
-              <h2>Avaliação do treino</h2>
-            </div>
-            <button
-              aria-controls="trainer-criteria-content"
-              aria-expanded={criteriosAbertos}
-              aria-label={criteriosAbertos ? "Recolher critérios" : "Expandir critérios"}
-              className="criteria-toggle"
-              onClick={() => setCriteriosAbertos((abertos) => !abertos)}
-              type="button"
-            >
-              <ChevronDown aria-hidden="true" size={20} />
-            </button>
-          </div>
-
-          <div
-            className={`criteria-collapse ${criteriosAbertos ? "is-open" : ""}`}
-            id="trainer-criteria-content"
-            inert={!criteriosAbertos}
-            aria-hidden={!criteriosAbertos}
-          >
-          <div className="criteria-grid">
+      {["team", "evaluations"].includes(view) && !team && <p className="empty-content">Selecione ou crie uma equipe para ajustar suas configurações.</p>}
+      {view === "evaluations" && team && (
+        <CollapsiblePanel title="Avaliação de Treinos" eyebrow="Critérios" className="settings-panel criteria-panel">
+          {normalizeModality(team.modality) === "Futsal" && <PositionProfileSettings team={team} actions={actions} />}
+          {normalizeModality(team.modality) !== "Futsal" && <div className="criteria-grid">
             <GerenciarCriterio
               criteria={team.objectiveCriteria || []}
               newName={nomeObjetivo}
@@ -349,7 +328,7 @@ export function SettingsPage({
               title="Objetivos"
             />
 
-            <GerenciarCriterio
+            {normalizeModality(team.modality) !== "Futsal" && <GerenciarCriterio
               criteria={team.qualitativeCriteria || []}
               newName={nomeQualitativo}
               onAdd={(event) =>
@@ -360,11 +339,10 @@ export function SettingsPage({
               onRename={(nomeAntigo, nomeNovo) => renomearCriterio("qualitative", nomeAntigo, nomeNovo)}
               title="Qualitativos"
               maxCriteria={4}
-            />
-          </div>
-          </div>
+            />}
+          </div>}
           {feedbackPara("criteria")}
-        </section>
+        </CollapsiblePanel>
       )}
 
       {view === "profile" && <section className="panel settings-panel">
@@ -588,4 +566,8 @@ function GerenciarCriterio({
       </div>
     </div>
   );
+}
+
+export function EvaluationSettingsPage(props) {
+  return <SettingsPage {...props} view="evaluations" />;
 }

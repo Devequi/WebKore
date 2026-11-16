@@ -140,3 +140,9 @@ Participação=8, Trabalho em equipe=7.
 Não há lint configurado. O relatório atual de problemas, correções, arquivos,
 testes e implantação está em [Documentação/auditoria-geral.md](Documentação/auditoria-geral.md).
 As revisões anteriores foram mantidas como histórico.
+
+## Avaliações de futsal por posição
+
+O futsal agora possui critérios e pesos configuráveis por equipe para goleiros e jogadores de linha, estatísticas opcionais, histórico preservado e rankings separados (mínimo de três avaliações específicas). Notas ponderadas e validações são executadas no backend. As avaliações antigas e as demais modalidades continuam acessíveis.
+
+Consulte [as regras, a arquitetura, a migration, os arquivos alterados e os testes](Documentação/avaliacoes-por-posicao.md).

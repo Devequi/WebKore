@@ -1,3 +1,4 @@
+import { recordScore } from "../../shared/evaluations.js";
 import { average } from "./formatters.js";
 import { ratingEntries } from "./athletePerformance.js";
 import { isDateOnly } from "../../shared/birthDate.js";
@@ -6,13 +7,14 @@ export function teamPerformance(trainings, teamId) {
   const scoped = trainings.filter((training) => training.teamId === teamId && isDateOnly(training.date))
     .slice().sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
   const samples = [];
+  const scores = [];
   const presence = [];
   const observations = scoped.map((training) => {
     const ratings = new Map();
     for (const record of Object.values(training.athletes || {})) {
-      if (typeof record.present === "boolean") presence.push(record.present ? 100 : 0);
+      if (typeof record?.present === "boolean") presence.push(record.present ? 100 : 0);
       const entries = ratingEntries(record);
-      if (entries.length) samples.push(entries);
+      if (entries.length) { samples.push(entries); scores.push(recordScore(record)); }
       for (const [name, value] of entries) {
         if (!ratings.has(name)) ratings.set(name, []);
         ratings.get(name).push(value);
@@ -29,7 +31,7 @@ export function teamPerformance(trainings, teamId) {
     return { name, average: average(values), change: comparable ? points.at(-1).ratings[name] - points[0].ratings[name] : null };
   });
   return { observations, criteria, summaries, evaluationCount: samples.length,
-    averageScore: samples.length ? average(samples.map((entries) => average(entries.map(([, value]) => value)))) : null,
+    averageScore: samples.length ? average(scores) : null,
     presenceAverage: presence.length ? average(presence) : null,
     hasComparableEvaluations: summaries.some((item) => item.change !== null),
     best: [...summaries].sort((a, b) => b.average - a.average)[0],
