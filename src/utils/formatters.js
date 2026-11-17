@@ -8,6 +8,10 @@ export function percent(value) {
   return `${Math.round(value)}%`;
 }
 
+export function trainingCoverage(valid, total) {
+  return total > 0 ? `Dados em ${valid} de ${total} ${total === 1 ? "treino" : "treinos"}` : undefined;
+}
+
 export function average(values) {
   const cleanValues = values.filter((value) => Number.isFinite(value));
   if (!cleanValues.length) return 0;

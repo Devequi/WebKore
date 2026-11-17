@@ -103,26 +103,44 @@ export function validateGoalkeeperStats(stats) {
   if (stats.shotsOnTarget != null && [stats.saves, stats.goalsConceded].some((n) => n != null && n > stats.shotsOnTarget)) throw new Error("Defesas e gols não podem ultrapassar as finalizações no alvo.");
   return Object.fromEntries(Object.keys(goalkeeperFields).map((key) => [key, stats[key] ?? null]));
 }
-export const ratio = (success, attempts) => Number.isFinite(success) && Number.isFinite(attempts) && attempts > 0 ? success / attempts * 100 : null;
-export function goalkeeperIndicators(stats = {}) {
-  return { defensiveEfficiency: ratio(stats.saves, stats.saves != null && stats.goalsConceded != null ? stats.saves + stats.goalsConceded : null),
-    distributionAccuracy: ratio(stats.accurateDistributions, stats.distributionAttempts), exitEfficiency: ratio(stats.successfulExits, stats.exitAttempts) };
-}
-export function aggregateGoalkeeperStats(records) {
-  const stats = records.filter((record) => record?.role === "GOALKEEPER").map((record) => record.goalkeeperStats).filter(Boolean);
-  const sum = (key) => { const values = stats.map((item) => item[key]).filter(Number.isFinite); return values.length ? values.reduce((a, b) => a + b, 0) : null; };
-  // Ratios use only records with both numerator and denominator observed.
-  const paired = (a, b) => stats.filter((item) => Number.isFinite(item[a]) && Number.isFinite(item[b]));
-  const combined = (a, b, defensive = false) => {
-    const values = paired(a, b);
-    if (!values.length) return null;
-    const first = values.reduce((total, item) => total + item[a], 0);
-    const second = values.reduce((total, item) => total + item[b], 0);
-    return ratio(first, defensive ? first + second : second);
+const validCount = (value) => Number.isInteger(value) && value >= 0;
+const validPair = (success, attempts) => validCount(success) && validCount(attempts) && attempts > 0 && success <= attempts;
+export const ratio = (success, attempts) => validPair(success, attempts) ? success / attempts * 100 : null;
+
+function goalkeeperPairs({ saves, goalsConceded, accurateDistributions, distributionAttempts, successfulExits, exitAttempts }) {
+  return {
+    defensiveEfficiency: [saves, validCount(saves) && validCount(goalsConceded) ? saves + goalsConceded : null],
+    distributionAccuracy: [accurateDistributions, distributionAttempts],
+    exitEfficiency: [successfulExits, exitAttempts]
   };
-  return { ...Object.fromEntries(Object.keys(goalkeeperFields).map((key) => [key, sum(key)])),
-    defensiveEfficiency: combined("saves", "goalsConceded", true),
-    distributionAccuracy: combined("accurateDistributions", "distributionAttempts"), exitEfficiency: combined("successfulExits", "exitAttempts") };
+}
+
+export function goalkeeperIndicators(stats = {}) {
+  return Object.fromEntries(Object.entries(goalkeeperPairs(stats)).map(([key, pair]) => [key, ratio(...pair)]));
+}
+
+export const trainingObservationKey = (record) => record.trainingId ?? record;
+
+export function aggregateGoalkeeperStats(records) {
+  const eligible = records.filter((record) => record?.role === "GOALKEEPER");
+  const observed = eligible.filter((record) => record.present !== false && record.goalkeeperStats);
+  const byIndicator = {};
+  const values = {};
+  for (const key of Object.keys(goalkeeperFields)) {
+    const valid = observed.filter(({ goalkeeperStats }) => validCount(goalkeeperStats[key]));
+    values[key] = valid.length ? valid.reduce((sum, { goalkeeperStats }) => sum + goalkeeperStats[key], 0) : null;
+    byIndicator[key] = new Set(valid.map(trainingObservationKey)).size;
+  }
+  const rates = Object.keys(goalkeeperPairs({}));
+  const pairs = observed.map((record) => ({ record, values: goalkeeperPairs(record.goalkeeperStats) }));
+  for (const key of rates) {
+    const valid = pairs.filter((row) => validPair(...row.values[key]));
+    const successes = valid.reduce((sum, row) => sum + row.values[key][0], 0);
+    const attempts = valid.reduce((sum, row) => sum + row.values[key][1], 0);
+    values[key] = ratio(successes, attempts);
+    byIndicator[key] = new Set(valid.map(({ record }) => trainingObservationKey(record))).size;
+  }
+  return { ...values, coverage: { total: new Set(eligible.map(trainingObservationKey)).size, byIndicator } };
 }
 export function recordScore(record) {
   if (["WEIGHTED", "AVERAGE"].includes(record?.evaluationSource)) return Number.isFinite(record.finalScore) && record.finalScore >= 0 && record.finalScore <= 10 ? record.finalScore : null;

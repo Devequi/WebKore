@@ -7,46 +7,63 @@ import { CollapsiblePanel } from "./PainelRetratil.jsx";
 import { aggregateGoalkeeperStats, goalkeeperFields, profileFor, criteriaFor, criterionKinds, evaluationProfiles, PROFILE_VERSION, validateTypedCriteria, validateGoalkeeperStats, weightedEvaluation, arithmeticEvaluation, initialRatings } from "../../../shared/evaluations.js";
 import { scoreLabel } from "../../utils/athletePerformance.js";
 import { positionMeasurements } from "../../utils/teamPerformance.js";
+import { trainingCoverage } from "../../utils/formatters.js";
+import { getTeamCriteria, normalizeModality } from "../../../shared/criteria.js";
 
 export function GoalkeeperSummary({ records, compact = false, initialOpen = true }) {
   const stats = aggregateGoalkeeperStats(records);
   const rate = (value) => value === null ? "Sem dados" : `${value.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%`;
   const indicators = [
-    ["Defesas", stats.saves, Shield], ["Gols sofridos", stats.goalsConceded, Goal],
-    ["Eficiência defensiva", stats.defensiveEfficiency, ShieldCheck, rate],
-    ["Precisão das reposições", stats.distributionAccuracy, Send, rate],
-    ["Eficiência das saídas", stats.exitEfficiency, Crosshair, rate]
+    ["saves", "Defesas", Shield], ["goalsConceded", "Gols sofridos", Goal],
+    ["defensiveEfficiency", "Eficiência defensiva", ShieldCheck, rate],
+    ["distributionAccuracy", "Precisão das reposições", Send, rate],
+    ["exitEfficiency", "Eficiência das saídas", Crosshair, rate]
   ];
-  const visible = compact ? indicators.filter(([, value]) => value !== null) : indicators;
-  if (!visible.length || !records.some((record) => record?.role === "GOALKEEPER" && record.goalkeeperStats)) return null;
   const metrics = <section className={compact ? "team-home__metrics" : "position-metrics"} aria-label="Estatísticas observadas dos goleiros">
-    {visible.map(([label, value, Icon, format]) => <KpiCard key={label} icon={Icon} label={label}
-      value={format ? format(value) : value ?? "Sem dados"} />)}
+    {indicators.map(([key, label, Icon, format]) => <KpiCard key={key} icon={Icon} label={label}
+      value={format ? format(stats[key]) : stats[key] ?? "Sem dados"}
+      detail={trainingCoverage(stats.coverage.byIndicator[key], stats.coverage.total)} />)}
   </section>;
   return compact ? metrics : <CollapsiblePanel title="Estatísticas de goleiro" initialOpen={initialOpen}>{metrics}</CollapsiblePanel>;
 }
 
 export function OutfieldSummary({ team, records, initialOpen = true }) {
   const criteria = criteriaFor(team, "OUTFIELD", "QUANTITATIVE") || [];
-  const observed = positionMeasurements(records.filter((record) => record.present !== false), "OUTFIELD");
-  const totals = new Map(observed.map(({ id, value }) => [id, value]));
+  const measurements = positionMeasurements(records, "OUTFIELD", criteria);
 
   return <CollapsiblePanel title="Estatísticas de linha" initialOpen={initialOpen}>
-    {criteria.length ? <div className="position-metrics">
-      {criteria.map(({ id, name }) => <KpiCard key={id} icon={Crosshair} label={name}
-        value={totals.get(id)?.toLocaleString("pt-BR") ?? "Sem dados"} />)}
+    {measurements.length ? <div className="position-metrics">
+      {measurements.map(({ id, label, value, validTrainings, totalTrainings }) => <KpiCard key={id} icon={Crosshair} label={label}
+        value={value?.toLocaleString("pt-BR") ?? "Sem dados"} detail={trainingCoverage(validTrainings, totalTrainings)} />)}
     </div> : <p className="empty-content">Nenhuma medida quantitativa configurada para jogadores de linha.</p>}
   </CollapsiblePanel>;
 }
 
-export function PositionEvaluationEditor({ record, team, onSave, hideRatings = false, draftStats, draftMetrics, onDraftChange }) {
+export function PositionEvaluationEditor({ record, team, onSave, hideRatings = false, disabled = false, draftStats, draftMetrics, onDraftChange }) {
   const profile = record.criteriaSnapshot?.length ? record.criteriaSnapshot : profileFor({ ...team, modality: record.modality || team.modality }, record.role, record.position);
   const [ratings, setRatings] = useState(() => initialRatings(profile, record.ratings));
-  const [stats, setStats] = useState(() => draftStats || record.goalkeeperStats || {});
-  const [metrics, setMetrics] = useState(() => draftMetrics || record.metrics || {});
+  const [statEdits, setStatEdits] = useState({});
+  const [metricEdits, setMetricEdits] = useState({});
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
-  useEffect(() => { setRatings(initialRatings(profile, record.ratings)); setStats(draftStats || record.goalkeeperStats || {}); setMetrics(draftMetrics || record.metrics || {}); }, [record.id, record.ratings, record.goalkeeperStats, record.metrics]);
+  useEffect(() => setRatings(initialRatings(profile, record.ratings)), [record.id, record.ratings]);
+  useEffect(() => { setStatEdits({}); setMetricEdits({}); }, [record.id]);
+  const stats = draftStats ?? statEdits;
+  const metrics = draftMetrics ?? metricEdits;
+  const statValues = { ...record.goalkeeperStats, ...stats };
+  const metricValues = { ...record.metrics, ...metrics };
+  const futsal = normalizeModality(record.modality || team.modality) === "Futsal";
+  const storedMetrics = Object.keys(record.metrics || {});
+  const metricNames = futsal && hideRatings ? storedMetrics : [...new Set([...getTeamCriteria(team, "objective"), ...storedMetrics])];
+
+  function changeStats(next) {
+    setStatEdits(next);
+    onDraftChange?.({ stats: next });
+  }
+  function changeMetrics(next) {
+    setMetricEdits(next);
+    onDraftChange?.({ metrics: next });
+  }
   let preview = null;
   try { preview = (record.evaluationSource === "WEIGHTED" ? weightedEvaluation : arithmeticEvaluation)(profile, ratings).finalScore; } catch { /* incomplete form */ }
   async function save(event, kind) {
@@ -54,15 +71,17 @@ export function PositionEvaluationEditor({ record, team, onSave, hideRatings = f
     setMessage(""); setSaving(true);
     try {
       if (kind === "ratings") (record.evaluationSource === "WEIGHTED" ? weightedEvaluation : arithmeticEvaluation)(profile, ratings);
-      else if (kind === "stats") validateGoalkeeperStats(stats);
+      else if (kind === "stats") validateGoalkeeperStats(statValues);
       await onSave(kind === "ratings" ? { ratings } : kind === "stats" ? { goalkeeperStats: stats } : { metrics });
+      if (kind === "stats") changeStats({});
+      if (kind === "metrics") changeMetrics({});
       setMessage("Dados salvos.");
     } catch (error) { setMessage(error.message); }
     finally { setSaving(false); }
   }
   if (!profile && !hideRatings) return <p className="form-hint">Defina a posição do atleta no cadastro antes de registrar a avaliação.</p>;
   return <div className="page-stack position-evaluation">
-    {!hideRatings && <form onSubmit={(event) => save(event, "ratings")}><fieldset disabled={saving} className="athlete-profile-fields">
+    {!hideRatings && <form onSubmit={(event) => save(event, "ratings")}><fieldset disabled={disabled || saving} className="athlete-profile-fields">
       <legend>Avaliação técnica · {record.position || "Posição não informada"}</legend>
       <div className="rating-grid">{profile.map((item) => <label key={item.name}><span>{item.name}</span>
         <input aria-label={`Nota: ${item.name}`} type="number" min="0" max="10" step="0.1" required value={ratings[item.name] ?? ""}
@@ -71,15 +90,20 @@ export function PositionEvaluationEditor({ record, team, onSave, hideRatings = f
     </fieldset></form>}
     {record.role === "GOALKEEPER" && <details><summary>Estatísticas do goleiro (opcionais)</summary>
       <p className="form-hint">Preencha apenas ações observadas. Em branco significa não informado. Finalizações no alvo = defesas + gols sofridos.</p>
-      <form onSubmit={(event) => save(event, "stats")}><fieldset disabled={saving} className="athlete-profile-fields"><div className="metric-grid">
-        {Object.entries(goalkeeperFields).map(([key, label]) => <label key={key}>{label}<input type="number" min="0" step="1" value={stats[key] ?? ""}
-          onChange={(event) => { const next = { ...stats, [key]: event.target.value === "" ? null : Number(event.target.value) }; setStats(next); onDraftChange?.({ stats: next }); }} /></label>)}
-      </div><Button type="submit">Salvar estatísticas</Button></fieldset></form>
+      <form onSubmit={(event) => save(event, "stats")}><fieldset disabled={disabled || saving} className="athlete-profile-fields"><div className="metric-grid">
+        {Object.entries(goalkeeperFields).map(([key, label]) => <label key={key}>{label}<input type="number" min="0" max="2147483647" step="1" value={statValues[key] ?? ""}
+          onChange={(event) => changeStats({ ...stats, [key]: event.target.value === "" ? null : Number(event.target.value) })} /></label>)}
+      </div><Button type="submit" disabled={!Object.keys(stats).length}>Salvar estatísticas</Button></fieldset></form>
     </details>}
-    {record.role === "OUTFIELD" && <details><summary>Estatísticas de linha</summary><form onSubmit={(event) => save(event, "metrics")}>
-      <fieldset disabled={saving} className="athlete-profile-fields"><div className="metric-grid">{(team.objectiveCriteria || []).map((name) => <label key={name}>{name}
-        <input type="number" min="0" step="1" value={metrics[name] ?? ""} onChange={(event) => { const next = { ...metrics }; if (event.target.value === "") delete next[name]; else next[name] = Number(event.target.value); setMetrics(next); onDraftChange?.({ metrics: next }); }} />
-      </label>)}</div><Button type="submit">Salvar estatísticas</Button></fieldset></form></details>}
+    {metricNames.length > 0 && (record.role === "OUTFIELD" || hideRatings && storedMetrics.length > 0) && <details>
+      <summary>{futsal && record.role === "OUTFIELD" ? "Estatísticas de linha" : "Estatísticas esportivas"}</summary>
+      <form onSubmit={(event) => save(event, "metrics")}>
+        <fieldset disabled={disabled || saving} className="athlete-profile-fields"><div className="metric-grid">{metricNames.map((name) => <label key={name}>{name}
+          <input type="number" min="0" max="2147483647" step="1" value={Object.hasOwn(metricValues, name) ? metricValues[name] ?? "" : ""}
+            onChange={(event) => changeMetrics({ ...metrics, [name]: event.target.value === "" ? null : Number(event.target.value) })} />
+        </label>)}</div><Button type="submit" disabled={!Object.keys(metrics).length}>Salvar estatísticas</Button></fieldset>
+      </form>
+    </details>}
     {message && <p role={message === "Dados salvos." ? "status" : "alert"} className={`form-feedback form-feedback--${message === "Dados salvos." ? "success" : "error"}`}>{message}</p>}
   </div>;
 }

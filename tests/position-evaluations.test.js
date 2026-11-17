@@ -51,6 +51,25 @@ test('ratios avoid zero divisions and aggregate paired observations rather than 
   assert.equal(aggregate.defensiveEfficiency, 10 / 12 * 100);
   assert.equal(aggregate.distributionAccuracy, 20);
 });
+test('partial goalkeeper data counts only reported values and complete positive-denominator pairs', () => {
+  const records = [
+    { saves: 8, accurateDistributions: 7, distributionAttempts: 10, successfulExits: 0, exitAttempts: 4 },
+    { saves: 5, accurateDistributions: 0, distributionAttempts: 0, goalsConceded: 1, exitAttempts: 9 },
+    { accurateDistributions: 9, distributionAttempts: 10, successfulExits: 3 },
+    { saves: 0, accurateDistributions: 4, distributionAttempts: 5 }
+  ].map((goalkeeperStats) => ({ role: 'GOALKEEPER', goalkeeperStats }));
+  const total = aggregateGoalkeeperStats(records);
+  assert.equal(total.saves, 13);
+  assert.equal(total.distributionAccuracy, 80);
+  assert.equal(total.exitEfficiency, 0);
+  assert.equal(total.coverage.total, 4);
+  assert.equal(total.coverage.byIndicator.saves, 3);
+  assert.equal(total.coverage.byIndicator.distributionAccuracy, 3);
+  assert.equal(total.coverage.byIndicator.exitEfficiency, 1);
+  assert.equal(aggregateGoalkeeperStats(records.slice(2)).defensiveEfficiency, null);
+  assert.equal(goalkeeperIndicators({ saves: 0, goalsConceded: 3 }).defensiveEfficiency, 0);
+  assert.equal(goalkeeperIndicators({ accurateDistributions: 4, distributionAttempts: 3 }).distributionAccuracy, null);
+});
 test('weight changes and position changes cannot rewrite evaluation snapshots', () => {
   const original = { role: "GOALKEEPER", position: "Goleiro", modality: "Futsal", source: "WEIGHTED", ...weightedEvaluation(profile, ratings), criteria: { create: weightedEvaluation(profile, ratings).criteria } };
   const existing = { ...original, criteria: original.criteria.create };
@@ -81,17 +100,19 @@ test('rankings separate roles, enforce minimum and deterministic ties, and ignor
   assert.deepEqual(ranks.OUTFIELD.map((a) => a.id), ['line']);
 });
 test('dashboards and reports use weighted final scores and export historical context', () => {
-  const record = { ...weighted(), present: true, goalkeeperStats: { saves: 4, goalsConceded: 1 } };
+  const record = { ...weighted(), present: true, metrics: { Defesas: 0, Passes: null }, goalkeeperStats: { saves: 4, goalsConceded: 1 } };
   const training = { id: 'history', teamId: 't', date: '2026-11-01', athletes: { a: record } };
   assert.equal(athletePerformance([training], 'a').averageScore, 7.2);
   assert.equal(teamPerformance([training], 't').averageScore, 7.2);
   const rows = teamReportRows({ trainings: [training, { ...training, teamId: 'other', id: 'foreign' }], users: [] }, team);
   assert.equal(rows.length, 2);
   assert.equal(rows[1][6], 7.2);
+  assert.equal(rows[1][7], 'Defesas: 0 | Passes: Não informado');
   assert.equal(rows[1][8], 'Goleiro');
   assert.match(rows[1][10], /35%/);
   assert.match(rows[1][11], /4/);
   assert.match(rows[1][12], /80.00%/);
+  assert.match(rows[1][12], /distributionAccuracy: Sem dados/);
   assert.equal(rows[1][13], 'history');
 });
 

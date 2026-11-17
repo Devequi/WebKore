@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "./Botao.jsx";
 import { PositionEvaluationEditor } from "./AvaliacaoPosicao.jsx";
 import { evaluationRole, validateMeasurements } from "../../../shared/evaluations.js";
+import { getTeamCriteria, normalizeModality } from "../../../shared/criteria.js";
 import { evaluationDraft, evaluationProfile, measurementProfile, draftScore } from "../../utils/evaluationDraft.js";
 import { scoreLabel } from "../../utils/athletePerformance.js";
 import { formatDate } from "../../utils/formatters.js";
@@ -16,7 +17,7 @@ export function TrainingReview({ training, athletes, team, actions, drafts, setD
     const record = training.athletes[athlete.id];
     const profile = evaluationProfile(record, team, athlete);
     const quantitative = measurementProfile(record, team, athlete);
-    const draft = drafts[athlete.id] || evaluationDraft(record, profile, quantitative);
+    const draft = drafts[athlete.id] || evaluationDraft(record, profile);
     let measurementError = null;
     try { validateMeasurements(quantitative, draft.measurements || {}); } catch(error) { measurementError = error.message; }
     const score = draftScore(record, profile, draft.ratings);
@@ -30,7 +31,7 @@ export function TrainingReview({ training, athletes, team, actions, drafts, setD
   function patch(id, changes) {
     setMessage(null);
     const row = rows.find((item) => item.athlete.id === id);
-    setDrafts((old) => ({ ...old, [id]: { ...row.draft, ...changes } }));
+    setDrafts((old) => ({ ...old, [id]: { ...(old[id] || row.draft), ...changes } }));
   }
   async function save() {
     setSaving(true); setMessage(null);
@@ -44,7 +45,9 @@ export function TrainingReview({ training, athletes, team, actions, drafts, setD
         await actions.updateTrainingAthlete({ trainingId: training.id, athleteId: row.athlete.id,
           patch: { present: row.draft.present, ...(ratingsChanged ? { ratings: row.draft.ratings } : {}), ...(measurementsChanged ? { measurements: row.draft.measurements } : {}) } });
         // Clear only changes confirmed by the API. Other participants keep their drafts.
-        setDrafts((old) => ({ ...old, [row.athlete.id]: { ...row.draft, confirmed: ratingsChanged ? false : row.draft.confirmed, dirty: ratingsChanged ? false : row.draft.dirty, measurementsDirty: measurementsChanged ? false : row.draft.measurementsDirty } }));
+        setDrafts((old) => ({ ...old, [row.athlete.id]: { ...(old[row.athlete.id] || row.draft),
+          ...(ratingsChanged ? { confirmed: false, dirty: false } : {}),
+          ...(measurementsChanged ? { measurements: {}, measurementsDirty: false } : {}) } }));
         count++;
       }
       setMessage({ type: "success", text: `Registro salvo. ${pending ? `${pending} avaliação(ões) continuam pendentes e não foram registradas.` : "Avaliações confirmadas salvas."}` });
@@ -52,6 +55,10 @@ export function TrainingReview({ training, athletes, team, actions, drafts, setD
     finally { setSaving(false); }
   }
   if (!current) return <p className="empty-content">Nenhum participante disponível.</p>;
+  const currentRole = current.record.role || (current.record.modality && evaluationRole(current.record.modality, current.record.position || current.athlete.position));
+  const futsal = normalizeModality(current.record.modality || team.modality) === "Futsal";
+  const canEditStats = currentRole === "GOALKEEPER" || Object.keys(current.record.metrics || {}).length > 0
+    || !futsal && getTeamCriteria(team, "objective").length > 0;
   return <div className="training-review">
     <section className="review-information" aria-label="Informações do treino">
       <h3>1. Informações do treino</h3><dl className="review-facts">
@@ -94,17 +101,17 @@ export function TrainingReview({ training, athletes, team, actions, drafts, setD
           <fieldset disabled={saving} className="athlete-profile-fields"><div className="metric-grid">{current.quantitative.map((item) => {
             const id = item.criterionId || item.id;
             return <label key={id}>{item.name}<input type="number" min="0" max="2147483647" step="1" aria-label={`Quantidade: ${item.name}`}
-              value={current.draft.measurements?.[id] ?? ""} onChange={(event) => patch(current.athlete.id, {
+              value={(Object.hasOwn(current.draft.measurements, id) ? current.draft.measurements[id] : item.value) ?? ""} onChange={(event) => patch(current.athlete.id, {
                 measurements: { ...current.draft.measurements, [id]: event.target.value === "" ? null : Number(event.target.value) }, measurementsDirty: true })} /></label>;
           })}</div></fieldset>
           {current.measurementError && <p className="form-feedback form-feedback--error" role="alert">{current.measurementError}</p>}
         </section>}
-        {current.draft.present && (current.record.goalkeeperStats || Object.keys(current.record.metrics || {}).length > 0) && <div className="review-statistics">
-          <p className="form-hint">Estatísticas anteriores deste registro. As alterações abaixo são salvas separadamente.</p>
-          <PositionEvaluationEditor key={current.athlete.id} hideRatings team={team}
+        {current.draft.present && canEditStats && <div className="review-statistics">
+          <p className="form-hint">Campos em branco ficam como não informados. Use o botão da seção para salvar estas estatísticas.</p>
+          <PositionEvaluationEditor key={current.athlete.id} hideRatings disabled={saving} team={team}
             draftStats={current.draft.stats} draftMetrics={current.draft.metrics} onDraftChange={(changes) => patch(current.athlete.id, changes)}
             record={{ ...current.record, position: current.record.position || current.athlete.position,
-              role: current.record.role || (current.record.modality && evaluationRole(current.record.modality, current.athlete.position)) || "OUTFIELD" }}
+              role: currentRole || "OUTFIELD" }}
             onSave={(patch) => actions.updateTrainingAthlete({ trainingId: training.id, athleteId: current.athlete.id, patch })} />
         </div>}
       </section>

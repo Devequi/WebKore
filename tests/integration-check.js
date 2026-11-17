@@ -6,6 +6,7 @@ import { prisma } from "../server/src/lib/prisma.js";
 import { getJwtSecret } from "../server/src/lib/environment.js";
 import { authenticate, clearSession, restoreSession } from "../src/services/session.js";
 import { api, getAuthToken, setAuthToken } from "../src/services/api.js";
+import { teamReportRows } from "../src/services/reports.js";
 import { changeCriterion } from "../shared/criteria.js";
 import { calculateAge } from "../shared/birthDate.js";
 
@@ -15,7 +16,8 @@ const run = randomUUID();
 const password = randomUUID();
 const createdUsers = [];
 const createdTeams = [];
-const models = ["user", "team", "membership", "training", "trainingRecord", "evaluation", "sportMetric"];
+const models = ["user", "team", "membership", "training", "trainingRecord", "evaluation", "sportMetric",
+  "evaluationProfile", "profileCriterion", "evaluationCriterion", "goalkeeperStats", "trainingMeasurement"];
 async function snapshot() {
   return Promise.all(models.map(async (model) => {
     const rows = await prisma[model].findMany({ orderBy: { id: "asc" } });
@@ -202,7 +204,25 @@ try {
       const secondAthlete = await register("athlete", "second-athlete");
       await api.requestJoin(team.code);
       await request(`/trainings/team/${team.id}`, "GET", undefined, secondAthlete.token, 404);
+      async function assertRestrictedMembership(status) {
+        const session = await request("/auth/me", "GET", undefined, secondAthlete.token);
+        assert.equal(session.state.memberships.find((item) => item.teamId === team.id).status, status);
+        assert.deepEqual(session.state.trainings, []);
+        for (const listed of [session.state.teams, await request("/teams", "GET", undefined, secondAthlete.token)]) {
+          const preview = listed.find((item) => item.id === team.id);
+          assert.equal(preview.name, team.name);
+          assert.equal(preview.coach.name, coach.user.name);
+          for (const field of ["code", "athletes", "objectiveCriteria", "qualitativeCriteria", "evaluationProfiles"]) {
+            assert.equal(preview[field], undefined);
+          }
+        }
+      }
+      await assertRestrictedMembership("pending");
       setAuthToken(validToken);
+      const pendingIdentity = (await api.me()).state.users.find((item) => item.id === secondAthlete.user.id);
+      assert.equal(pendingIdentity.name, secondAthlete.user.name);
+      assert.equal(pendingIdentity.email, undefined);
+      assert.equal(pendingIdentity.birthDate, undefined);
       await api.respondRequest(team.id, secondAthlete.user.id, "approved");
       const privateTraining = await api.createTraining({ teamId: team.id, date: "2026-09-30", type: "Coletivo", records: [
         { athleteId: athlete.user.id, ratings: { "Técnica nova": 0 }, present: true, metrics: { "Gols marcados": 2 } },
@@ -212,6 +232,8 @@ try {
       createdTeams.push(foreignTeam.id);
       const ownSession = await request("/auth/me", "GET", undefined, athlete.token);
       assert.deepEqual(ownSession.state.teams.map((item) => item.id), [team.id]);
+      assert.equal(ownSession.state.teams[0].code, team.code);
+      assert.deepEqual(ownSession.state.teams[0].qualitativeCriteria, team.qualitativeCriteria);
       assert.deepEqual(ownSession.state.memberships.map((item) => item.athleteId), [athlete.user.id]);
       assert.ok(!ownSession.state.users.some((item) => item.id === secondAthlete.user.id));
       assert.equal(ownSession.state.users.find((item) => item.id === coach.user.id).email, undefined);
@@ -225,6 +247,13 @@ try {
       assert.deepEqual(coachSession.state.teams.map((item) => item.id), [team.id]);
       assert.deepEqual(Object.keys(coachSession.state.trainings.find((item) => item.id === privateTraining.id).athletes).sort(), [athlete.user.id, secondAthlete.user.id].sort());
       assert.ok(!coachSession.state.users.some((item) => item.id === otherCoach.user.id));
+      const ownReport = teamReportRows(coachSession.state, team);
+      assert.ok(ownReport.slice(1).some((row) => row[13] === privateTraining.id));
+      const foreignSession = await request("/auth/me", "GET", undefined, otherCoach.token);
+      assert.deepEqual(foreignSession.state.teams.map((item) => item.id), [foreignTeam.id]);
+      assert.equal(teamReportRows(foreignSession.state, team).length, 1);
+      assert.deepEqual(await request(`/teams?code=${encodeURIComponent(team.code)}`, "GET", undefined, otherCoach.token), []);
+      assert.equal((await request(`/teams?code=${encodeURIComponent(team.code)}`, "GET", undefined, validToken))[0].id, team.id);
       const discovered = await request(`/teams?code=${encodeURIComponent(` ${team.code.toLowerCase()} `)}`, "GET", undefined, secondAthlete.token);
       assert.equal(discovered[0].name, team.name);
       assert.equal(discovered[0].athletes, undefined);
@@ -232,15 +261,34 @@ try {
       await request(`/trainings/team/${team.id}`, "GET", undefined, otherCoach.token, 404);
       await request(`/trainings/team/${foreignTeam.id}`, "GET", undefined, athlete.token, 404);
       await request(`/trainings/${privateTraining.id}/athletes/${athlete.user.id}`, "PATCH", { present: false }, otherCoach.token, 404);
+      await request(`/trainings/${privateTraining.id}`, "DELETE", undefined, otherCoach.token, 404);
+      await request("/trainings", "POST", { teamId: team.id, date: "2026-09-30", type: "Coletivo", records: [] }, otherCoach.token, 404);
+      await request(`/teams/${team.id}`, "DELETE", undefined, otherCoach.token, 404);
+      await request(`/teams/${team.id}/requests/${secondAthlete.user.id}`, "PATCH", { status: "rejected" }, otherCoach.token, 404);
+      await request(`/teams/${team.id}/athletes/${secondAthlete.user.id}`, "PATCH", { number: 4 }, otherCoach.token, 404);
+      await request(`/teams/${team.id}/athletes/${secondAthlete.user.id}`, "DELETE", undefined, otherCoach.token, 404);
       await request(`/trainings/${privateTraining.id}`, "DELETE", undefined, athlete.token, 403);
       await request(`/teams/${team.id}/athletes/${secondAthlete.user.id}`, "PATCH", { number: 4 }, athlete.token, 403);
+      await request(`/teams/${team.id}/athletes/${athlete.user.id}`, "PATCH", { number: 4, position: "Ponteiro" }, athlete.token, 403);
+      await request(`/teams/${team.id}/athletes/${secondAthlete.user.id}`, "DELETE", undefined, athlete.token, 403);
+      await request(`/teams/${team.id}/requests/${athlete.user.id}`, "PATCH", { status: "approved" }, athlete.token, 403);
+      await request(`/trainings/${privateTraining.id}/athletes/${secondAthlete.user.id}`, "PATCH", { present: false }, athlete.token, 403);
+      await request("/auth/me", "PATCH", { role: "COACH", name: "Alteração não autorizada" }, athlete.token, 403);
+      assert.equal((await request("/auth/me", "GET", undefined, athlete.token)).user.name, ownSession.user.name);
       for (const claims of [{ id: "missing-user", role: "COACH" }, { id: athlete.user.id, role: "COACH" }, { id: coach.user.id, role: "ADMIN" }, { role: "COACH" }]) {
         await request("/auth/me", "GET", undefined, jwt.sign(claims, getJwtSecret(), { expiresIn: "1h" }), 401);
       }
+      await api.respondRequest(team.id, secondAthlete.user.id, "rejected");
+      await assertRestrictedMembership("rejected");
+      await request(`/trainings/team/${team.id}`, "GET", undefined, secondAthlete.token, 404);
+      await api.respondRequest(team.id, secondAthlete.user.id, "approved");
       await request(`/teams/${team.id}/athletes/${secondAthlete.user.id}`, "DELETE", undefined, secondAthlete.token, 204);
       await request(`/trainings/team/${team.id}`, "GET", undefined, secondAthlete.token, 404);
       assert.equal((await request("/auth/me", "GET", undefined, secondAthlete.token)).state.trainings.length, 0);
       assert.ok(await prisma.trainingRecord.findUnique({ where: { trainingId_athleteId: { trainingId: privateTraining.id, athleteId: secondAthlete.user.id } } }));
+      const disposable = await api.createTraining({ teamId: team.id, date: "2026-09-30", type: "Coletivo", records: [] });
+      await request(`/trainings/${disposable.id}`, "DELETE", undefined, validToken, 204);
+      assert.equal(await prisma.training.findUnique({ where: { id: disposable.id } }), null);
       console.log("Etapa 6: dois atletas, equipes de dois treinadores, projeção, notas privadas, busca, saída sem apagar histórico e JWT/conta verificados OK.");
     }
     if (stage >= 7) {

@@ -15,10 +15,12 @@ export function teamReportRows(state, team) {
   const rows = trainings.flatMap((training) => Object.entries(training.athletes || {}).map(([athleteId, record]) => {
     const athlete = state.users.find((user) => user.id === athleteId);
     const stats = record.goalkeeperStats;
-    const indicators = stats ? goalkeeperIndicators(stats) : null;
+    const indicators = stats && record.present !== false ? goalkeeperIndicators(stats) : null;
+    const metrics = [...Object.entries(record.metrics || {}).map(([name, value]) => `${name}: ${value ?? "Não informado"}`),
+      ...(record.measurements || []).map((item) => `${item.name}: ${item.value ?? "Não informado"}`)];
     return [team.name, record.modality || team.modality, athlete?.name || athleteId, formatDate(training.date), training.type,
       record.present ? "Presente" : "Ausente", recordScore(record),
-      [...Object.entries(record.metrics || {}).map(([name, value]) => `${name}: ${value}`), ...(record.measurements || []).map((item) => `${item.name}: ${item.value ?? "Não informado"}`)].join(" | "),
+      metrics.join(" | ") || "Sem dados",
       record.position || "Não registrada (legado)", record.evaluationSource || "Sem avaliação",
       record.evaluationSource === "WEIGHTED" ? (record.criteriaSnapshot || []).map((item) => `${item.name}: ${item.score} (peso ${item.weight}%)`).join(" | ")
         : Object.entries(record.ratings || {}).map(([name, value]) => `${name}: ${value}`).join(" | "),

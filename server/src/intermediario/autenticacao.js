@@ -14,7 +14,10 @@ export async function requireAuth(request, response, next) {
   let claims;
   try {
     claims = jwt.verify(token, getJwtSecret(), { algorithms: ["HS256"] });
-    if (typeof claims.id !== "string" || !/^[A-Za-z0-9_-]{1,191}$/.test(claims.id) || !["COACH", "ATHLETE"].includes(claims.role)) throw new Error("Claims inválidas");
+    if (!Number.isSafeInteger(claims.exp) || typeof claims.id !== "string" ||
+      !/^[A-Za-z0-9_-]{1,191}$/.test(claims.id) || !["COACH", "ATHLETE"].includes(claims.role)) {
+      throw new Error("Claims inválidas");
+    }
   } catch {
     return response.status(401).json({ message: "Token inválido." });
   }

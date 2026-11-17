@@ -1,4 +1,5 @@
 import { goalkeeperFields, goalkeeperIndicators } from "../../../shared/evaluations.js";
+import { fromStoredMetric } from "./metricas.js";
 import { evaluationFromRatings, getTeamCriteria, normalizeModality, qualitativeFields } from "../../../shared/criteria.js";
 import { HttpError } from "./validacao.js";
 
@@ -57,20 +58,25 @@ export function toPublicUser(user, membership) {
   };
 }
 
-export function toClientTeam(team) {
-  return {
+export function toClientTeam(team, viewer) {
+  const identity = {
     id: team.id,
     name: team.name,
     modality: normalizeModality(team.modality) || team.modality,
-    code: team.code,
     coachId: team.coachId,
+    coach: toPublicUser(team.coach)
+  };
+  if (viewer?.role === "ATHLETE" && !team.memberships?.some((membership) =>
+    membership.athleteId === viewer.id && membership.status === "APPROVED")) return identity;
+  return {
+    ...identity,
+    code: team.code,
     objectiveCriteria: getTeamCriteria(team, "objective"),
     qualitativeCriteria: getTeamCriteria(team, "qualitative"),
     evaluationProfiles: team.evaluationProfiles || [],
     athletes: team.memberships
       ?.filter((membership) => membership.status === "APPROVED")
       .map((membership) => toPublicUser(membership.athlete, membership)),
-    coach: toPublicUser(team.coach),
     createdAt: team.createdAt,
     updatedAt: team.updatedAt
   };
@@ -114,7 +120,7 @@ export function toClientTraining(training, team) {
           criteriaSnapshot: record.evaluation?.criteria || [],
           goalkeeperStats: record.goalkeeperStats ? Object.fromEntries(Object.keys(goalkeeperFields).map((key) => [key, record.goalkeeperStats[key] ?? null])) : null,
           goalkeeperIndicators: record.goalkeeperStats ? goalkeeperIndicators(record.goalkeeperStats) : null,
-          metrics: Object.fromEntries((record.metrics || []).map((metric) => [metric.name, metric.value])),
+          metrics: Object.fromEntries((record.metrics || []).map((metric) => [metric.name, fromStoredMetric(metric.value)])),
           ratings: ["WEIGHTED", "AVERAGE"].includes(record.evaluation?.source)
             ? Object.fromEntries((record.evaluation.criteria || []).map((item) => [item.name, item.score])) : Object.fromEntries(
             criteria.map((name, index) => [

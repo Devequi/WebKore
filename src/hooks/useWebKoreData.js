@@ -1,8 +1,7 @@
-import { normalizeModality } from "../../shared/criteria.js";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, ApiError, getAuthToken } from "../services/api.js";
 import { authenticate, clearSession, restoreSession } from "../services/session.js";
-import { changeCriterion, getTeamCriteria, metricCatalog } from "../../shared/criteria.js";
+import { changeCriterion, metricCatalog } from "../../shared/criteria.js";
 import { getApprovedAthletes } from "../utils/selectors.js";
 
 const emptyState = () => ({ users: [], teams: [], memberships: [], trainings: [] });
@@ -153,12 +152,7 @@ export function useWebKoreData() {
     removeAthlete: ({ athleteId, teamId }) => mutate(() => api.deleteMembership(teamId, athleteId)),
     addTraining: ({ team, date, type, description }) => mutate(() => api.createTraining({
       teamId: team.id, date, type, description,
-      records: getApprovedAthletes(state, team.id).map((athlete) => ({
-        athleteId: athlete.id, present: true,
-        ...(normalizeModality(team.modality) === "Futsal" ? {} : {
-          metrics: Object.fromEntries(getTeamCriteria(team, "objective").map((name) => [name, 0])),
-        })
-      }))
+      records: getApprovedAthletes(state, team.id).map((athlete) => ({ athleteId: athlete.id, present: true }))
     })),
     updateTrainingAthlete: ({ trainingId, athleteId, patch }) => mutate(() => api.updateTrainingAthlete(trainingId, athleteId, patch)),
     deleteTraining: ({ trainingId }) => mutate(() => api.deleteTraining(trainingId))

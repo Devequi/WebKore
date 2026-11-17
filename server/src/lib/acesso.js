@@ -15,9 +15,14 @@ export function visibleRecords(user) {
   return { ...(user.role === "ATHLETE" ? { where: { athleteId: user.id } } : {}),
     include: recordInclude };
 }
+export function trainingTeamScope(user) {
+  return user.role === "COACH" ? { coachId: user.id } : {
+    memberships: { some: { athleteId: user.id, status: "APPROVED" } }
+  };
+}
 export function visibleTrainings(user) {
-  return user.role === "COACH" ? { team: { coachId: user.id } } : {
-    team: { memberships: { some: { athleteId: user.id, status: "APPROVED" } } },
-    records: { some: { athleteId: user.id } }
+  return {
+    team: trainingTeamScope(user),
+    ...(user.role === "ATHLETE" ? { records: { some: { athleteId: user.id } } } : {})
   };
 }

@@ -1,4 +1,4 @@
-import { recordScore } from "../../shared/evaluations.js";
+import { recordScore, trainingObservationKey } from "../../shared/evaluations.js";
 import { average } from "./formatters.js";
 import { ratingEntries } from "./athletePerformance.js";
 import { isDateOnly } from "../../shared/birthDate.js";
@@ -48,17 +48,21 @@ export function teamPerformance(trainings, teamId, role) {
     improvement: summaries.filter((item) => item.change > 0).sort((a, b) => b.change - a.change)[0] };
 }
 
-export function positionMeasurements(records, role) {
-  const totals = new Map();
-  for (const record of records) {
-    if (record?.role !== role) continue;
+export function positionMeasurements(records, role, criteria = []) {
+  const entries = new Map(criteria.map(({ id, name }) => [id, { id, label: name, value: null, trainings: new Set() }]));
+  const eligible = records.filter((record) => record?.role === role);
+  const totalTrainings = new Set(eligible.map(trainingObservationKey)).size;
+  for (const record of eligible) {
+    if (record.present === false) continue;
     for (const item of record.measurements || []) {
-      if (item.role !== role || !Number.isFinite(item.value)) continue;
-      const previous = totals.get(item.criterionId);
-      totals.set(item.criterionId, { id: item.criterionId, label: item.name, value: (previous?.value ?? 0) + item.value });
+      if (item.role !== role || !Number.isInteger(item.value) || item.value < 0) continue;
+      const entry = entries.get(item.criterionId) || { id: item.criterionId, label: item.name, value: null, trainings: new Set() };
+      entry.value = (entry.value ?? 0) + item.value;
+      entry.trainings.add(trainingObservationKey(record));
+      entries.set(entry.id, entry);
     }
   }
-  return [...totals.values()];
+  return [...entries.values()].map(({ trainings, ...entry }) => ({ ...entry, validTrainings: trainings.size, totalTrainings }));
 }
 
 export function coachOverview(state, coachId) {

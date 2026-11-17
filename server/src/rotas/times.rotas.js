@@ -20,7 +20,9 @@ teamsRouter.get("/", async (request, response) => {
   try {
     if (request.query.code !== undefined) {
       const code = normalizeTeamCode(text(request.query.code, "Código"));
-      const team = await prisma.team.findUnique({ where: { code }, select: {
+      const team = await prisma.team.findUnique({ where: {
+        code, ...(request.user.role === "COACH" ? { coachId: request.user.id } : {})
+      }, select: {
         id: true, name: true, modality: true, code: true, coachId: true, coach: { select: coachIdentitySelect }
       } });
       return response.json(team ? [{ ...team, modality: normalizeModality(team.modality) || team.modality,
@@ -34,7 +36,7 @@ teamsRouter.get("/", async (request, response) => {
       }
     });
 
-    return response.json(teams.map(toClientTeam));
+    return response.json(teams.map((team) => toClientTeam(team, request.user)));
   } catch (error) {
     return sendError(response, error, "Erro ao buscar equipes.");
   }
@@ -204,7 +206,8 @@ teamsRouter.patch(
           teamId_athleteId: {
             teamId,
             athleteId
-          }
+          },
+          team: { coachId: request.user.id }
         },
 
         data: {
@@ -333,20 +336,16 @@ teamsRouter.delete("/:teamId", async (request, response) => {
       return response.status(403).json({ message: "Apenas treinadores podem excluir equipes." });
     }
 
-    const team = await prisma.team.findFirst({
+    const { count } = await prisma.team.deleteMany({
       where: {
         id: teamId,
         coachId: request.user.id
       }
     });
 
-    if (!team) {
+    if (!count) {
       return response.status(404).json({ message: "Equipe nao encontrada." });
     }
-
-    await prisma.team.delete({
-      where: { id: teamId }
-    });
 
     return response.status(204).send();
   } catch (error) {
@@ -357,17 +356,11 @@ teamsRouter.delete("/:teamId", async (request, response) => {
 teamsRouter.patch("/:teamId/athletes/:athleteId", async (request, response) => {
   try {
     const { athleteId, teamId } = request.params;
-    const team = await prisma.team.findUnique({ where: { id: teamId } });
-
-    const canEdit =
-      request.user.role === "ATHLETE"
-        ? request.user.id === athleteId
-        : team?.coachId === request.user.id;
-
-    if (!canEdit) {
-      return response.status(403).json({ message: "Voce nao tem permissao para editar este atleta." });
+    if (request.user.role !== "COACH") {
+      return response.status(403).json({ message: "Apenas treinadores podem editar dados do vínculo." });
     }
 
+    const team = await prisma.team.findFirst({ where: { id: teamId, coachId: request.user.id }, select: { modality: true } });
     if (!team) throw new HttpError(404, "Equipe nao encontrada.");
     let data;
     try { data = membershipPatch(request.body, team.modality); }
@@ -378,7 +371,8 @@ teamsRouter.patch("/:teamId/athletes/:athleteId", async (request, response) => {
         teamId_athleteId: {
           teamId,
           athleteId
-        }
+        },
+        team: { coachId: request.user.id }
       },
       data
     });
@@ -393,30 +387,18 @@ teamsRouter.delete("/:teamId/athletes/:athleteId", async (request, response) => 
   try {
     const { athleteId, teamId } = request.params;
 
-    const canRemove =
-      request.user.role === "ATHLETE"
-        ? request.user.id === athleteId
-        : Boolean(
-            await prisma.team.findFirst({
-              where: {
-                id: teamId,
-                coachId: request.user.id
-              }
-            })
-          );
-
-    if (!canRemove) {
+    if (request.user.role === "ATHLETE" && request.user.id !== athleteId) {
       return response.status(403).json({ message: "Voce nao tem permissao para remover este vinculo." });
     }
 
-    await prisma.membership.delete({
+    const { count } = await prisma.membership.deleteMany({
       where: {
-        teamId_athleteId: {
-          teamId,
-          athleteId
-        }
+        teamId,
+        athleteId,
+        ...(request.user.role === "COACH" ? { team: { coachId: request.user.id } } : {})
       }
     });
+    if (!count) throw new HttpError(404, "Vínculo não encontrado.");
 
     return response.status(204).send();
   } catch (error) {

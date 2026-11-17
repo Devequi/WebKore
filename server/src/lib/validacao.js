@@ -63,8 +63,9 @@ export function validateMetrics(metrics) {
     text(name, "Nome da métrica");
     if (names.has(name)) throw new HttpError(400, "Métrica repetida.");
     names.add(name);
-    integer(value, "Métrica");
+    if (value !== null) integer(value, "Métrica");
   }
+  return entries;
 }
 
 export function validatePresence(value) {

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ArrowDown, ArrowUp, Minus } from "lucide-react";
 import { useTodayDate } from "../../hooks/useTodayDate.js";
-import { formatDate } from "../../utils/formatters.js";
+import { formatDate, trainingCoverage } from "../../utils/formatters.js";
 import { individualEvolution, individualSeries } from "../../utils/individualEvolution.js";
 import { CollapsiblePanel } from "../ui/PainelRetratil.jsx";
 import { chartSeries } from "./chartAppearance.jsx";
@@ -52,6 +52,7 @@ export function AthleteDashboard({ trainings, athlete, team }) {
   const tableLabel = grouped ? `${views[view]} · ${evaluationGroups[group]}` : views[view];
   const unit = units[metric?.unit || "score"];
   const { data, table, change, count } = individualSeries(rows, metric);
+  const coverage = metric && metric.unit !== "score" ? trainingCoverage(count, table.length) : null;
 
   return <CollapsiblePanel title={title} className="chart-panel individual-evolution"
     headingClassName="individual-evolution__heading" actions={<EvolutionChange change={change} unit={unit} />}>
@@ -76,6 +77,7 @@ export function AthleteDashboard({ trainings, athlete, team }) {
       : <p className="empty-content" role="status">{rows.length
         ? "Sem valores registrados para esta visualização." : "Sem registros do perfil atual neste período."}</p>}
     {outsideProfile > 0 && <p className="athlete-note individual-evolution__history-note">Registros de outros perfis ou sem posição registrada estão no histórico de treinos.</p>}
+    {coverage && <p className="athlete-note">{coverage}</p>}
     {table.length > 0 && <details className="athlete-chart-table">
       <summary>Consultar notas em tabela</summary>
       <div className="athlete-table-scroll"><table>

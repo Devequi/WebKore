@@ -56,7 +56,13 @@ async function buildSessionPayload(userId) {
     visibleUserMap.set(team.coach.id, toPublicUser(team.coach));
 
     team.memberships.forEach((membership) => {
-      visibleUserMap.set(membership.athlete.id, toPublicUser(membership.athlete, membership));
+      const athlete = toPublicUser(membership.athlete, membership);
+      if (user.role === "ATHLETE" || membership.status === "APPROVED") {
+        visibleUserMap.set(athlete.id, athlete);
+      } else if (!visibleUserMap.has(athlete.id)) {
+        const { id, name, photo, role } = athlete;
+        visibleUserMap.set(id, { id, name, photo, role });
+      }
     });
   });
 
@@ -82,7 +88,7 @@ async function buildSessionPayload(userId) {
     user: toPublicUser(user),
     state: {
       users: Array.from(visibleUserMap.values()),
-      teams: teams.map(toClientTeam),
+      teams: teams.map((team) => toClientTeam(team, user)),
       memberships: memberships.map(toClientMembership),
       trainings: clientTrainings,
       teamRankings
@@ -199,6 +205,9 @@ authRouter.get("/me", requireAuth, async (request, response) => {
 
 authRouter.patch("/me", requireAuth, async (request, response) => {
   try {
+    if (["role", "id", "userId", "passwordHash"].some((field) => Object.hasOwn(request.body, field))) {
+      throw new HttpError(403, "Você não tem permissão para alterar a identidade ou o perfil de acesso da conta.");
+    }
     const { email, name, password, photo, birthDate } = request.body;
 
     const data = {};

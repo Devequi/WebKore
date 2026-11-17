@@ -101,10 +101,13 @@ test("goleiro distingue medidas de perfil de estatísticas com nomes iguais e ma
 
 test("outras modalidades preservam critérios e contagens do histórico legado", () => {
   const trainings = [
-    training("old", "2026-04-03", { present: true, ratings: { Técnica: 5 }, metrics: { Aces: 17 } }),
-    training("recent", "2026-11-03", { present: true, ratings: { Técnica: 9 }, metrics: { Aces: 0 } })
+    training("old", "2026-04-03", { present: true, ratings: { Aces: 5 }, metrics: { Aces: 17 } }),
+    training("blank", "2026-09-01", { present: true, ratings: { Aces: 7 }, metrics: { Aces: null } }),
+    training("recent", "2026-11-03", { present: true, ratings: { Aces: 9 }, metrics: { Aces: 0 } })
   ];
-  const result = evolution(trainings, { team: { ...team, modality: "Vôlei" } });
+  const result = evolution(trainings, { team: { ...team, modality: "Vôlei", qualitativeCriteria: ["Aces"] } });
   assert.equal(individualSeries(result.rows, result.modes.qualitative[0]).change, 4);
-  assert.equal(individualSeries(result.rows, result.modes.quantitative.find((item) => item.label === "Aces")).change, -17);
+  const aces = individualSeries(result.rows, result.modes.quantitative.find((item) => item.label === "Aces"));
+  assert.deepEqual(aces.data.map((row) => row.value), [17, null, 0]);
+  assert.equal(aces.change, -17);
 });

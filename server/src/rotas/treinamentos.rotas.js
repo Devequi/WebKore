@@ -1,11 +1,11 @@
 import { goalkeeperFields as goalkeeperStatsFields } from "../../../shared/evaluations.js";
 import { prepareEvaluation, prepareMeasurements, prepareStats, recordContext } from "../lib/avaliacoes.js";
-import { profileInclude, recordInclude } from "../lib/acesso.js";
+import { profileInclude, recordInclude, trainingTeamScope, visibleRecords, visibleTrainings } from "../lib/acesso.js";
+import { fromStoredMetric, toStoredMetric } from "../lib/metricas.js";
 import { Router } from "express";
 
 import { requireAuth } from "../intermediario/autenticacao.js";
 import { prisma } from "../lib/prisma.js";
-import { visibleRecords } from "../lib/acesso.js";
 import { normalizeTrainingType, toClientTraining } from "../lib/serializadores.js";
 import { date as validateDate, HttpError, id, sendError, text, validateMetrics, validateNotes, validateParam, validatePresence } from "../lib/validacao.js";
 
@@ -14,40 +14,12 @@ export const trainingsRouter = Router();
 trainingsRouter.use(requireAuth);
 for (const name of ["teamId", "trainingId", "athleteId"]) trainingsRouter.param(name, validateParam);
 
-function metricsToCreate(metrics) {
-  if (Array.isArray(metrics)) {
-    return metrics.map((metric) => ({
-      name: metric.name,
-      value: Number(metric.value) || 0
-    }));
-  }
-
-  return Object.entries(metrics || {}).map(([name, value]) => ({
-    name,
-    value: Number(value) || 0
-  }));
-}
-
 trainingsRouter.get("/team/:teamId", async (request, response) => {
   try {
     const { teamId } = request.params;
 
     const team = await prisma.team.findFirst({
-      where:
-        request.user.role === "COACH"
-          ? {
-              id: teamId,
-              coachId: request.user.id
-            }
-          : {
-              id: teamId,
-              memberships: {
-                some: {
-                  athleteId: request.user.id,
-                  status: "APPROVED"
-                }
-              }
-            }
+      where: { id: teamId, ...trainingTeamScope(request.user) }
     });
 
     if (!team) {
@@ -55,10 +27,7 @@ trainingsRouter.get("/team/:teamId", async (request, response) => {
     }
 
     const trainings = await prisma.training.findMany({
-      where: {
-        teamId,
-        ...(request.user.role === "ATHLETE" ? { records: { some: { athleteId: request.user.id } } } : {})
-      },
+      where: { teamId, ...visibleTrainings(request.user) },
 
       include: {
         records: visibleRecords(request.user)
@@ -107,7 +76,6 @@ trainingsRouter.post("/", async (request, response) => {
       validatePresence(record.present);
 
       if (record.evaluation !== undefined) validateNotes(record.evaluation, ["technique", "physicalCondition", "participation", "teamwork"]);
-      if (record.metrics !== undefined) validateMetrics(record.metrics);
     }
     if (new Set(athleteIds).size !== athleteIds.length) throw new HttpError(400, "Atleta repetido no treino.");
 
@@ -121,6 +89,7 @@ trainingsRouter.post("/", async (request, response) => {
       const created = await transaction.training.create({
         data: { teamId, date: parsedDate, type: normalizedType, description: description || "",
           records: { create: records.map((record) => {
+            const metrics = record.metrics === undefined ? undefined : validateMetrics(record.metrics);
             const context = recordContext(team, memberships.find((item) => item.athleteId === record.athleteId));
             if (context.modalitySnapshot === "Futsal" && record.evaluation) throw new HttpError(400, "Envie as notas por critério para avaliar futsal.");
             if (record.present === false && (record.ratings !== undefined || record.evaluation !== undefined)) throw new HttpError(400, "Atletas ausentes não podem receber uma nova avaliação.");
@@ -130,12 +99,13 @@ trainingsRouter.post("/", async (request, response) => {
             if (record.measurements !== undefined && !futsal) throw new HttpError(400, "Medidas por perfil são exclusivas do futsal.");
             const hasMeasurements = record.measurements !== undefined || futsal && (record.metrics !== undefined || evaluation);
             if (record.present === false && hasMeasurements) throw new HttpError(400, "Atletas ausentes não podem receber medidas.");
-            const measurements = hasMeasurements ? prepareMeasurements(context, team, record.measurements === undefined ? {} : record.measurements, record.metrics) : null;
+            const measurements = hasMeasurements ? prepareMeasurements(context, team, record.measurements === undefined ? {} : record.measurements,
+              metrics && Object.fromEntries(metrics)) : null;
             return { athleteId: record.athleteId, present: record.present ?? true, ...context,
               ...(measurements ? { measurementsInitialized: true, measurements: { create: measurements } } : {}),
               ...(evaluation ? { evaluation: { create: evaluation } } : {}),
               ...(stats ? { goalkeeperStats: { create: stats } } : {}),
-              metrics: { create: metricsToCreate(futsal ? undefined : record.metrics) } };
+              ...(!futsal && metrics?.length ? { metrics: { create: metrics.map(([name, value]) => ({ name, value: toStoredMetric(value) })) } } : {}) };
           }) }
         }, include: { records: { include: recordInclude } }
       });
@@ -201,14 +171,15 @@ trainingsRouter.patch("/:trainingId/athletes/:athleteId", async (request, respon
         }, include: { metrics: true }
       });
       for (const [name, expected] of Object.entries(expectedMetrics || {})) {
-        if ((record.metrics.find((metric) => metric.name === name)?.value ?? 0) !== expected) {
+        if (fromStoredMetric(record.metrics.find((metric) => metric.name === name)?.value) !== expected) {
           throw new HttpError(409, "A métrica foi alterada em outra operação. Atualize o painel e tente novamente.");
         }
       }
       for (const [name, value] of Object.entries(legacyMetrics)) {
+        const stored = toStoredMetric(value);
         await transaction.sportMetric.upsert({
           where: { recordId_name: { recordId: record.id, name } },
-          create: { recordId: record.id, name, value }, update: { value }
+          create: { recordId: record.id, name, value: stored }, update: { value: stored }
         });
       }
       const result = await transaction.training.findUnique({
@@ -230,7 +201,7 @@ trainingsRouter.delete("/:trainingId", async (request, response) => {
       return response.status(403).json({ message: "Apenas treinadores podem excluir treinos." });
     }
 
-    const training = await prisma.training.findFirst({
+    const { count } = await prisma.training.deleteMany({
       where: {
         id: trainingId,
         team: {
@@ -239,13 +210,9 @@ trainingsRouter.delete("/:trainingId", async (request, response) => {
       }
     });
 
-    if (!training) {
+    if (!count) {
       return response.status(404).json({ message: "Treino nao encontrado." });
     }
-
-    await prisma.training.delete({
-      where: { id: trainingId }
-    });
 
     return response.status(204).send();
   } catch (error) {

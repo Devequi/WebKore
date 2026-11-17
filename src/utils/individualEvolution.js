@@ -8,8 +8,8 @@ const keeperNames = new Set(["Defesas", "Saídas do gol", "Reposições certas",
 const averageMetric = { id: "average", label: "Média geral", unit: "score" };
 const valid = (value, unit) => Number.isFinite(value) && value >= 0 &&
   (unit === "count" ? Number.isInteger(value) : value <= (unit === "score" ? 10 : 100));
-const nameId = (name) => `name:${name}`;
-const savedId = (id, name) => id ? `criterion:${id}` : nameId(name);
+const nameId = (kind, name) => `${kind}:${name}`;
+const savedId = (kind, id, name) => id ? `criterion:${id}` : nameId(kind, name);
 
 export function individualEvolution({ trainings, athlete, team, period, today }) {
   const modality = normalizeModality(team.modality);
@@ -19,8 +19,8 @@ export function individualEvolution({ trainings, athlete, team, period, today })
   const base = { qualitative: new Map(), quantitative: new Map(), statistics: new Map() };
   for (const [kind, unit, type] of [["qualitative", "score", "QUALITATIVE"], ["quantitative", "count", "QUANTITATIVE"]]) {
     const configured = futsal
-      ? (criteriaFor(team, role, type) || []).map(({ id, name }) => ({ id: savedId(id, name), label: name, unit }))
-      : getTeamCriteria(team, kind === "qualitative" ? "qualitative" : "objective").map((name) => ({ id: nameId(name), label: name, unit }));
+      ? (criteriaFor(team, role, type) || []).map(({ id, name }) => ({ id: savedId(kind, id, name), label: name, unit }))
+      : getTeamCriteria(team, kind === "qualitative" ? "qualitative" : "objective").map((name) => ({ id: nameId(kind, name), label: name, unit }));
     for (const metric of configured) base[kind].set(metric.id, metric);
   }
 
@@ -50,20 +50,18 @@ export function individualEvolution({ trainings, athlete, team, period, today })
       if (valid(overall, "score")) scores.set(averageMetric.id, overall);
 
       if (record.criteriaSnapshot?.length) {
-        for (const item of record.criteriaSnapshot) remember("qualitative", savedId(item.criterionId, item.name), item.name, "score", item.score);
+        for (const item of record.criteriaSnapshot) remember("qualitative", savedId("qualitative", item.criterionId, item.name), item.name, "score", item.score);
       } else if (!isGoalkeeper) {
-        for (const [name, value] of Object.entries(record.ratings || {})) remember("qualitative", nameId(name), name, "score", value);
+        for (const [name, value] of Object.entries(record.ratings || {})) remember("qualitative", nameId("qualitative", name), name, "score", value);
       }
 
       for (const item of record.measurements || []) {
-        if (!futsal || item.role === role) remember("quantitative", savedId(item.criterionId, item.name), item.name, "count", item.value);
+        if (!futsal || item.role === role) remember("quantitative", savedId("quantitative", item.criterionId, item.name), item.name, "count", item.value);
       }
-      if (!record.measurementsInitialized && !record.measurements?.length) {
-        for (const [name, value] of Object.entries(record.metrics || {})) {
-          if (futsal && (!role || isGoalkeeper !== keeperNames.has(criterionKey(name)))) continue;
-          if (isGoalkeeper) remember("statistics", nameId(name), `${name} (histórico)`, "count", value);
-          else remember("quantitative", nameId(name), name, "count", value);
-        }
+      for (const [name, value] of Object.entries(record.metrics || {})) {
+        if (futsal && (!role || isGoalkeeper !== keeperNames.has(criterionKey(name)))) continue;
+        if (isGoalkeeper) remember("statistics", nameId("statistics", name), `${name} (histórico)`, "count", value);
+        else remember("quantitative", nameId("quantitative", name), name, "count", value);
       }
       if (isGoalkeeper) {
         for (const [key, name] of Object.entries(goalkeeperFields)) {

@@ -6,7 +6,7 @@ import { TeamEvolutionChart } from "../../componentes/charts/GraficoEvolucaoEqui
 import { KpiCard } from "../../componentes/ui/CartaoKpi.jsx";
 import { EmptyState } from "../../componentes/ui/EstadoVazio.jsx";
 import { CollapsiblePanel } from "../../componentes/ui/PainelRetratil.jsx";
-import { formatDate, percent } from "../../utils/formatters.js";
+import { formatDate, percent, trainingCoverage } from "../../utils/formatters.js";
 import { getApprovedAthletes, getTeamStats, getTeamTrainings } from "../../utils/selectors.js";
 import { getTrainingHighlight } from "../../utils/athleteHighlights.js";
 import { positionMeasurements, teamPerformance } from "../../utils/teamPerformance.js";
@@ -76,8 +76,8 @@ function CriterionHighlights({ performance }) {
   </details>;
 }
 
-function PerformancePanel({ title, icon: Icon, performance, role, records }) {
-  const measurements = role ? positionMeasurements(records, role) : [];
+function PerformancePanel({ title, icon: Icon, performance, role, records, team }) {
+  const measurements = role ? positionMeasurements(records, role, criteriaFor(team, role, "QUANTITATIVE") || []) : [];
   return <section className={`panel team-home__performance${role === "GOALKEEPER" ? " team-home__keeper" : ""}`}>
     <h2><Icon size={21} aria-hidden="true" />{title}</h2>
     <div className="team-home__metrics">
@@ -87,8 +87,9 @@ function PerformancePanel({ title, icon: Icon, performance, role, records }) {
     {role === "GOALKEEPER" && <GoalkeeperSummary records={records} compact />}
     {measurements.length > 0 && <details className="team-home__details" open={role === "OUTFIELD"}>
       <summary>Medidas do perfil</summary>
-      <div className="team-home__metrics">{measurements.map(({ id, label, value }) =>
-        <KpiCard key={id} icon={Crosshair} label={label} value={numberLabel(value)} />)}</div>
+      <div className="team-home__metrics">{measurements.map(({ id, label, value, validTrainings, totalTrainings }) =>
+        <KpiCard key={id} icon={Crosshair} label={label} value={value === null ? "Sem dados" : numberLabel(value)}
+          detail={trainingCoverage(validTrainings, totalTrainings)} />)}</div>
     </details>}
     <CriterionHighlights performance={performance} />
   </section>;
@@ -103,7 +104,8 @@ export function TeamHome({ state, team, onOpenTraining }) {
   const futsal = normalizeModality(team.modality) === "Futsal";
   const athletes = getApprovedAthletes(state, team.id);
   const last = stats.lastTraining;
-  const records = futsal ? trainings.flatMap((training) => Object.values(training.athletes || {})) : [];
+  const records = futsal ? trainings.flatMap((training) => Object.values(training.athletes || {})
+    .map((record) => ({ ...record, trainingId: training.id }))) : [];
   const positionViews = futsal ? roles.map((role) => {
     const scoped = teamPerformance(trainings, team.id, role.id);
     const configured = criteriaFor(team, role.id, "QUALITATIVE").map((item) => item.name);
@@ -136,7 +138,7 @@ export function TeamHome({ state, team, onOpenTraining }) {
     </div>
     {futsal ? <div className="team-home__role-grid">
       {positionViews.map(({ id, label, icon, performance: scoped }) => <PerformancePanel key={id}
-        title={`Desempenho — ${label}`} icon={icon} performance={scoped} role={id} records={records} />)}
+        title={`Desempenho — ${label}`} icon={icon} performance={scoped} role={id} records={records} team={team} />)}
     </div> : <PerformancePanel title="Desempenho da equipe" icon={BarChart3} performance={performance} />}
     <AverageRankings key={team.id} rankings={rankings} lastRankings={sessionRankings} athletes={athletes} trainings={trainings} />
   </div>;

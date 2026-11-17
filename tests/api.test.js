@@ -34,7 +34,8 @@ test("API preserva health, respostas 401 e restrições do perfil atleta sem ace
     const tokens = [
       "invalid-token",
       jwt.sign({ id: "test-user", role: "ATHLETE" }, secret, { expiresIn: -1 }),
-      jwt.sign({ id: "test-user", role: "ATHLETE" }, randomBytes(48).toString("hex"))
+      jwt.sign({ id: "test-user", role: "ATHLETE" }, randomBytes(48).toString("hex"), { expiresIn: "1h" }),
+      jwt.sign({ id: "test-user", role: "ATHLETE" }, secret)
     ];
     for (const token of tokens) {
       const response = await fetch(`${baseUrl}/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
@@ -54,6 +55,10 @@ test("API preserva health, respostas 401 e restrições do perfil atleta sem ace
       ["POST", "/teams"],
       ["POST", "/trainings"],
       ["PATCH", "/teams/test-team"],
+      ["PATCH", "/teams/test-team/requests/test-user"],
+      ["PATCH", "/teams/test-team/athletes/test-user"],
+      ["PATCH", "/trainings/test-training/athletes/test-user"],
+      ["DELETE", "/teams/test-team"],
       ["DELETE", "/trainings/test-training"]
     ]) {
       const response = await fetch(`${baseUrl}${path}`, {
@@ -63,6 +68,14 @@ test("API preserva health, respostas 401 e restrições do perfil atleta sem ace
       });
       assert.equal(response.status, 403);
       assert.equal(typeof (await response.json()).message, "string");
+    }
+
+    for (const patch of [{ role: "COACH" }, { id: "other-user" }, { userId: "other-user" }, { passwordHash: "invalid" }]) {
+      const response = await fetch(`${baseUrl}/auth/me`, {
+        method: "PATCH", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify(patch)
+      });
+      assert.equal(response.status, 403);
     }
 
     process.env.JWT_SECRET = "";

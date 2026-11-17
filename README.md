@@ -143,6 +143,16 @@ As revisões anteriores foram mantidas como histórico.
 
 ## Avaliações de futsal por posição
 
+Estatísticas são opcionais. Na API, um campo omitido deixa o registro anterior como está,
+`null` limpa o valor e `0` registra uma contagem observada. Nas métricas legadas
+(`SportMetric`), a coluna inteira existente usa o valor reservado `-1` para uma
+limpeza explícita. A API sempre o apresenta como `null`.
+
+Zeros antigos permanecem registrados como zeros. O sistema antigo podia preencher
+alguns campos com zero automaticamente, e os registros históricos não indicam
+quais zeros foram preenchidos pelo treinador. Quando houver evidência de que um
+valor antigo não foi informado, ele pode ser limpo individualmente na edição do treino.
+
 O futsal agora possui critérios e pesos configuráveis por equipe para goleiros e jogadores de linha, estatísticas opcionais, histórico preservado e rankings separados (mínimo de três avaliações específicas). Notas ponderadas e validações são executadas no backend. As avaliações antigas e as demais modalidades continuam acessíveis.
 
 Consulte [as regras, a arquitetura, a migration, os arquivos alterados e os testes](Documentação/avaliacoes-por-posicao.md).

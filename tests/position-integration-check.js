@@ -66,6 +66,11 @@ try {
   await request(path, 'PATCH', { goalkeeperStats: { shotsOnTarget: null } });
   await request(path, 'PATCH', { goalkeeperStats: { saves: 9 } });
   await request(path, 'PATCH', { goalkeeperStats: { goalsConceded: 0 } });
+  const clearedKeeper = (await request(path, 'PATCH', { goalkeeperStats: { accurateDistributions: null } })).athletes[keeper.id];
+  assert.equal(clearedKeeper.goalkeeperStats.accurateDistributions, null);
+  assert.equal(clearedKeeper.goalkeeperStats.distributionAttempts, 5);
+  assert.equal(clearedKeeper.goalkeeperStats.successfulExits, 0);
+  assert.equal(clearedKeeper.goalkeeperIndicators.distributionAccuracy, null);
   await request(path, 'PATCH', { goalkeeperStats: null }, coach, 400);
   await request(path, 'PATCH', { ratings: { unknown: 3 } }, coach, 400);
   await request(`/trainings/${training.id}/athletes/${line.id}`, 'PATCH', { goalkeeperStats: { saves: 1 } }, coach, 400);
@@ -163,11 +168,14 @@ try {
   // Quantities can be saved before reviewing notes without creating a fictional evaluation.
   const quantityOnly = await request('/trainings','POST',{teamId:team.id,date:'2026-11-05',type:'Misto',records:[{athleteId:line.id}]},coach,201);
   const quantityPath = `/trainings/${quantityOnly.id}/athletes/${line.id}`;
-  const quantitySaved = await request(quantityPath,'PATCH',{measurements:{[quant[0].id]:72}});
+  const quantitySaved = await request(quantityPath,'PATCH',{measurements:{[quant[0].id]:72,[quant[1].id]:0}});
   assert.equal(quantitySaved.athletes[line.id].evaluationSource,null);
   assert.equal(quantitySaved.athletes[line.id].finalScore,null);
   assert.deepEqual(quantitySaved.athletes[line.id].ratings,{});
   assert.equal(await prisma.evaluation.count({where:{recordId:quantitySaved.athletes[line.id].id}}),0);
+  const clearedQuantity = await request(quantityPath, 'PATCH', { measurements: { [quant[0].id]: null } });
+  assert.equal(clearedQuantity.athletes[line.id].measurements.find((item) => item.criterionId === quant[0].id).value, null);
+  assert.equal(clearedQuantity.athletes[line.id].measurements.find((item) => item.criterionId === quant[1].id).value, 0);
   const fiveQuantities = revised.map(p=>p.role==='OUTFIELD'?{...p,criteria:[...p.criteria,{id:randomUUID(),name:'Fifth count',kind:'QUANTITATIVE'}]}:p);
   await request(`/teams/${team.id}`,'PATCH',{evaluationProfiles:fiveQuantities},coach,400);
   // An explicitly empty profile is valid; its empty historical quantity snapshot stays empty.
@@ -191,6 +199,20 @@ try {
   const historicalPatch = await request(`/trainings/${historical.id}/athletes/${keeper.id}`, 'PATCH', { ratings: { 'Old A': 5 } });
   assert.equal(historicalPatch.athletes[keeper.id].finalScore, 4);
   assert.deepEqual(historicalPatch.athletes[keeper.id].criteriaSnapshot.map((item) => item.weight), [80, 20]);
+  const volleyball = await request('/teams', 'POST', { name: 'Métricas opcionais', modality: 'Vôlei' }, coach, 201);
+  await prisma.membership.create({ data: { teamId: volleyball.id, athleteId: line.id, status: 'APPROVED' } });
+  const volleyballTraining = await request('/trainings', 'POST', { teamId: volleyball.id, date: '2026-11-08', type: 'Misto',
+    records: [{ athleteId: line.id, metrics: [{ name: 'Pontos', value: 0 }, { name: 'Defesas', value: null }] }] }, coach, 201);
+  const metricsPath = `/trainings/${volleyballTraining.id}/athletes/${line.id}`;
+  assert.deepEqual(volleyballTraining.athletes[line.id].metrics, { Pontos: 0, Defesas: null });
+  await request(metricsPath, 'PATCH', { metrics: { Aces: 3 }, expectedMetrics: { Aces: 0 } }, coach, 409);
+  await request(metricsPath, 'PATCH', { metrics: { Aces: 3 }, expectedMetrics: { Aces: null } });
+  await request(metricsPath, 'PATCH', { present: true });
+  await request(metricsPath, 'PATCH', { metrics: { Aces: null }, expectedMetrics: { Aces: 3 } });
+  const persisted = (await request(`/trainings/team/${volleyball.id}`))[0].athletes[line.id];
+  assert.deepEqual(persisted.metrics, { Pontos: 0, Defesas: null, Aces: null });
+  assert.deepEqual(await prisma.sportMetric.findMany({ where: { recordId: persisted.id }, select: { value: true, name: true }, orderBy: { name: 'asc' } }),
+    [{ name: 'Aces', value: -1 }, { name: 'Defesas', value: -1 }, { name: 'Pontos', value: 0 }]);
   console.log('Position integration OK: MySQL persistence, snapshots, statistics, transactions, authorization, team isolation, legacy data and reports.');
 } finally {
   try {

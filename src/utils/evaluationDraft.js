@@ -16,9 +16,9 @@ export function measurementProfile(record, team, athlete) {
   const role = record.role || evaluationRole(record.modality, record.position || athlete.position);
   return criteriaFor({ ...team, modality: record.modality }, role, "QUANTITATIVE") || [];
 }
-export function evaluationDraft(record, profile, quantitative = []) {
+export function evaluationDraft(record, profile) {
   return { present: record.present !== false, ratings: initialRatings(profile, record.ratings), confirmed: false, dirty: false,
-    measurements: Object.fromEntries(quantitative.map((item) => [item.criterionId || item.id, item.value ?? null])), measurementsDirty: false };
+    measurements: {}, measurementsDirty: false };
 }
 export function draftScore(record, profile, ratings) {
   try { return (record.evaluationSource === "WEIGHTED" ? weightedEvaluation : arithmeticEvaluation)(profile, ratings).finalScore; }

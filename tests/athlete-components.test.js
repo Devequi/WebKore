@@ -289,6 +289,7 @@ test("revisão inicia em 5, mantém pendências explícitas e oculta avaliação
   assert.equal((html.match(/value="5"/g) || []).length, 4);
   assert.match(html, /Pendente de revisão/);
   assert.match(html, /Revisei e confirmo estas notas/);
+  assert.match(html, /Estatísticas do goleiro/);
   assert.match(html, /button[^>]*disabled/);
   assert.doesNotMatch(html, /Finalização e ataque/);
   props.training.athletes.a.present = false;

@@ -60,12 +60,17 @@ test("medidas do perfil somam contagens observadas e preservam zero por função
   const line = "OUTFIELD";
   const keeper = "GOALKEEPER";
   const records = [
-    { role: line, measurements: [measure("g", "Gols", 2, line), measure("a", "Assistências", 0, line), measure("d", "Defesas", 4, keeper)] },
-    { role: line, measurements: [measure("g", "Gols", 4, line), measure("p", "Passes", null, line)] },
+    { role: line, trainingId: "first", measurements: [measure("g", "Gols", 2, line), measure("a", "Assistências", 0, line), measure("d", "Defesas", 4, keeper)] },
+    { role: line, trainingId: "first", measurements: [measure("g", "Gols", 4, line), measure("p", "Passes", null, line)] },
+    { role: line, trainingId: "second", present: false, measurements: [measure("g", "Gols", 9, line)] },
     { role: keeper, measurements: [measure("d", "Defesas", 2, keeper)] }
   ];
-  assert.deepEqual(positionMeasurements(records, line), [{ id: "g", label: "Gols", value: 6 }, { id: "a", label: "Assistências", value: 0 }]);
-  assert.deepEqual(positionMeasurements(records, keeper), [{ id: "d", label: "Defesas", value: 2 }]);
+  assert.deepEqual(positionMeasurements(records, line, [{ id: "p", name: "Passes" }]), [
+    { id: "p", label: "Passes", value: null, validTrainings: 0, totalTrainings: 2 },
+    { id: "g", label: "Gols", value: 6, validTrainings: 1, totalTrainings: 2 },
+    { id: "a", label: "Assistências", value: 0, validTrainings: 1, totalTrainings: 2 }
+  ]);
+  assert.deepEqual(positionMeasurements(records, keeper), [{ id: "d", label: "Defesas", value: 2, validTrainings: 1, totalTrainings: 1 }]);
 });
 test("perfil profissional conta atletas únicos aprovados somente nas equipes do treinador", () => {
   const state = { teams: [{ id: "1", coachId: "coach", modality: "Vôlei" }, { id: "2", coachId: "coach", modality: "Futsal" }, { id: "3", coachId: "other", modality: "Futebol" }],
