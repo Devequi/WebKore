@@ -3,8 +3,8 @@ import { ChevronDown } from "lucide-react";
 import { isPanelSurfaceClick } from "../../utils/panelInteraction.js";
 import "../../styles/CollapsiblePanel.css";
 
-export function CollapsiblePanel({ title, eyebrow, children, actions, className = "", headingClassName = "" }) {
-  const [open, setOpen] = useState(true);
+export function CollapsiblePanel({ title, eyebrow, children, actions, className = "", headingClassName = "", initialOpen = true }) {
+  const [open, setOpen] = useState(initialOpen);
   const contentId = useId();
   const headingRef = useRef(null);
   const panelRef = useRef(null);

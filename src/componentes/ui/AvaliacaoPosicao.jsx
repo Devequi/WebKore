@@ -6,8 +6,9 @@ import { KpiCard } from "./CartaoKpi.jsx";
 import { CollapsiblePanel } from "./PainelRetratil.jsx";
 import { aggregateGoalkeeperStats, goalkeeperFields, profileFor, criteriaFor, criterionKinds, evaluationProfiles, PROFILE_VERSION, validateTypedCriteria, validateGoalkeeperStats, weightedEvaluation, arithmeticEvaluation, initialRatings } from "../../../shared/evaluations.js";
 import { scoreLabel } from "../../utils/athletePerformance.js";
+import { positionMeasurements } from "../../utils/teamPerformance.js";
 
-export function GoalkeeperSummary({ records, compact = false }) {
+export function GoalkeeperSummary({ records, compact = false, initialOpen = true }) {
   const stats = aggregateGoalkeeperStats(records);
   const rate = (value) => value === null ? "Sem dados" : `${value.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%`;
   const indicators = [
@@ -18,12 +19,26 @@ export function GoalkeeperSummary({ records, compact = false }) {
   ];
   const visible = compact ? indicators.filter(([, value]) => value !== null) : indicators;
   if (!visible.length || !records.some((record) => record?.role === "GOALKEEPER" && record.goalkeeperStats)) return null;
-  const metrics = <section className={compact ? "team-home__metrics" : "keeper-metrics"} aria-label="Estatísticas observadas dos goleiros">
+  const metrics = <section className={compact ? "team-home__metrics" : "position-metrics"} aria-label="Estatísticas observadas dos goleiros">
     {visible.map(([label, value, Icon, format]) => <KpiCard key={label} icon={Icon} label={label}
       value={format ? format(value) : value ?? "Sem dados"} />)}
   </section>;
-  return compact ? metrics : <CollapsiblePanel title="Estatísticas de goleiro">{metrics}</CollapsiblePanel>;
+  return compact ? metrics : <CollapsiblePanel title="Estatísticas de goleiro" initialOpen={initialOpen}>{metrics}</CollapsiblePanel>;
 }
+
+export function OutfieldSummary({ team, records, initialOpen = true }) {
+  const criteria = criteriaFor(team, "OUTFIELD", "QUANTITATIVE") || [];
+  const observed = positionMeasurements(records.filter((record) => record.present !== false), "OUTFIELD");
+  const totals = new Map(observed.map(({ id, value }) => [id, value]));
+
+  return <CollapsiblePanel title="Estatísticas de linha" initialOpen={initialOpen}>
+    {criteria.length ? <div className="position-metrics">
+      {criteria.map(({ id, name }) => <KpiCard key={id} icon={Crosshair} label={name}
+        value={totals.get(id)?.toLocaleString("pt-BR") ?? "Sem dados"} />)}
+    </div> : <p className="empty-content">Nenhuma medida quantitativa configurada para jogadores de linha.</p>}
+  </CollapsiblePanel>;
+}
+
 export function PositionEvaluationEditor({ record, team, onSave, hideRatings = false, draftStats, draftMetrics, onDraftChange }) {
   const profile = record.criteriaSnapshot?.length ? record.criteriaSnapshot : profileFor({ ...team, modality: record.modality || team.modality }, record.role, record.position);
   const [ratings, setRatings] = useState(() => initialRatings(profile, record.ratings));

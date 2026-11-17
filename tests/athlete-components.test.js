@@ -87,17 +87,70 @@ test("posição usa select de quatro opções, carrega seleção salva e preserv
   assert.match(render(PositionField, { ...props, modality: "Vôlei", value: "Ponteiro" }), /<input[^>]+value="Ponteiro"/);
 });
 
-test("perfil bloqueia salvar posição incompatível sem alterar cards de indicadores", () => {
+test("perfil abre com edição recolhida e exibe a identificação e os indicadores", () => {
   const team = { id: "t", modality: "Futsal" };
   const state = { users: [{ id: "a", name: "Atleta" }], trainings: [], memberships: [
-    { athleteId: "a", teamId: "t", status: "approved", position: "Ponteiro" }
+    { athleteId: "a", teamId: "t", status: "approved", position: "Ponteiro", number: 8 }
   ] };
   const html = render(AthletesPage, { team, state, actions: {}, selectedAthleteId: "a" });
-  assert.match(html, /<button[^>]+disabled=""[^>]*>[\s\S]*?<span>Salvar<\/span>/);
+  assert.ok(html.includes("Editar atleta"));
+  assert.match(html, /<p>Ponteiro[^<]*Camisa 8<\/p>/);
+  assert.ok(!html.includes("Número da camisa"));
   for (const label of ["Presença", "Treinos", "Desempenho"]) assert.ok(html.includes(label));
-  const free = render(AthletesPage, { team: { ...team, modality: "Vôlei" }, state, actions: {} });
-  assert.doesNotMatch(free, /disabled=""/);
 });
+
+test("perfil de linha soma as medidas configuradas do atleta e distingue zero de ausências", () => {
+  const criteria = ["Gols", "Assistências", "Finalizações"].map((name, order) =>
+    ({ id: `metric-${order}`, name, kind: "QUANTITATIVE", order }));
+  const team = { id: "t", modality: "Futsal", evaluationProfiles: [
+    { schemaVersion: 2, modality: "Futsal", role: "OUTFIELD", criteria }
+  ] };
+  const record = (present, goals, role = "OUTFIELD") => ({
+    role, present, measurements: [
+      { criterionId: "metric-0", name: "Gols", role, value: goals },
+      { criterionId: "metric-1", name: "Assistências", role, value: 0 }
+    ]
+  });
+  const training = (id, athletes, teamId = "t") => ({ id, teamId, date: "2026-11-12", athletes });
+  const state = {
+    users: [{ id: "a", name: "Atleta" }, { id: "other", name: "Outro atleta" }],
+    memberships: [{ athleteId: "a", teamId: "t", status: "approved", position: "Pivô" }],
+    trainings: [
+      training("one", { a: record(true, 2), other: record(true, 100) }),
+      training("two", { a: record(true, 3) }),
+      training("absent", { a: record(false, 100) }),
+      training("keeper", { a: record(true, 100, "GOALKEEPER") }),
+      training("other", { a: record(true, 100) }, "other")
+    ]
+  };
+  const html = render(AthletesPage, { team, state, actions: {}, selectedAthleteId: "a" });
+  assert.match(html, /aria-label="Estatísticas de linha" aria-expanded="false"/);
+  assert.match(html, /<p>Gols<\/p><strong>5<\/strong>/);
+  assert.match(html, /<p>Assistências<\/p><strong>0<\/strong>/);
+  assert.match(html, /<p>Finalizações<\/p><strong>Sem dados<\/strong>/);
+});
+
+test("Atletas organiza evolução e estatísticas antes do histórico resumido", () => {
+  const team = { id: "t", modality: "Futsal" };
+  const trainings = [1, 4, 2, 3].map((day) => ({
+    id: "training-" + day, teamId: team.id, date: "2026-11-0" + day, title: "Sessão " + day,
+    athletes: { a: { present: true, role: "OUTFIELD" } }
+  }));
+  const state = {
+    users: [{ id: "a", name: "Atleta" }],
+    memberships: [{ athleteId: "a", teamId: "t", status: "approved", position: "Ala" }],
+    trainings
+  };
+  const props = { team, state, actions: {}, selectedAthleteId: "a" };
+  const html = render(AthletesPage, props);
+  assert.match(html, /Evolução de desempenho[\s\S]*Estatísticas de linha[\s\S]*Treinos recentes/);
+  const history = html.slice(html.indexOf("athlete-history-panel"));
+  assert.match(history, /Sessão 4[\s\S]*Sessão 3[\s\S]*Sessão 2[\s\S]*Ver todos os treinos/);
+  assert.doesNotMatch(history, /Sessão 1/);
+  const shorter = render(AthletesPage, { ...props, state: { ...state, trainings: trainings.slice(0, 3) } });
+  assert.doesNotMatch(shorter, /Ver todos os treinos/);
+});
+
 test("gráfico distingue nenhum treino de treinos sem notas e lista critérios configurados", () => {
   const empty = render(EvolutionChart, { data: [], criteria: ["Critério sem notas"] });
   assert.match(empty, /Nenhum treino registrado/);
