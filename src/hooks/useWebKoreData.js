@@ -30,6 +30,7 @@ export function useWebKoreData() {
     if (mounted.current) {
       setSession(null);
       setState(emptyState());
+      setLoadingSession(false);
       setSessionMessage("");
     }
   }, []);
@@ -73,7 +74,17 @@ export function useWebKoreData() {
     const update = () => { if (getAuthToken() && !authRequest.current) refresh().catch(() => undefined); };
     const changedSession = (event) => {
       if (event.key !== "webkore-auth-token-v1") return;
-      if (event.newValue) refresh({ force: true }).catch(() => undefined);
+      if (event.newValue) {
+        // A different tab may have signed in as another account. Hide the old
+        // account immediately while the API verifies the replacement token.
+        authRequest.current?.abort();
+        setSession(null);
+        setState(emptyState());
+        setLoadingSession(true);
+        refresh({ force: true }).catch(() => undefined).finally(() => {
+          if (mounted.current && event.newValue === getAuthToken()) setLoadingSession(false);
+        });
+      }
       else logout();
     };
     window.addEventListener("focus", update);
@@ -84,6 +95,14 @@ export function useWebKoreData() {
     };
   }, [refresh, logout]);
 
+  useEffect(() => {
+    if (!session) return;
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === "visible" && !authRequest.current) refresh().catch(() => undefined);
+    }, 60000);
+    return () => window.clearInterval(timer);
+  }, [session?.userId, refresh]);
+
   async function signIn(credentials, register = false) {
     const currentVersion = ++version.current;
     authRequest.current?.abort();
@@ -92,6 +111,7 @@ export function useWebKoreData() {
     try {
       const payload = await authenticate(credentials, register, { signal: controller.signal });
       if (mounted.current && currentVersion === version.current) applySession(payload);
+      return payload;
     } finally {
       if (authRequest.current === controller) authRequest.current = null;
     }

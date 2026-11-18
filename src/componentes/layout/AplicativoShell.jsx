@@ -18,7 +18,7 @@ export function AppShell({
   const coach = currentUser.role === "coach";
   const mobile = useCompactNavigation();
   const shellClassName = coach ? "app-shell coach-experience" : "app-shell";
-  const selectedView = activeView === "athlete-search" ? "athlete-lobby" : activeView;
+  const selectedView = activeView === "athlete-search" ? "athlete-lobby" : activeView === "athlete-trainings" ? "athlete-home" : activeView;
 
   useEffect(() => {
     if (mobile) return;
@@ -57,7 +57,7 @@ export function AppShell({
         <header className="topbar">
           <div className="topbar__title">
             <span className="eyebrow">{team?.modality || "WebKore"}</span>
-            <h1>{team?.name || "Painel"}</h1>
+            <h1>{activeView === "athlete-trainings" ? "Detalhes do treino" : activeView.endsWith("-home") ? team?.name || "Painel" : activeView === "profile" ? "Meu perfil" : tabs.find(tab => tab.id === selectedView)?.label || "WebKore"}</h1>
           </div>
           <div className="topbar__actions">
             <Button icon={Users} onClick={onLogoClick} type="button" variant="ghost">

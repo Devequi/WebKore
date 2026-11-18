@@ -11,6 +11,8 @@ let EvolutionChart;
 let PerformanceSummary;
 let TeamHome;
 let SettingsPage;
+let MyProfilePage;
+let NavigationItems;
 let PositionField;
 let AthletesPage;
 let TrainingHistory;
@@ -24,6 +26,8 @@ before(async () => {
   ({ PerformanceSummary } = await server.ssrLoadModule("/src/componentes/ui/ResumoDesempenho.jsx"));
   ({ TeamHome } = await server.ssrLoadModule("/src/paginas/treinador/PrincipalTreinador.jsx"));
   ({ SettingsPage } = await server.ssrLoadModule("/src/paginas/treinador/ConfigsTreinador.jsx"));
+  ({ MyProfilePage } = await server.ssrLoadModule("/src/paginas/MeuPerfil.jsx"));
+  ({ NavigationItems } = await server.ssrLoadModule("/src/componentes/layout/NavegacaoMobile.jsx"));
   ({ PositionField } = await server.ssrLoadModule("/src/componentes/ui/CampoPosicao.jsx"));
   ({ AthletesPage } = await server.ssrLoadModule("/src/paginas/treinador/AtletasTreinador.jsx"));
   ({ TrainingHistory } = await server.ssrLoadModule("/src/componentes/charts/HistoricoTreinos.jsx"));
@@ -32,6 +36,24 @@ before(async () => {
   ({ AthleteLobby } = await server.ssrLoadModule("/src/paginas/atleta/Lobby.jsx"));
 });
 after(async () => { await server?.close(); });
+
+test("elenco sem ID não abre o primeiro atleta e treino individual não mistura outros treinos", () => {
+  const team = { id: "t", name: "Equipe", modality: "Futebol" };
+  const state = { users: [{ id: "a", name: "Ana" }], teams: [team],
+    memberships: [{ teamId: "t", athleteId: "a", status: "approved" }],
+    trainings: [{ id: "w1", teamId: "t", date: "2026-10-01", type: "Misto", description: "TREINO_VISIVEL", athletes: {} },
+      { id: "w2", teamId: "t", date: "2026-10-02", type: "Misto", description: "TREINO_OCULTO", athletes: {} }] };
+  const roster = render(AthletesPage, { team, state, actions: {}, selectedAthleteId: "" });
+  assert.match(roster, /Selecione um atleta/);
+  assert.doesNotMatch(roster, /Editar atleta|Evolução de desempenho/);
+  const training = render(TrainingsPage, { team, state, actions: {}, initialTrainingId: "w1" });
+  assert.match(training, /TREINO_VISIVEL/);
+  assert.doesNotMatch(training, /TREINO_OCULTO/);
+  assert.match(training, /Voltar aos treinos/);
+  const creation = render(TrainingsPage, { team, state, actions: {}, createMode: true });
+  assert.match(creation, /Informações do treino/);
+  assert.doesNotMatch(creation, /TREINO_VISIVEL|TREINO_OCULTO/);
+});
 
 const render = (component, props) => renderToStaticMarkup(createElement(component, props));
 
@@ -236,19 +258,36 @@ test("último treino mostra destaque da sessão e melhor atleta ocupa um card in
   assert.match(empty, /Ainda não há avaliações suficientes/);
 });
 
-test("perfil do treinador usa dados reais, não exige nascimento e separa configurações da equipe", () => {
-  const currentUser = { id: "coach", name: "Treinador Teste", email: "coach@example.invalid" };
+test("perfil pessoal do treinador funciona sem equipes e não existe nas configurações da equipe", () => {
+  const currentUser = { id: "coach", role: "coach", name: "Treinador Teste", email: "coach@example.invalid" };
   const state = { teams: [{ id: "t", name: "Minha equipe", modality: "Vôlei", coachId: "coach" }, { id: "x", name: "Equipe privada", coachId: "other" }], memberships: [], trainings: [] };
-  const profile = render(SettingsPage, { currentUser, state, actions: {}, view: "profile" });
-  assert.match(profile, /Resumo profissional/);
-  assert.match(profile, /Minha equipe/);
+  const profile = render(MyProfilePage, { currentUser, actions: {} });
+  assert.match(profile, /Treinador Teste/);
+  assert.match(profile, /Perfil de acesso/);
   assert.match(profile, /coach@example.invalid/);
-  assert.match(profile, /Salvar conta/);
-  assert.doesNotMatch(profile, /Data de [Nn]ascimento|Equipe privada/);
+  assert.match(profile, /Salvar perfil/);
+  assert.doesNotMatch(profile, /Data de [Nn]ascimento|Minha equipe|Equipe privada|Equipe atual|Resumo esportivo|Minhas equipes/);
   const settings = render(SettingsPage, { currentUser, state, actions: {}, team: { ...state.teams[0], code: "WK-TEST", objectiveCriteria: [], qualitativeCriteria: [] } });
   assert.match(settings, /Salvar equipe/);
   assert.match(settings, /Excluir equipe/);
-  assert.doesNotMatch(settings, /Salvar conta|Critérios por posição|Novo critério/);
+  assert.doesNotMatch(settings, /Salvar perfil|Editar perfil|coach@example.invalid|Excluir conta|Critérios por posição|Novo critério/);
+});
+
+test("atleta usa a mesma página pessoal, sem vínculo esportivo, e Perfil fica ativo no menu", async () => {
+  const currentUser = { id: "a", role: "athlete", name: "Ana", email: "ana@example.invalid", birthDate: "2004-02-29" };
+  const profile = render(MyProfilePage, { currentUser, actions: {} });
+  assert.match(profile, /Ana/);
+  assert.match(profile, /Data de nascimento/);
+  assert.match(profile, /Foto ou iniciais/);
+  assert.doesNotMatch(profile, /Equipe atual|Resumo esportivo|Minhas equipes|Sair da equipe|Excluir conta|Nova senha/);
+  const Icon = () => null;
+  const nav = render(NavigationItems, { activeView: "profile", tabs: [
+    { id: "coach-lobby", label: "Equipes", icon: Icon }, { id: "profile", label: "Meu Perfil", icon: Icon }
+  ] });
+  assert.equal((nav.match(/aria-current="page"/g) || []).length, 1);
+  assert.match(nav, /aria-current="page" class="nav-item nav-item--active"[^>]*><span>Meu Perfil/);
+  const lobby = render(AthleteLobby, { currentUser, state: { users: [] }, actions: {}, teams: [{ id: "t", name: "Equipe", modality: "Futsal" }] });
+  assert.match(lobby, /Sair da equipe/);
 });
 // UI uses the existing Vite SSR harness; position editors must never mix role-specific fields.
 test("formulários de futsal exibem critérios e estatísticas da função automaticamente", async () => {

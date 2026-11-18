@@ -37,6 +37,12 @@ equipes, vínculos, treinos e avaliações. A API é a fonte dos dados das sess�
 autenticadas no servidor. JWT é enviado como Bearer; `/auth/me` restaura a sessão.
 O backend limita equipes e registros conforme a conta e o perfil autenticados.
 
+As páginas usam URLs persistentes com `#`, incluindo equipe, atleta e treino
+selecionados. Meu Perfil usa uma única rota global `#/perfil` para a conta
+autenticada, independente das equipes. A restauração da sessão mantém o endereço ao atualizar. Consulte
+[Navegação e sessão](Documentação/navegacao-e-sessao.md) para rotas, decisões de UX,
+permissões e validação da refatoração.
+
 O sistema depende da API para cadastro, login, restauração de sessão e operações
 esportivas. Falhas de conexão são exibidas ao usuário; não há fallback de login,
 cadastro ou gravação local. O token continua no localStorage para permitir nova

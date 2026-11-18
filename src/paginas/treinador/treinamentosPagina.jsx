@@ -13,7 +13,7 @@ import {
 } from "../../utils/selectors.js";
 import "../../styles/paginasTreinador/treinamentosPagina.css";
 
-export function TrainingsPage({ actions, state, team, initialTrainingId }) {
+export function TrainingsPage({ actions, state, team, initialTrainingId, createMode = false, onNavigateTraining }) {
   const formularioRef = useRef(null);
   const dataRef = useRef(null);
   const [form, setForm] = useState({
@@ -23,12 +23,13 @@ export function TrainingsPage({ actions, state, team, initialTrainingId }) {
   });
   const [drafts, setDrafts] = useState({});
   const [treinoAberto, setTreinoAberto] = useState(initialTrainingId || null);
-  const [aba, setAba] = useState(initialTrainingId ? "history" : "add");
+  const [aba, setAba] = useState(createMode ? "add" : "history");
   const [feedback, setFeedback] = useState(null);
   const [saving, setSaving] = useState(false);
   const { confirmAction, confirmation } = useConfirmation();
 
   function abrirFormulario() {
+    if (onNavigateTraining) { onNavigateTraining("new"); return; }
     setAba("add");
     requestAnimationFrame(() => {
       formularioRef.current?.scrollIntoView({
@@ -60,7 +61,7 @@ export function TrainingsPage({ actions, state, team, initialTrainingId }) {
         team,
         ...form
       });
-      if (created?.id) { setTreinoAberto(created.id); setAba("history"); }
+      if (created?.id) { if (onNavigateTraining) onNavigateTraining(created.id, "Treino cadastrado."); else { setTreinoAberto(created.id); setAba("history"); } }
     } catch (error) {
       setFeedback({ type: "error", text: error.message || "Não foi possível cadastrar o treino." });
       setSaving(false);
@@ -78,6 +79,7 @@ export function TrainingsPage({ actions, state, team, initialTrainingId }) {
   }
 
   function abrirFechar(trainingId) {
+    if (onNavigateTraining) { onNavigateTraining(trainingId); return; }
     setTreinoAberto(
       treinoAberto === trainingId ? null : trainingId
     );
@@ -88,6 +90,8 @@ export function TrainingsPage({ actions, state, team, initialTrainingId }) {
       description: "O treino e seus registros serão removidos." })) return;
     try {
       await actions.deleteTraining({ trainingId });
+      setFeedback({ type: "success", text: "Treino excluído." });
+      if (onNavigateTraining) onNavigateTraining("", "Treino excluído.");
     } catch (error) {
       setFeedback({ type: "error", text: error.message || "Não foi possível excluir o treino." });
     }
@@ -97,6 +101,8 @@ export function TrainingsPage({ actions, state, team, initialTrainingId }) {
   return (
     <div className="page-stack">
       {confirmation}
+      {initialTrainingId && <Button variant="ghost" onClick={() => onNavigateTraining?.()}>Voltar aos treinos</Button>}
+      {initialTrainingId && <p role="status">Detalhes e avaliação do treino</p>}
       {aba === "history" && feedback && <p className={`form-feedback form-feedback--${feedback.type}`}
         role={feedback.type === "error" ? "alert" : "status"}>{feedback.text}</p>}
       <div aria-label="Visualização dos treinos" className="tabs-header" role="tablist">
@@ -115,7 +121,7 @@ export function TrainingsPage({ actions, state, team, initialTrainingId }) {
           aria-controls="training-history-panel"
           aria-selected={aba === "history"}
           className={`tab-button ${aba === "history" ? "active" : ""}`}
-          onClick={() => setAba("history")}
+          onClick={() => onNavigateTraining ? onNavigateTraining() : setAba("history")}
           role="tab"
           type="button"
         >
@@ -211,7 +217,7 @@ export function TrainingsPage({ actions, state, team, initialTrainingId }) {
         <section className="panel training-history" id="training-history-panel" role="tabpanel">
           <div className="section-heading">
             <div>
-              <h2>Histórico de treinos</h2>
+              <h2>{initialTrainingId ? "Detalhes do treino" : "Histórico de treinos"}</h2>
             </div>
             <Button icon={CalendarPlus} onClick={abrirFormulario} type="button">
               Cadastrar treino
@@ -225,7 +231,7 @@ export function TrainingsPage({ actions, state, team, initialTrainingId }) {
             />
           ) : (
             <div className="accordion-list">
-              {treinos.map((treino) => (
+              {treinos.filter((treino) => !initialTrainingId || treino.id === initialTrainingId).map((treino) => (
                 <article
                   className="training-card"
                   key={treino.id}

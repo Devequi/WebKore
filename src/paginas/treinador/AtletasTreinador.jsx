@@ -149,7 +149,7 @@ export function AthletesPage({
   const atletaSelecionado =
     atletas.find(
       (atleta) => atleta.id === selectedAthleteId
-    ) || atletas[0];
+    );
 
   if (!team) {
     return (
@@ -159,7 +159,7 @@ export function AthletesPage({
     );
   }
 
-  if (!atletaSelecionado) {
+  if (!atletas.length) {
     return (
       <div className="page-stack">
         {removed && <p className="form-feedback form-feedback--success" role="status">Atleta removido da equipe.</p>}
@@ -168,12 +168,12 @@ export function AthletesPage({
     );
   }
 
-  const role = evaluationRole(team.modality, atletaSelecionado.position);
-  const treinos = getAthleteTrainings(state, team.id, atletaSelecionado.id);
-  const stats = getAthleteStats(state, team.id, atletaSelecionado.id);
-  const performance = athletePerformance(treinos, atletaSelecionado.id);
-  const records = treinos.map((training) => training.athletes[atletaSelecionado.id]);
-  const selectionKey = `${team.id}:${atletaSelecionado.id}`;
+  const role = evaluationRole(team.modality, atletaSelecionado?.position);
+  const treinos = getAthleteTrainings(state, team.id, atletaSelecionado?.id);
+  const stats = getAthleteStats(state, team.id, atletaSelecionado?.id);
+  const performance = athletePerformance(treinos, atletaSelecionado?.id);
+  const records = treinos.map((training) => training.athletes[atletaSelecionado?.id]);
+  const selectionKey = `${team.id}:${atletaSelecionado?.id}`;
 
   function selectAthlete(id) {
     setRemoved(false);
@@ -211,7 +211,7 @@ export function AthletesPage({
             <p>Tente pesquisar por outro nome.</p>
           </div>}
           <div className="athlete-list">{atletasVisiveis.map((atleta) => {
-            const selected = atleta.id === atletaSelecionado.id;
+            const selected = atleta.id === atletaSelecionado?.id;
             const statsAtleta = getAthleteStats(state, team.id, atleta.id);
             const identity = [atleta.number != null ? `#${atleta.number}` : null, atleta.position,
               formatAge(atleta.birthDate, today)].filter(Boolean).join(" · ");
@@ -226,10 +226,11 @@ export function AthletesPage({
         </div>
       </section>
 
-      <section className="page-stack athlete-detail-stack">
+      {atletaSelecionado ? <section className="page-stack athlete-detail-stack">
+        <Button variant="ghost" onClick={() => onSelectAthlete("")}>Voltar ao elenco</Button>
         {removed && <p className="form-feedback form-feedback--success" role="status">Atleta removido da equipe.</p>}
         <AthleteProfile key={selectionKey} athlete={atletaSelecionado} team={team} stats={stats} today={today}
-          actions={actions} averageScore={performance.averageScore} headingRef={profileHeading} onRemoved={() => setRemoved(true)} />
+          actions={actions} averageScore={performance.averageScore} headingRef={profileHeading} onRemoved={() => { setRemoved(true); onSelectAthlete("", "Atleta removido da equipe."); }} />
 
         <AthleteDashboard key={`evolution:${selectionKey}:${atletaSelecionado.position}`}
           trainings={treinos} athlete={atletaSelecionado} team={team} />
@@ -237,9 +238,9 @@ export function AthletesPage({
         {role === "GOALKEEPER" && <GoalkeeperSummary key={`statistics:${selectionKey}`} records={records} initialOpen={false} />}
         {role === "OUTFIELD" && <OutfieldSummary key={`statistics:${selectionKey}`} team={team} records={records} initialOpen={false} />}
 
-        <TrainingHistory key={`history:${selectionKey}`} trainings={treinos} athleteId={atletaSelecionado.id}
+        <TrainingHistory key={`history:${selectionKey}`} trainings={treinos} athleteId={atletaSelecionado?.id}
           recentLimit={3} showAllLabel="Ver todos os treinos" />
-      </section>
+      </section> : <EmptyState title="Selecione um atleta" text="Abra um atleta do elenco para consultar seu perfil, avaliações e histórico." />}
     </div>
   );
 }

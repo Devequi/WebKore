@@ -74,6 +74,21 @@ test("sessão incompleta ou cadastro sem nascimento não persistem autenticaçã
   }
 }));
 
+test("cadastro e login só autenticam após resposta completa, perfil correto e sem cancelamento", () => withStorage(async () => {
+  for (const register of [true, false]) {
+    globalThis.fetch = async () => Response.json({ ...payload(), token: "" });
+    await assert.rejects(() => authenticate(credentials, register), error => error.status === 401);
+    assert.equal(getAuthToken(), null);
+    globalThis.fetch = async () => Response.json({ ...payload(), user: { id: "a", role: "coach" } });
+    await assert.rejects(() => authenticate(credentials, register), error => error.status === 401);
+    assert.equal(getAuthToken(), null);
+    const controller = new AbortController();
+    globalThis.fetch = async () => { controller.abort(); return Response.json(payload()); };
+    await assert.rejects(() => authenticate(credentials, register, { signal: controller.signal }), error => error.name === "AbortError");
+    assert.equal(getAuthToken(), null);
+  }
+}));
+
 test("cliente rejeita JSON inválido, respeita cancelamento e não usa cache HTTP", () => withStorage(async () => {
   globalThis.fetch = async (_url, options) => {
     assert.equal(options.cache, "no-store");

@@ -4,12 +4,15 @@ import { AppShell } from "./componentes/layout/AplicativoShell.jsx";
 import { MobileNavigation, useCompactNavigation } from "./componentes/layout/NavegacaoMobile.jsx";
 import { Button } from "./componentes/ui/Botao.jsx";
 import { AthleteLobby } from "./paginas/atleta/Lobby.jsx";
-import { AthleteProfile } from "./paginas/atleta/PerfilAtleta.jsx";
+import { MyProfilePage } from "./paginas/MeuPerfil.jsx";
 import { TeamSearch } from "./paginas/atleta/PesquisaTime.jsx";
 import { CoachLobby } from "./paginas/treinador/LobbyTreinador.jsx";
 import { RequestsPage } from "./paginas/treinador/SolicitacoesTreinador.jsx";
 import { LoginPage } from "./paginas/PaginaLogin.jsx";
 import { useWebKoreData } from "./hooks/useWebKoreData.js";
+import { parseRoute, routePath, routeError } from "./services/navigation.js";
+import { getAuthToken } from "./services/api.js";
+import { EmptyState } from "./componentes/ui/EstadoVazio.jsx";
 import { getAthleteTeams, getCoachTeams } from "./utils/selectors.js";
 import "./styles/experience.css";
 import "./styles/paginasTreinador/CoachExperience.css";
@@ -20,21 +23,23 @@ const TeamHome = lazy(() => import("./paginas/treinador/PrincipalTreinador.jsx")
 const TrainingsPage = lazy(() => import("./paginas/treinador/treinamentosPagina.jsx").then((page) => ({ default: page.TrainingsPage })));
 const EvaluationSettingsPage = lazy(() => import("./paginas/treinador/ConfigsTreinador.jsx").then((page) => ({ default: page.EvaluationSettingsPage })));
 const SettingsPage = lazy(() => import("./paginas/treinador/ConfigsTreinador.jsx").then((page) => ({ default: page.SettingsPage })));
+const TrainingDetails = lazy(() => import("./componentes/charts/HistoricoTreinos.jsx").then((page) => ({ default: page.TrainingDetails })));
 
 const coachTabs = [
+  { id: "coach-lobby", label: "Equipes", icon: Users },
   { id: "coach-home", label: "Home", icon: Home },
   { id: "coach-athletes", label: "Atletas", icon: Users },
   { id: "coach-requests", label: "Solicitações", icon: ShieldCheck },
   { id: "coach-trainings", label: "Treinos", icon: ClipboardList },
   { id: "coach-evaluations", label: "Avaliação de Treinos", icon: BarChart3 },
-  { id: "coach-profile", label: "Perfil", icon: Activity },
-  { id: "coach-settings", label: "Configurações", icon: Settings }
+  { id: "profile", label: "Meu Perfil", icon: Activity },
+  { id: "coach-settings", label: "Configurações da equipe", icon: Settings }
 ];
 
 const athleteTabs = [
   { id: "athlete-home", label: "Dados", icon: BarChart3 },
   { id: "athlete-lobby", label: "Equipes", icon: Users },
-  { id: "athlete-profile", label: "Perfil", icon: Activity }
+  { id: "profile", label: "Meu Perfil", icon: Activity }
 ];
 
 function LoadingState({ message = "Carregando página..." }) {
@@ -48,79 +53,90 @@ export function App() {
   const [state, actions] = useWebKoreData();
   const compact = useCompactNavigation();
   const session = state.session || { role: "", userId: "" };
-  const [activeView, setActiveView] = useState("login");
-  const [selectedTeamId, setSelectedTeamId] = useState("");
-  const [selectedAthleteId, setSelectedAthleteId] = useState("");
-  const [selectedTrainingId, setSelectedTrainingId] = useState("");
-
+  const [route, setRoute] = useState(() => parseRoute(window.location.hash));
+  const [navigationMessage, setNavigationMessage] = useState("");
+  const activeView = route.view;
+  const selectedAthleteId = route.athleteId || "";
+  const selectedTrainingId = route.trainingId || "";
   const coachTeams = useMemo(() => getCoachTeams(state, session.userId), [state, session.userId]);
   const athleteTeams = useMemo(() => getAthleteTeams(state, session.userId), [state, session.userId]);
   const availableTeams = session.role === "coach" ? coachTeams : athleteTeams;
-  const activeTeam = availableTeams.find((team) => team.id === selectedTeamId) || availableTeams?.[0] || null;
+  const activeTeam = availableTeams.find((team) => team.id === route.teamId) || null;
+
+  function go(path, replace = false, message = "") {
+    setNavigationMessage(message);
+    if (window.location.hash !== `#${path}`) window.history[replace ? "replaceState" : "pushState"](null, "", `#${path}`);
+    setRoute(parseRoute(`#${path}`));
+  }
+
+  useEffect(() => {
+    const sync = () => { setNavigationMessage(""); setRoute(parseRoute(window.location.hash)); };
+    window.addEventListener("popstate", sync);
+    window.addEventListener("hashchange", sync);
+    return () => { window.removeEventListener("popstate", sync); window.removeEventListener("hashchange", sync); };
+  }, []);
   const currentUser = state.users.find((user) => user.id === session.userId);
 
   function withNotice(content) {
-    return <>{state.sessionMessage && <div className="form-feedback session-notice" role="status">
+    return <>{navigationMessage && <p className="form-feedback form-feedback--success" role="status">{navigationMessage}</p>}{state.sessionMessage && <div className="form-feedback session-notice" role="status">
       <span>{state.sessionMessage}</span><Button type="button" variant="ghost" onClick={() => actions.refresh().catch(() => undefined)}>Atualizar painel</Button>
     </div>}{content}</>;
   }
 
   useEffect(() => {
-    setSelectedTeamId("");
-    setSelectedAthleteId("");
-    setActiveView(session.userId ? `${session.role}-lobby` : "login");
-  }, [session.userId, session.role]);
+    if (state.loadingSession) return;
+    if (route.redirect) { go(route.redirect, true); return; }
+    if (state.session && ["root", "login"].includes(route.view)) go(routePath(`${session.role}-lobby`), true);
+    else if (!state.session && !state.sessionMessage && route.view === "root") go("/login", true);
+  }, [state.loadingSession, session.userId, session.role, route.view, route.redirect]);
 
   async function handleLogin(credentials) {
-    try { await actions.login(credentials); return { ok: true }; }
+    try { const payload = await actions.login(credentials); go(routePath(`${payload.session.role}-lobby`), true); return { ok: true }; }
     catch (error) { return { ok: false, message: error.message }; }
   }
 
   async function handleRegister(payload) {
-    try { await actions.register(payload); return { ok: true }; }
+    try { const result = await actions.register(payload); go(routePath(`${result.session.role}-lobby`), true); return { ok: true }; }
     catch (error) { return { ok: false, message: error.message }; }
   }
 
-  function openTeam(teamId) {
-    setSelectedTeamId(teamId);
-    setSelectedTrainingId("");
-    setActiveView(session.role === "coach" ? "coach-home" : "athlete-home");
-  }
+  function openTeam(teamId) { go(routePath(`${session.role}-home`, teamId)); }
+  function logout() { actions.logout(); go("/login", true); }
+  function navigate(view) { go(routePath(view, route.teamId)); }
+  function setSelectedAthleteId(id, message) { go(routePath("coach-athletes", route.teamId, id), false, message); }
 
-  function logout() {
-    actions.logout();
-    setSelectedTeamId("");
-    setSelectedAthleteId("");
-    setActiveView("login");
-  }
+  const tabs = (session.role === "coach" ? coachTabs : athleteTabs).filter(tab => activeTeam || [ `${session.role}-lobby`, "profile" ].includes(tab.id));
 
-  function navigate(view) {
-    if (view !== activeView) setSelectedTrainingId("");
-    setActiveView(view);
-  }
-
-  function lobbyHeader(tabs) {
+  function lobbyHeader() {
     return compact ? <MobileNavigation tabs={tabs} activeView={activeView} onNavigate={navigate}
-      onLogoClick={() => window.scrollTo({ top: 0, behavior: "instant" })} onLogout={logout} /> : null;
+      onLogoClick={() => navigate(`${session.role}-lobby`)} onLogout={logout} /> : null;
   }
 
   if (state.loadingSession) return <main className="auth-page"><LoadingState message="Restaurando sessão..." /></main>;
 
-  if (!state.session || !currentUser || activeView === "login") {
+  if (!state.session && getAuthToken() && state.sessionMessage) return <main className="auth-page">
+    <section className="panel page-stack"><h1>Não foi possível restaurar sua sessão</h1>
+      <p role="alert">{state.sessionMessage}</p>
+      <Button onClick={() => actions.refresh().catch(() => undefined)}>Tentar novamente</Button>
+      <Button variant="ghost" onClick={logout}>Voltar ao login</Button>
+    </section>
+  </main>;
+
+  if (!state.session || !currentUser) {
     return <LoginPage onLogin={handleLogin} onRegister={handleRegister} notice={state.sessionMessage} />;
   }
 
   if (session.role === "coach" && activeView === "coach-lobby") {
     return withNotice(
       <CoachLobby
-        header={lobbyHeader(coachTabs)}
+        header={lobbyHeader()}
         actions={actions}
         currentUser={currentUser}
         onLogout={logout}
         onOpenTeam={openTeam}
         state={state}
         teams={coachTeams}
-        onProfile={() => setActiveView("coach-profile")}
+        onProfile={() => navigate("profile")}
       />
     );
   }
@@ -128,28 +144,31 @@ export function App() {
   if (session.role === "athlete" && activeView === "athlete-lobby") {
     return withNotice(
       <AthleteLobby
-        header={lobbyHeader(athleteTabs)}
+        header={lobbyHeader()}
         currentUser={currentUser}
+        actions={actions}
         onLogout={logout}
         onOpenTeam={openTeam}
-        onSearch={() => {
-          setSelectedTeamId("");
-          setActiveView("athlete-search");
-        }}
+        onSearch={() => navigate("athlete-search")}
         state={state}
         teams={athleteTeams}
-        onProfile={() => setActiveView("athlete-profile")}
+        onProfile={() => navigate("profile")}
       />
     );
   }
 
-  const tabs = session.role === "coach" ? coachTabs : athleteTabs;
+  const error = routeError(route, state, session);
+  if (error) return withNotice(<AppShell activeView={activeView} currentUser={currentUser}
+    onLogoClick={() => navigate(`${session.role}-lobby`)} onLogout={logout} setActiveView={navigate} tabs={tabs}>
+    <div className="page-stack"><EmptyState title="Página indisponível" text={error} />
+    <Button onClick={() => navigate(`${session.role}-lobby`)}>Minhas equipes</Button></div>
+  </AppShell>);
 
   return withNotice(
     <AppShell
       activeView={activeView}
       currentUser={currentUser}
-      onLogoClick={() => setActiveView(session.role === "coach" ? "coach-lobby" : "athlete-lobby")}
+      onLogoClick={() => navigate(`${session.role}-lobby`)}
       onLogout={logout}
       setActiveView={navigate}
       tabs={tabs}
@@ -157,11 +176,10 @@ export function App() {
     ><Suspense fallback={<LoadingState />}>
       {session.role === "coach" && activeView === "coach-home" && <TeamHome state={state} team={activeTeam}
         onOpenTraining={(trainingId) => {
-          setSelectedTrainingId(trainingId);
-          setActiveView("coach-trainings");
+          go(routePath("coach-trainings", route.teamId, trainingId));
         }} />}
       {session.role === "coach" && activeView === "coach-athletes" && (
-        <AthletesPage
+        <AthletesPage key={route.teamId}
           actions={actions}
           onSelectAthlete={setSelectedAthleteId}
           selectedAthleteId={selectedAthleteId}
@@ -173,25 +191,26 @@ export function App() {
         <RequestsPage actions={actions} state={state} team={activeTeam} />
       )}
       {session.role === "coach" && activeView === "coach-trainings" && (
-        <TrainingsPage actions={actions} state={state} team={activeTeam} initialTrainingId={selectedTrainingId} />
+        <TrainingsPage key={`${route.teamId}:${selectedTrainingId}:${route.createTraining}`} actions={actions} state={state} team={activeTeam}
+          initialTrainingId={selectedTrainingId} createMode={route.createTraining}
+          onNavigateTraining={(id = "", message) => go(routePath("coach-trainings", route.teamId, id), false, message)} />
       )}
       {session.role === "coach" && activeView === "coach-evaluations" && (
-        <EvaluationSettingsPage actions={actions} currentUser={currentUser} state={state} team={activeTeam} />
+        <EvaluationSettingsPage actions={actions} state={state} team={activeTeam} />
       )}
       {session.role === "coach" && activeView === "coach-settings" && (
-        <SettingsPage key="team" actions={actions} currentUser={currentUser} onLogout={logout} state={state} team={activeTeam} />
+        <SettingsPage key={route.teamId} onDeleted={() => go(routePath("coach-lobby"), true, "Equipe excluída.")} actions={actions} state={state} team={activeTeam} />
       )}
-      {session.role === "coach" && activeView === "coach-profile" && (
-        <SettingsPage key={session.userId} view="profile" actions={actions} currentUser={currentUser} onLogout={logout} state={state} team={activeTeam} />
-      )}
+      {activeView === "profile" && <MyProfilePage key={session.userId} currentUser={currentUser} actions={actions} onLogout={logout} />}
       {session.role === "athlete" && activeView === "athlete-home" && (
-        <AthleteDashboard athleteId={session.userId} state={state} team={activeTeam} />
+        <AthleteDashboard athleteId={session.userId} state={state} team={activeTeam}
+          onOpenTraining={(id) => go(routePath("athlete-trainings", route.teamId, id))} />
       )}
+      {session.role === "athlete" && activeView === "athlete-trainings" && <TrainingDetails inline
+        selected={state.trainings.find(item => item.id === route.trainingId && item.teamId === route.teamId)}
+        athleteId={session.userId} onClose={() => go(routePath("athlete-home", route.teamId))} />}
       {session.role === "athlete" && activeView === "athlete-search" && (
         <TeamSearch actions={actions} athleteId={session.userId} state={state} />
-      )}
-      {session.role === "athlete" && activeView === "athlete-profile" && (
-        <AthleteProfile key={session.userId} actions={actions} athleteId={session.userId} state={state} team={activeTeam} />
       )}
     </Suspense></AppShell>
   );

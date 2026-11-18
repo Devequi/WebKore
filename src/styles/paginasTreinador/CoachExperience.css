@@ -11,7 +11,6 @@
 .coach-experience .settings-form { gap: 1rem; max-width: none; }
 .coach-experience .athlete-profile-fields > .button { justify-self: start; }
 .coach-experience .section-heading h2 { font-size: var(--text-xl); }
-.coach-experience .coach-profile-teams { margin-top: 1.25rem; }
 .coach-experience .team-info, .coach-experience .team-card__actions { flex-wrap: wrap; gap: .75rem; }
 .coach-experience .team-info > div { min-width: 0; }
 .coach-experience .team-info p { overflow-wrap: anywhere; font-size: var(--text-sm); }

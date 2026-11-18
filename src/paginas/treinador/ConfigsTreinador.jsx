@@ -2,7 +2,6 @@ import { PositionProfileSettings } from "../../componentes/ui/AvaliacaoPosicao.j
 import { normalizeModality } from "../../../shared/criteria.js";
 import {
   Clipboard,
-  LogOut,
   Plus,
   RefreshCw,
   Save,
@@ -14,7 +13,6 @@ import { useEffect, useState } from "react";
 import { Button } from "../../componentes/ui/Botao.jsx";
 import { useConfirmation } from "../../componentes/ui/Confirmacao.jsx";
 import { CollapsiblePanel } from "../../componentes/ui/PainelRetratil.jsx";
-import { CoachProfileOverview } from "./PerfilTreinador.jsx";
 import { downloadTeamReport } from "../../services/reports.js";
 import "../../styles/paginasTreinador/ConfigsTreinador.css";
 
@@ -28,18 +26,11 @@ const modalidades = [
 
 export function SettingsPage({
   actions,
-  currentUser,
-  onLogout,
   state,
   team,
+  onDeleted,
   view = "team"
 }) {
-  const [formConta, setFormConta] = useState({
-    name: currentUser.name,
-    email: currentUser.email,
-    password: ""
-  });
-
   const [formTime, setFormTime] = useState({
     name: team?.name || "",
     modality: team?.modality || "Futebol"
@@ -48,17 +39,8 @@ export function SettingsPage({
   const [nomeObjetivo, setNomeObjetivo] = useState("");
   const [nomeQualitativo, setNomeQualitativo] = useState("");
   const [mensagem, setMensagem] = useState(null);
-  const [savingAccount, setSavingAccount] = useState(false);
   const [savingTeam, setSavingTeam] = useState(false);
   const { confirmAction, confirmation } = useConfirmation();
-
-  useEffect(() => {
-    setFormConta({
-      name: currentUser.name,
-      email: currentUser.email,
-      password: ""
-    });
-  }, [currentUser.id, currentUser.name, currentUser.email]);
 
   useEffect(() => {
     setFormTime({
@@ -66,32 +48,6 @@ export function SettingsPage({
       modality: team?.modality || "Futebol"
     });
   }, [team?.id, team?.name, team?.modality]);
-
-  async function salvarConta(event) {
-    event.preventDefault();
-    if (savingAccount) return;
-    setSavingAccount(true);
-    setMensagem(null);
-    try {
-      if (!formConta.name.trim() || formConta.name.length > 191) throw new Error("Informe um nome válido com até 191 caracteres.");
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formConta.email.trim())) throw new Error("Informe um e-mail válido.");
-      if (formConta.password && (formConta.password.length < 6 || new TextEncoder().encode(formConta.password).length > 72)) throw new Error("A nova senha deve ter pelo menos 6 caracteres e no máximo 72 bytes.");
-      await actions.updateUser({
-        userId: currentUser.id,
-        patch: {
-          name: formConta.name.trim(),
-          email: formConta.email.trim().toLowerCase(),
-          ...(formConta.password ? { password: formConta.password } : {})
-        }
-      });
-      setFormConta((current) => ({ ...current, password: "" }));
-      setMensagem({ area: "account", type: "success", text: "Conta atualizada." });
-    } catch (error) {
-      setMensagem({ area: "account", type: "error", text: error.message || "Não foi possível atualizar a conta." });
-    } finally {
-      setSavingAccount(false);
-    }
-  }
 
   async function salvarTime(event) {
     event.preventDefault();
@@ -114,20 +70,6 @@ export function SettingsPage({
     }
   }
 
-  async function excluirConta() {
-    if (!await confirmAction({ title: "Excluir conta?", label: "Excluir conta",
-      description: "A exclusão da conta também remove todas as equipes que você criou." })) return;
-
-    try {
-      await actions.deleteUser({
-        userId: currentUser.id
-      });
-      onLogout();
-    } catch (error) {
-      setMensagem({ area: "account", type: "error", text: error.message || "Não foi possível excluir a conta." });
-    }
-  }
-
   async function excluirTime() {
     if (!team) return;
 
@@ -139,6 +81,7 @@ export function SettingsPage({
         teamId: team.id
       });
       setMensagem({ area: "team", type: "success", text: "Equipe excluída." });
+      onDeleted?.();
     } catch (error) {
       setMensagem({ area: "team", type: "error", text: error.message || "Não foi possível excluir a equipe." });
     }
@@ -191,10 +134,12 @@ export function SettingsPage({
     }
   }
 
-  function copiarCodigo() {
-    if (team?.code) {
-      navigator.clipboard?.writeText(team.code);
-    }
+  async function copiarCodigo() {
+    try {
+      if (!navigator.clipboard) throw new Error("Copie o código exibido na página.");
+      await navigator.clipboard.writeText(team.code);
+      setMensagem({ area: "team", type: "success", text: "Código copiado." });
+    } catch (error) { setMensagem({ area: "team", type: "error", text: error.message || "Não foi possível copiar o código." }); }
   }
 
   function feedbackPara(area) {
@@ -208,7 +153,6 @@ export function SettingsPage({
   return (
     <div className="page-stack coach-experience coach-settings">
       {confirmation}
-      {view === "profile" && <CoachProfileOverview currentUser={currentUser} state={state} />}
       {!team && feedbackPara("team")}
       {view === "team" && team && (
         <section className="panel settings-panel">
@@ -338,123 +282,7 @@ export function SettingsPage({
         </CollapsiblePanel>
       )}
 
-      {view === "profile" && <section className="panel settings-panel">
-        <div className="section-heading">
-          <div>
-            <span className="eyebrow">Conta</span>
-            <h2>Editar perfil</h2>
-          </div>
-        </div>
 
-        <div className="settings-grid">
-          <form
-            className="settings-form"
-            onSubmit={salvarConta}
-            aria-busy={savingAccount}
-          >
-            <fieldset className="athlete-profile-fields" disabled={savingAccount}>
-            <label>
-              Nome completo
-
-              <input
-                onChange={(event) =>
-                  setFormConta((current) => ({
-                    ...current,
-                    name: event.target.value
-                  }))
-                }
-                required
-                maxLength={191}
-                autoComplete="name"
-                value={formConta.name}
-              />
-            </label>
-
-            <label>
-              E-mail
-
-              <input
-                onChange={(event) =>
-                  setFormConta((current) => ({
-                    ...current,
-                    email: event.target.value
-                  }))
-                }
-                required
-                maxLength={191}
-                autoComplete="email"
-                type="email"
-                value={formConta.email}
-              />
-            </label>
-
-            <label>
-              Nova senha
-
-              <input
-                minLength="6"
-                autoComplete="new-password"
-                onChange={(event) =>
-                  setFormConta((current) => ({
-                    ...current,
-                    password: event.target.value
-                  }))
-                }
-                placeholder="Digite uma senha forte"
-                type="password"
-                value={formConta.password}
-              />
-            </label>
-
-            <Button
-              icon={Save}
-              type="submit"
-            >
-              {savingAccount ? "Salvando..." : "Salvar conta"}
-            </Button>
-            </fieldset>
-          </form>
-
-          <div className="privacy-box">
-            <ShieldCheck size={28} />
-
-            <strong>Privacidade por perfil</strong>
-
-            <div className="settings-actions">
-              <Button
-                disabled={!team}
-                icon={RefreshCw}
-                onClick={() =>
-                  downloadTeamReport(state, team)
-                }
-                type="button"
-                variant="secondary"
-              >
-                Exportar relatório
-              </Button>
-
-              <Button
-                icon={LogOut}
-                onClick={onLogout}
-                type="button"
-                variant="ghost"
-              >
-                Logout
-              </Button>
-
-              <Button
-                icon={Trash2}
-                onClick={excluirConta}
-                type="button"
-                variant="danger"
-              >
-                Excluir conta
-              </Button>
-            </div>
-          </div>
-        </div>
-        {feedbackPara("account")}
-      </section>}
     </div>
   );
 }
