@@ -1,3 +1,4 @@
+import { CardGrid } from "../../componentes/ui/CardGrid.jsx";
 import { Activity, ArrowUpRight, BarChart3, CalendarDays, Crosshair, Footprints, Shield, Star, TrendingUp, Users } from "lucide-react";
 import { normalizeModality, getTeamCriteria } from "../../../shared/criteria.js";
 import { criteriaFor, positionRankings } from "../../../shared/evaluations.js";
@@ -80,16 +81,16 @@ function PerformancePanel({ title, icon: Icon, performance, role, records, team 
   const measurements = role ? positionMeasurements(records, role, criteriaFor(team, role, "QUANTITATIVE") || []) : [];
   return <section className={`panel team-home__performance${role === "GOALKEEPER" ? " team-home__keeper" : ""}`}>
     <h2><Icon size={21} aria-hidden="true" />{title}</h2>
-    <div className="team-home__metrics">
-      {role && <KpiCard icon={TrendingUp} label="Média" value={Number.isFinite(performance.averageScore) ? scoreLabel(performance.averageScore) : "—"} />}
+    <CardGrid className="team-home__metrics" layout="primary">
+      <KpiCard icon={TrendingUp} label="Média" value={Number.isFinite(performance.averageScore) ? scoreLabel(performance.averageScore) : "—"} />
       <KpiCard icon={BarChart3} label="Avaliações" value={performance.evaluationCount} />
-    </div>
+    </CardGrid>
     {role === "GOALKEEPER" && <GoalkeeperSummary records={records} compact />}
     {measurements.length > 0 && <details className="team-home__details" open={role === "OUTFIELD"}>
       <summary>Medidas do perfil</summary>
-      <div className="team-home__metrics">{measurements.map(({ id, label, value, validTrainings, totalTrainings }) =>
+      <CardGrid className="team-home__metrics" layout="metrics">{measurements.map(({ id, label, value, validTrainings, totalTrainings }) =>
         <KpiCard key={id} icon={Crosshair} label={label} value={value === null ? "Sem dados" : numberLabel(value)}
-          detail={trainingCoverage(validTrainings, totalTrainings)} />)}</div>
+          detail={trainingCoverage(validTrainings, totalTrainings)} />)}</CardGrid>
     </details>}
     <CriterionHighlights performance={performance} />
   </section>;
@@ -126,12 +127,12 @@ export function TeamHome({ state, team, onOpenTraining }) {
   const rankings = futsal ? stats.rankings ?? positionRankings(athletes, trainings) : null;
 
   return <div className="page-stack coach-experience team-home">
-    <section className="team-home__kpis" aria-label="Resumo da equipe">
+    <CardGrid className="team-home__kpis" columns={4} label="Resumo da equipe">
       <KpiCard icon={Users} label="Atletas" value={stats.athletesCount} />
       <KpiCard icon={CalendarDays} label="Treinos" value={stats.trainingsCount} />
       <KpiCard icon={Activity} label="Presença média" value={performance.presenceAverage === null ? "—" : percent(performance.presenceAverage)} />
       <KpiCard icon={BarChart3} label="Desempenho médio" value={scoreLabel(performance.averageScore)} />
-    </section>
+    </CardGrid>
     <div className="team-home__grid">
       <TeamEvolutionChart key={team.id} views={views} />
       <LastTraining key={team.id} training={last} highlights={highlights} onOpenTraining={onOpenTraining} />

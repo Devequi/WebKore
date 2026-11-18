@@ -1,3 +1,4 @@
+import { CardGrid } from "./CardGrid.jsx";
 import "../../styles/PositionEvaluation.css";
 import { useEffect, useState } from "react";
 import { Crosshair, Goal, Send, Shield, ShieldCheck } from "lucide-react";
@@ -19,11 +20,11 @@ export function GoalkeeperSummary({ records, compact = false, initialOpen = true
     ["distributionAccuracy", "Precisão das reposições", Send, rate],
     ["exitEfficiency", "Eficiência das saídas", Crosshair, rate]
   ];
-  const metrics = <section className={compact ? "team-home__metrics" : "position-metrics"} aria-label="Estatísticas observadas dos goleiros">
+  const metrics = <CardGrid className={compact ? "team-home__metrics" : "position-metrics"} layout="metrics" label="Estatísticas observadas dos goleiros">
     {indicators.map(([key, label, Icon, format]) => <KpiCard key={key} icon={Icon} label={label}
       value={format ? format(stats[key]) : stats[key] ?? "Sem dados"}
       detail={trainingCoverage(stats.coverage.byIndicator[key], stats.coverage.total)} />)}
-  </section>;
+  </CardGrid>;
   return compact ? metrics : <CollapsiblePanel title="Estatísticas de goleiro" initialOpen={initialOpen}>{metrics}</CollapsiblePanel>;
 }
 
@@ -32,10 +33,10 @@ export function OutfieldSummary({ team, records, initialOpen = true }) {
   const measurements = positionMeasurements(records, "OUTFIELD", criteria);
 
   return <CollapsiblePanel title="Estatísticas de linha" initialOpen={initialOpen}>
-    {measurements.length ? <div className="position-metrics">
+    {measurements.length ? <CardGrid className="position-metrics" layout="metrics">
       {measurements.map(({ id, label, value, validTrainings, totalTrainings }) => <KpiCard key={id} icon={Crosshair} label={label}
         value={value?.toLocaleString("pt-BR") ?? "Sem dados"} detail={trainingCoverage(validTrainings, totalTrainings)} />)}
-    </div> : <p className="empty-content">Nenhuma medida quantitativa configurada para jogadores de linha.</p>}
+    </CardGrid> : <p className="empty-content">Nenhuma medida quantitativa configurada para jogadores de linha.</p>}
   </CollapsiblePanel>;
 }
 

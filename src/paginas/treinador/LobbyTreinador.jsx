@@ -1,3 +1,4 @@
+import { CardGrid } from "../../componentes/ui/CardGrid.jsx";
 import { Clipboard, Plus, UserRound, Users, Trophy } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { PublicHeader } from "../../componentes/layout/CabecalhoPublico.jsx";
@@ -103,11 +104,11 @@ export function CoachLobby({
         <Button icon={UserRound} onClick={onProfile} type="button" variant="ghost">Meu perfil</Button>
       </section>
 
-      <section className="kpi-grid athlete-kpis">
+      <CardGrid className="kpi-grid athlete-kpis" label="Resumo das suas equipes">
         <KpiCard icon={Users} label="Equipes" value={times.length} detail="Administradas por você" />
         <KpiCard icon={UserRound} label="Atletas" value={totalAtletas} detail="Atletas únicos aprovados" />
         <KpiCard icon={Trophy} label="Modalidades" value={modalidades} detail="Nas suas equipes" />
-      </section>
+      </CardGrid>
       {feedback && <p className={`form-feedback form-feedback--${feedback.type}`} role={feedback.type === "error" ? "alert" : "status"}>{feedback.text}</p>}
 
       <section className="lobby-teams" aria-labelledby="coach-teams-title">

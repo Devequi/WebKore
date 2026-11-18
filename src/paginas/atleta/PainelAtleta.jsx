@@ -1,3 +1,4 @@
+import { CardGrid } from "../../componentes/ui/CardGrid.jsx";
 import { GoalkeeperSummary } from "../../componentes/ui/AvaliacaoPosicao.jsx";
 import { evaluationRole } from "../../../shared/evaluations.js";
 import { getApprovedAthletes } from "../../utils/selectors.js";
@@ -20,11 +21,11 @@ export function AthleteDashboard({ athleteId, state, team, onOpenTraining }) {
   const athlete = getApprovedAthletes(state, team.id).find((item) => item.id === athleteId);
   const goalkeeper = evaluationRole(team.modality, athlete?.position) === "GOALKEEPER";
   return <div className="page-stack athlete-experience">
-    <section className="kpi-grid athlete-kpis" aria-label="Resumo da equipe atual">
+    <CardGrid className="kpi-grid athlete-kpis" label="Resumo da equipe atual">
       <KpiCard icon={Activity} label="Presença" value={performance.presenceAverage === null ? "—" : percent(performance.presenceAverage)} detail="Frequência nos treinos registrados" />
       <KpiCard icon={CalendarDays} label="Treinos" value={trainings.length} detail="Registros individuais nesta equipe" />
       <KpiCard icon={Trophy} label="Média geral" value={scoreLabel(performance.averageScore)} detail={`${performance.evaluationCount} avaliações · escala de 0 a 10`} />
-    </section>
+    </CardGrid>
     {goalkeeper && <GoalkeeperSummary records={trainings.map((training) => training.athletes[athleteId])} />}
     <div className="athlete-dashboard-grid"><div className="page-stack">
       <EvolutionChart key={team.id} data={performance.observations} criteria={performance.criteria.length ? performance.criteria : getTeamCriteria(team, "qualitative")} />

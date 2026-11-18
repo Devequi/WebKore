@@ -1,9 +1,3 @@
 .team-lobby.coach-lobby .create-team-form { display: grid; gap: 20px; max-width: 680px; min-width: 0; padding: 24px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); }
 .coach-lobby .create-team-form h2 { font-size: var(--text-lg); }
 .coach-lobby .create-team-form > label { min-width: 0; }
-.coach-lobby .athlete-kpis.kpi-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
-.coach-lobby .athlete-kpis .kpi-card { min-height: 140px; height: 100%; padding: 24px; }
-.coach-lobby .athlete-kpis .kpi-card strong { color: var(--ink); font-size: clamp(1.75rem, 3vw, 2.25rem); }
-@media (max-width: 767px) {
-  .coach-lobby .athlete-kpis.kpi-grid { grid-template-columns: minmax(0, 1fr); }
-}

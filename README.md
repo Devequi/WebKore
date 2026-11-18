@@ -1,5 +1,8 @@
 # WebKore
 
+Consulte [Cards responsivos](Documentação/cards-responsivos.md) para os grids,
+breakpoints e validações da distribuição dos dashboards e estatísticas.
+
 Plataforma web para gestão e acompanhamento de desempenho esportivo.
 
 O WebKore permite que treinadores criem equipes, gerenciem atletas, registrem treinos e acompanhem métricas de desempenho. Atletas podem entrar em equipes através de código, visualizar seus dados, presença, histórico e evolução.

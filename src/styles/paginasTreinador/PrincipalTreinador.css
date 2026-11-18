@@ -18,34 +18,6 @@
 }
 
 .team-home__grid > *, .team-home__role-grid > *, .team-home__ranking-grid > * { min-width: 0; }
-.team-home__kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.team-home__metrics { grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr)); }
-
-.team-home .kpi-card {
-  display: flex;
-  gap: .5rem;
-  align-items: start;
-  min-width: 0;
-  min-height: 0;
-  padding: .75rem;
-  border-radius: var(--radius);
-  background: var(--surface-strong);
-}
-
-.team-home .kpi-card > div:last-child { min-width: 0; }
-.team-home .kpi-card p { color: var(--muted-strong); font-size: .875rem; line-height: 1.4; }
-.team-home .kpi-card strong { color: var(--ink); margin-top: .2rem; font-size: 1.4rem; line-height: 1.2; font-variant-numeric: tabular-nums; }
-.team-home .team-home__kpis strong { font-size: clamp(1.35rem, 4cqi, 2rem); }
-.team-home .kpi-card__icon {
-  width: 1.7rem;
-  height: 1.7rem;
-  flex: 0 0 1.7rem;
-  color: var(--team-role-color, var(--primary));
-  background: var(--primary-soft);
-  border-radius: .45rem;
-}
-.team-home .kpi-card__icon svg { width: 15px; height: 15px; }
-
 .team-home :is(h2, h3) { line-height: 1.3; }
 .team-home h2 { font-size: 1.2rem; }
 .team-home h3 { font-size: 1rem; }
@@ -58,7 +30,7 @@
   margin-bottom: .7rem;
 }
 .team-home :is(h2, h3) > svg { flex-shrink: 0; color: var(--team-role-color, var(--primary)); }
-.team-home__performance { display: grid; gap: .75rem; }
+.team-home__performance { display: grid; gap: var(--content-gap); min-width: 0; container: performance / inline-size; }
 .team-home .team-home__performance > h2 { margin-bottom: 0; }
 .team-home .team-home__keeper { --team-role-color: #a5b4fc; }
 .team-home .team-home__role-grid > .panel { border-top: 2px solid var(--team-role-color, var(--primary)); }
@@ -157,10 +129,10 @@
 .team-home__session { display: flex; flex-wrap: wrap; align-items: baseline; gap: .3rem .75rem; margin-bottom: .75rem; }
 .team-home__session strong { font-size: 1.1rem; }
 .team-home__session time { color: var(--muted-strong); font-size: .9rem; }
-.team-home__session-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .4rem; margin: 0; }
+.team-home__session-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr)); gap: .75rem; margin: 0; }
 .team-home__session-stats > div {
   min-width: 0;
-  padding: .5rem .35rem;
+  padding: .85rem .65rem; min-height: 5.5rem; align-content: center;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--surface-strong);
@@ -243,25 +215,25 @@
   .team-home :is(.team-home__kpis, .team-home__metrics) { gap: .6rem; }
   .team-home :is(.team-home__grid, .team-home__role-grid) > .panel,
   .team-home > .best-athlete-panel { padding-block: .75rem; }
-  .team-home .kpi-card { padding-block: .6rem; }
   .team-home__ranking-heading { margin-bottom: .65rem; }
 }
 
 @container (max-width: 28rem) {
   .team-home .athlete-evolution .collapsible-panel__actions { grid-template-columns: minmax(0, 1fr); }
 }
-@container (max-width: 21rem) {
-  .team-home .team-home__kpis .kpi-card { gap: .35rem; padding-inline: .5rem; }
-  .team-home .team-home__kpis .kpi-card__icon { width: 1.35rem; height: 1.35rem; flex-basis: 1.35rem; }
-}
 @container (min-width: 40rem) {
-  .team-home__kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .team-home .team-home__ranking-grid--split { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
-@container (min-width: 49rem) {
+@container (min-width: 64rem) {
   .team-home .team-home__role-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @container (min-width: 65rem) {
   .team-home .team-home__grid { grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr); }
-  .team-home .kpi-card { padding: .9rem; }
+}
+
+@media (min-width: 1600px) {
+  .coach-experience.team-home,
+  .team-home :is(.team-home__grid, .team-home__role-grid, .team-home__ranking-grid) { gap: 1.5rem; }
+  .team-home h2 { font-size: 1.35rem; }
+  .team-home .panel { padding: 1.5rem; }
 }

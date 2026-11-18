@@ -48,13 +48,6 @@
 }
 html:has(dialog:is(.confirm-dialog, .athlete-training-dialog)[open]) { overflow: hidden; }
 
-.athlete-experience .athlete-kpis .kpi-card {
-  min-height: 0; padding: var(--panel-inset); border-radius: var(--radius); background: var(--surface-strong);
-}
-.athlete-experience .athlete-kpis .kpi-card__icon { width: 1.85rem; height: 1.85rem; flex-basis: 1.85rem; }
-.athlete-experience .athlete-kpis .kpi-card__icon svg { width: 16px; height: 16px; }
-.athlete-experience .athlete-kpis .kpi-card strong { font-variant-numeric: tabular-nums; }
-
 .runtime-error__actions { display: flex; flex-wrap: wrap; gap: var(--content-gap); }
 .runtime-error__actions > .button { width: auto; flex: 1 1 10rem; }
 .session-notice {
@@ -81,10 +74,4 @@ html:has(dialog:is(.confirm-dialog, .athlete-training-dialog)[open]) { overflow:
   .team-lobby .lobby-hero { gap: .75rem; }
   .app-shell:not(.app-shell--coach-home) .athlete-table-scroll th,
   .app-shell:not(.app-shell--coach-home) .athlete-table-scroll td { padding: .55rem; }
-}
-
-@media (max-width: 700px) {
-  .app-shell .athlete-experience .athlete-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--content-gap); }
-  .athlete-experience .athlete-kpis .kpi-card { gap: .45rem; }
-  .athlete-experience .athlete-kpis .kpi-card:last-child { grid-column: 1 / -1; }
 }

@@ -1,3 +1,4 @@
+import { CardGrid } from "../../componentes/ui/CardGrid.jsx";
 import { GoalkeeperSummary, OutfieldSummary } from "../../componentes/ui/AvaliacaoPosicao.jsx";
 import { evaluationRole } from "../../../shared/evaluations.js";
 import { Activity, CalendarDays, ChevronDown, Pencil, Save, Search, Trash2, Trophy, X } from "lucide-react";
@@ -91,11 +92,11 @@ function AthleteProfile({ athlete, team, stats, averageScore, today, actions, he
           else setDraft({ number: athlete.number ?? "", position: athlete.position ?? "" });
         }}>Editar atleta</Button>
     </div>
-    <div className="kpi-grid athlete-kpis">
+    <CardGrid className="kpi-grid athlete-kpis" label="Resumo do atleta">
       <KpiCard icon={Activity} label="Presença" value={percent(stats.presenceAverage)} />
       <KpiCard icon={CalendarDays} label="Treinos" value={stats.trainingsCount} />
       <KpiCard icon={Trophy} label="Desempenho" value={scoreLabel(averageScore)} />
-    </div>
+    </CardGrid>
     <div id={editorId} hidden={!editing}>
       {editing && <form className="athlete-editor" onSubmit={save} aria-label="Editar atleta" aria-busy={pending}>
         <fieldset className="athlete-profile-fields" disabled={pending}>
