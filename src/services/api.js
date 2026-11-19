@@ -1,7 +1,7 @@
 import { getAuthToken } from "./storage.js";
 export { getAuthToken, setAuthToken } from "./storage.js";
 
-const API_BASE_URL = import.meta.env?.VITE_API_URL || "http://localhost:3333/api";
+const API_BASE_URL = import.meta.env?.VITE_API_URL || (import.meta.env?.PROD ? "/api" : "http://localhost:3333/api");
 
 export class ApiError extends Error {
   constructor(message, status) {
@@ -57,6 +57,9 @@ async function request(path, options = {}) {
 }
 
 export const api = {
+  logout() {
+    return request("/auth/logout", { method: "POST", body: {} });
+  },
   login(credentials, options) {
     return request("/auth/login", {
       method: "POST",

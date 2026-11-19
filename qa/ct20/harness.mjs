@@ -86,7 +86,9 @@ export async function login(page, account) {
 export async function session(page, account, path) {
   await page.goto('/');
   await page.evaluate(token => localStorage.setItem('webkore-auth-token-v1', token), account.token);
-  await page.goto(`/#${path}`);
+  // A query exclusiva força um novo documento. Só mudar o hash permite que
+  // a conta anterior redirecione a rota antes da restauração do novo token.
+  await page.goto(`/?ct20-session=${randomUUID()}#${path}`);
   await page.reload();
 }
 export const teamPath = (team, suffix = '') => `/coach/teams/${team.id}${suffix}`;

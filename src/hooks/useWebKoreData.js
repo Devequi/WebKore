@@ -22,7 +22,7 @@ export function useWebKoreData() {
     setSessionMessage("");
   }, []);
 
-  const logout = useCallback(() => {
+  const resetSession = useCallback(() => {
     version.current += 1;
     authRequest.current?.abort();
     inFlight.current = null;
@@ -44,7 +44,7 @@ export function useWebKoreData() {
       return payload;
     }).catch((error) => {
       if (mounted.current && currentVersion === version.current && !signal?.aborted) {
-        if (error instanceof ApiError && error.status === 401) logout();
+        if (error instanceof ApiError && error.status === 401) resetSession();
         setSessionMessage(error.message);
       }
       throw error;
@@ -53,7 +53,7 @@ export function useWebKoreData() {
     });
     inFlight.current = request;
     return request;
-  }, [applySession, logout]);
+  }, [applySession, resetSession]);
 
   useEffect(() => {
     mounted.current = true;
@@ -85,7 +85,7 @@ export function useWebKoreData() {
           if (mounted.current && event.newValue === getAuthToken()) setLoadingSession(false);
         });
       }
-      else logout();
+      else resetSession();
     };
     window.addEventListener("focus", update);
     window.addEventListener("storage", changedSession);
@@ -93,7 +93,7 @@ export function useWebKoreData() {
       window.removeEventListener("focus", update);
       window.removeEventListener("storage", changedSession);
     };
-  }, [refresh, logout]);
+  }, [refresh, resetSession]);
 
   useEffect(() => {
     if (!session) return;
@@ -121,6 +121,11 @@ export function useWebKoreData() {
     const token = getAuthToken();
     try {
       const result = await operation();
+      if (result?.reauthenticate && token === getAuthToken()) {
+        resetSession();
+        setSessionMessage("Senha alterada. Entre novamente para continuar.");
+        return result;
+      }
       if (mounted.current && token === getAuthToken()) {
         // Uma operação confirmada não pode parecer malsucedida só porque a
         // consulta seguinte falhou: o aviso permite atualizar sem repetir a escrita.
@@ -131,7 +136,7 @@ export function useWebKoreData() {
       return result;
     } catch (error) {
       if (mounted.current && token === getAuthToken() && error instanceof ApiError && error.status === 401) {
-        logout();
+        resetSession();
         setSessionMessage("Sua sessão expirou. Faça login novamente.");
       }
       throw error;
@@ -150,7 +155,17 @@ export function useWebKoreData() {
   const actions = {
     login: (credentials) => signIn(credentials),
     register: (credentials) => signIn(credentials, true),
-    logout,
+    async logout() {
+      const token = getAuthToken();
+      try { if (token) await api.logout(); }
+      catch (error) {
+        if (!(error instanceof ApiError && error.status === 401)) {
+          setSessionMessage("Não foi possível encerrar a sessão no servidor. Tente sair novamente.");
+          throw error;
+        }
+      }
+      if (token === getAuthToken()) resetSession();
+    },
     refresh,
     updateTeam: ({ teamId, patch }) => mutate(() => api.updateTeam(teamId, patch)),
     addCriterion: (payload) => editCriterion(payload, "add"),
@@ -161,7 +176,7 @@ export function useWebKoreData() {
     async deleteUser() {
       const token = getAuthToken();
       await api.deleteMe();
-      if (token === getAuthToken()) logout();
+      if (token === getAuthToken()) resetSession();
     },
     createTeam: ({ name, modality }) => mutate(() => api.createTeam({ name, modality })),
     requestJoin: ({ code }) => mutate(() => api.requestJoin(code)),

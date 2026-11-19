@@ -11,6 +11,8 @@ import { prisma } from "../server/src/lib/prisma.js";
 test("API preserva health, respostas 401 e restrições do perfil atleta sem acessar o banco", async () => {
   const originalSecret = process.env.JWT_SECRET;
   const originalFindUser = prisma.user.findUnique;
+  const originalFindSession = prisma.authSession.findUnique;
+  prisma.authSession.findUnique = async () => ({ userId: "test-user", expiresAt: new Date(Date.now() + 60000), user: { id: "test-user", role: "ATHLETE", authVersion: 0 } });
   prisma.user.findUnique = async ({ where }) => where.id === "test-user" ? { id: "test-user", role: "ATHLETE" } : null;
   const secret = randomBytes(48).toString("hex");
   process.env.JWT_SECRET = secret;
@@ -43,7 +45,7 @@ test("API preserva health, respostas 401 e restrições do perfil atleta sem ace
       assert.deepEqual(await response.json(), { message: "Token inválido." });
     }
 
-    const token = jwt.sign({ id: "test-user", role: "ATHLETE" }, secret, { expiresIn: "7d" });
+    const token = jwt.sign({ id: "test-user", role: "ATHLETE", ver: 0 }, secret, { expiresIn: "1h", jwtid: "00000000-0000-4000-8000-000000000001", issuer: "webkore-api", audience: "webkore-app" });
     const request = { headers: { authorization: `Bearer ${token}` } };
     let authenticated = false;
     await requireAuth(request, {}, () => { authenticated = true; });
@@ -83,6 +85,7 @@ test("API preserva health, respostas 401 e restrições do perfil atleta sem ace
     assert.throws(createApp, /Configure JWT_SECRET/);
   } finally {
     prisma.user.findUnique = originalFindUser;
+    prisma.authSession.findUnique = originalFindSession;
     if (originalSecret === undefined) delete process.env.JWT_SECRET;
     else process.env.JWT_SECRET = originalSecret;
     await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));

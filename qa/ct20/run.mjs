@@ -9,6 +9,7 @@ import '../../server/src/lib/environment.js';
 import { writeReport, jsonFile } from './report.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
+const security = process.argv.includes('--security');
 const dbName = `webkore_ct20_${randomUUID().replaceAll('-', '')}`;
 const cacheDir = resolve(root, 'tmp', dbName, 'vite-cache');
 let admin, created = false, apiServer, apiPrisma, vite, child;
@@ -44,8 +45,18 @@ try {
   process.env.NODE_ENV = 'test';
   process.env.WEBKORE_CT20_DB_NAME = dbName;
   process.env.WEBKORE_CT20_ISOLATED = '1';
+  // Limites altos são explícitos e exclusivos das fixtures; testes dedicados
+  // abaixo exercitam limites baixos reais em outra instância da aplicação.
+  process.env.AUTH_LOGIN_LIMIT = '500';
+  process.env.AUTH_REGISTER_LIMIT = '500';
+  process.env.API_RATE_LIMIT = '10000';
   console.log(`CT20: schema e dados exclusivamente no banco temporário ${dbName}.`);
   await command('../../node_modules/prisma/build/index.js', ['db', 'push', '--skip-generate']);
+  const socket = createSocketServer();
+  await new Promise((resolve, reject) => { socket.once('error', reject); socket.listen(0, '127.0.0.1', resolve); });
+  const frontendPort = socket.address().port;
+  await new Promise(resolve => socket.close(resolve));
+  process.env.APP_ORIGINS = `http://127.0.0.1:${frontendPort}`;
   const { createApp } = await import('../../server/src/aplicativo.js');
   ({ prisma: apiPrisma } = await import('../../server/src/lib/prisma.js'));
   apiServer = createApp().listen(0, '127.0.0.1');
@@ -53,16 +64,18 @@ try {
   process.env.WEBKORE_CT20_API = `http://127.0.0.1:${apiServer.address().port}/api`;
   process.env.VITE_API_URL = process.env.WEBKORE_CT20_API;
   const { createServer } = await import('vite');
-  const socket = createSocketServer();
-  await new Promise((resolve, reject) => { socket.once('error', reject); socket.listen(0, '127.0.0.1', resolve); });
-  const frontendPort = socket.address().port;
-  await new Promise(resolve => socket.close(resolve));
   vite = await createServer({ cacheDir,
     optimizeDeps: { entries: ['index.html'], include: ['react', 'react-dom/client', 'lucide-react', 'recharts'] },
     server: { host: '127.0.0.1', port: frontendPort, strictPort: true, open: false } });
   await vite.listen();
   process.env.WEBKORE_CT20_ORIGIN = `http://127.0.0.1:${vite.httpServer.address().port}`;
-  await command('../../node_modules/@playwright/test/cli.js', ['test', '--config', 'qa/ct20/playwright.config.mjs', ...process.argv.slice(2)]);
+  if (security) {
+    await command('./security-check.mjs', []);
+    await command('../../tests/integration-check.js', ['7']);
+    await command('../../tests/position-integration-check.js', []);
+  }
+  await command('../../node_modules/@playwright/test/cli.js', ['test', '--config', 'qa/ct20/playwright.config.mjs', ...process.argv.slice(2).filter(arg => arg !== '--security')]);
+  if (security) await command('../../node_modules/@playwright/test/cli.js', ['test', '--config', 'qa/ct20/security-ui.config.mjs']);
   exitCode = 0;
 } catch (error) {
   errorMessage = error.message;

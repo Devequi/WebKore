@@ -1,12 +1,11 @@
 import bcrypt from "bcryptjs";
 import { Router } from "express";
-import jwt from "jsonwebtoken";
 import { positionRankings } from "../../../shared/evaluations.js";
 import { normalizeModality } from "../../../shared/criteria.js";
 
 import { requireAuth } from "../intermediario/autenticacao.js";
 import { prisma } from "../lib/prisma.js";
-import { getJwtSecret } from "../lib/environment.js";
+import { issueSession } from "../lib/sessions.js";
 import { profileInclude, publicUserSelect, teamRelations, visibleRecords, visibleTeams, visibleTrainings } from "../lib/acesso.js";
 import { birthDate as validateBirthDate, email as validateEmail, HttpError, password as validatePassword, sendError, text } from "../lib/validacao.js";
 import {
@@ -18,19 +17,6 @@ import {
 } from "../lib/serializadores.js";
 
 export const authRouter = Router();
-
-function signToken(user) {
-  return jwt.sign(
-    {
-      id: user.id,
-      role: user.role
-    },
-    getJwtSecret(),
-    {
-      expiresIn: "7d"
-    }
-  );
-}
 
 async function buildSessionPayload(userId) {
   const user = await prisma.user.findUnique({
@@ -147,7 +133,7 @@ authRouter.post("/register", async (request, response) => {
     const payload = await buildSessionPayload(user.id);
 
     return response.status(201).json({
-      token: signToken(user),
+      token: await issueSession(user),
       user: payload.user,
       state: payload.state
     });
@@ -180,13 +166,20 @@ authRouter.post("/login", async (request, response) => {
     const payload = await buildSessionPayload(user.id);
 
     return response.json({
-      token: signToken(user),
+      token: await issueSession(user),
       user: payload.user,
       state: payload.state
     });
   } catch (error) {
     return sendError(response, error, "Erro ao realizar login.");
   }
+});
+
+authRouter.post("/logout", requireAuth, async (request, response) => {
+  try {
+    await prisma.authSession.deleteMany({ where: { id: request.sessionId, userId: request.user.id } });
+    return response.status(204).send();
+  } catch (error) { return sendError(response, error, "Erro ao encerrar sessão."); }
 });
 
 authRouter.get("/me", requireAuth, async (request, response) => {
@@ -208,7 +201,16 @@ authRouter.patch("/me", requireAuth, async (request, response) => {
     if (["role", "id", "userId", "passwordHash"].some((field) => Object.hasOwn(request.body, field))) {
       throw new HttpError(403, "Você não tem permissão para alterar a identidade ou o perfil de acesso da conta.");
     }
-    const { email, name, password, photo, birthDate } = request.body;
+    const { email, name, password, currentPassword, photo, birthDate } = request.body;
+
+    const account = await prisma.user.findUnique({ where: { id: request.user.id } });
+    if (!account) throw new HttpError(401, "Sessão inválida. Entre novamente.");
+    const emailChanged = email !== undefined && validateEmail(email) !== account.email;
+    if (password !== undefined || emailChanged) {
+      if (typeof currentPassword !== "string" || currentPassword.length > 4096 || !(await bcrypt.compare(currentPassword, account.passwordHash))) {
+        throw new HttpError(403, "Informe a senha atual para alterar o e-mail ou a senha.");
+      }
+    }
 
     const data = {};
     if (birthDate !== undefined) data.birthDate = validateBirthDate(birthDate);
@@ -217,14 +219,18 @@ authRouter.patch("/me", requireAuth, async (request, response) => {
     if (photo !== undefined) data.photoUrl = photo === null || photo === "" ? null : text(photo, "Foto");
     if (password !== undefined) data.passwordHash = await bcrypt.hash(validatePassword(password, true), 10);
 
-    const user = await prisma.user.update({
-      where: { id: request.user.id },
-      data
+    const user = await prisma.$transaction(async (transaction) => {
+      const updated = await transaction.user.update({
+        where: { id: request.user.id, authVersion: account.authVersion, passwordHash: account.passwordHash },
+        data: { ...data, ...(password !== undefined ? { authVersion: { increment: 1 } } : {}) }
+      });
+      if (password !== undefined) await transaction.authSession.deleteMany({ where: { userId: request.user.id } });
+      return updated;
     });
 
     const payload = await buildSessionPayload(user.id);
 
-    return response.json(payload);
+    return response.json({ ...payload, ...(password !== undefined ? { reauthenticate: true } : {}) });
   } catch (error) {
     return sendError(response, error, "Erro ao atualizar conta.");
   }

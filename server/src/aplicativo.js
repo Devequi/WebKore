@@ -1,6 +1,9 @@
 import cors from "cors";
 import express from "express";
+import helmet from "helmet";
+import { allowedOrigins, originGuard, authenticationLimiters, securityEvents } from "./lib/security.js";
 import { getJwtSecret } from "./lib/environment.js";
+import { getSessionSeconds } from "./lib/sessions.js";
 import { sendError } from "./lib/validacao.js";
 import { authRouter } from "./rotas/autenticacao.rotas.js";
 import { teamsRouter } from "./rotas/times.rotas.js";
@@ -8,15 +11,29 @@ import { trainingsRouter } from "./rotas/treinamentos.rotas.js";
 
 export function createApp() {
   getJwtSecret();
+  getSessionSeconds();
   const app = express();
   app.disable("x-powered-by");
-
-  app.use(cors());
-  app.use(express.json());
+  app.use(securityEvents);
+  // Confie somente no proxy explicitamente configurado; nunca em qualquer hop.
+  if (process.env.TRUST_PROXY) {
+    const proxies = process.env.TRUST_PROXY.split(",").map((value) => value.trim());
+    if (proxies.some((value) => ["true", "false", "0.0.0.0/0", "::/0", "0", "1"].includes(value))) throw new Error("TRUST_PROXY deve identificar somente proxies confiáveis por IP, subnet ou loopback.");
+    app.set("trust proxy", proxies);
+  }
+  const origins = allowedOrigins();
+  const limits = authenticationLimiters();
+  app.use(helmet({ strictTransportSecurity: process.env.NODE_ENV === "production" ? undefined : false }));
   app.use("/api", (_request, response, next) => {
     response.set("Cache-Control", "no-store");
     next();
   });
+  app.use(originGuard(origins));
+  app.use(cors({ origin: origins, methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"], allowedHeaders: ["Content-Type", "Authorization"], maxAge: 600 }));
+  app.use("/api", limits.api);
+  app.use("/api/auth/login", limits.login);
+  app.use("/api/auth/register", limits.register);
+  app.use(express.json({ limit: "100kb", inflate: false }));
   app.use((request, response, next) => {
     if (["POST", "PATCH"].includes(request.method) && (!request.body || typeof request.body !== "object" || Array.isArray(request.body))) {
       return response.status(400).json({ message: "Envie um objeto JSON válido." });

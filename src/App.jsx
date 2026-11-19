@@ -87,7 +87,7 @@ export function App() {
     if (state.loadingSession) return;
     if (route.redirect) { go(route.redirect, true); return; }
     if (state.session && ["root", "login"].includes(route.view)) go(routePath(`${session.role}-lobby`), true);
-    else if (!state.session && !state.sessionMessage && route.view === "root") go("/login", true);
+    else if (!state.session && !getAuthToken() && route.view !== "login") go("/login", true);
   }, [state.loadingSession, session.userId, session.role, route.view, route.redirect]);
 
   async function handleLogin(credentials) {
@@ -101,7 +101,10 @@ export function App() {
   }
 
   function openTeam(teamId) { go(routePath(`${session.role}-home`, teamId)); }
-  function logout() { actions.logout(); go("/login", true); }
+  async function logout() {
+    try { await actions.logout(); go("/login", true); }
+    catch { /* O aviso de falha permanece visível; o servidor não confirmou a revogação. */ }
+  }
   function navigate(view) { go(routePath(view, route.teamId)); }
   function setSelectedAthleteId(id, message) { go(routePath("coach-athletes", route.teamId, id), false, message); }
 

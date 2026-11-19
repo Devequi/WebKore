@@ -37,6 +37,19 @@ model User {
   updatedAt    DateTime     @updatedAt
   teams        Team[]       @relation("CoachTeams")
   memberships  Membership[]
+  authVersion  Int          @default(0)
+  sessions     AuthSession[]
+}
+
+model AuthSession {
+  id        String   @id
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 model Team {

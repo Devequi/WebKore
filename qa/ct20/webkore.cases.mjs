@@ -86,13 +86,13 @@ define('CT-04', async ({ rig, page }, info) => {
   expect(await page.evaluate(() => localStorage.getItem('webkore-auth-token-v1'))).toBeNull();
   await page.goto('/#/perfil');
   await expect(page.getByRole('heading', { name: 'Bem-vindo de volta' })).toBeVisible();
-  // Existing JWT contract: logout is local, there is no token revocation endpoint.
-  expect((await rig.req('/auth/me', 'GET', undefined, { token: copiedToken })).user.id).toBe(account.user.id);
+  // Logout revoga a sessão persistida; uma cópia do token também deve falhar.
+  await rig.req('/auth/me', 'GET', undefined, { token: copiedToken }, 401);
   const expired = jwt.sign({ id: account.user.id, role: 'COACH' }, process.env.JWT_SECRET, { expiresIn: -1 });
   await rig.req('/auth/me', 'GET', undefined, { token: expired }, 401);
   await rig.req('/auth/me', 'DELETE', undefined, account, 204);
   await rig.req('/auth/me', 'GET', undefined, { token: copiedToken }, 401);
-  obtained(info, 'Reload restaurou a sessão; logout limpou o navegador e bloqueou UI. Token copiado continuou válido conforme JWT sem blacklist; expiração e exclusão da conta foram rejeitadas com 401.');
+  obtained(info, 'Reload restaurou a sessão; logout limpou o navegador e bloqueou UI. Token copiado foi rejeitado após revogação no servidor; expiração e exclusão da conta foram rejeitadas com 401.');
 });
 
 define('CT-05', async ({ rig, browser }, info) => {

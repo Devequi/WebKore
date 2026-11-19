@@ -1,13 +1,12 @@
 // Explicit MySQL/HTTP integration run; fixtures are removed and all pre-existing rows are compared.
 import assert from 'node:assert/strict';
 import { createHash, randomUUID } from 'node:crypto';
-import jwt from 'jsonwebtoken';
+import { issueSession } from '../server/src/lib/sessions.js';
 import { createApp } from '../server/src/aplicativo.js';
 import { prisma } from '../server/src/lib/prisma.js';
-import { getJwtSecret } from '../server/src/lib/environment.js';
 import { criteriaFor, profileFor, positionRankings, recordScore } from '../shared/evaluations.js';
 import { teamReportRows } from '../src/services/reports.js';
-const models = ['user', 'team', 'membership', 'training', 'trainingRecord', 'evaluation', 'sportMetric', 'evaluationProfile', 'profileCriterion', 'evaluationCriterion', 'goalkeeperStats', 'trainingMeasurement'];
+const models = ['authSession', 'user', 'team', 'membership', 'training', 'trainingRecord', 'evaluation', 'sportMetric', 'evaluationProfile', 'profileCriterion', 'evaluationCriterion', 'goalkeeperStats', 'trainingMeasurement'];
 const snapshot = () => Promise.all(models.map(async (model) => ({ model, digest: createHash('sha256').update(JSON.stringify(await prisma[model].findMany({ orderBy: { id: 'asc' } }))).digest('hex') })));
 const before = await snapshot();
 const users = [];
@@ -17,7 +16,7 @@ try {
     const id = randomUUID();
     await prisma.user.create({ data: { id, name: `Position QA ${role}`, email: `${id}@example.invalid`, role, passwordHash: 'fixture-no-login' } });
     users.push(id);
-    return { id, token: jwt.sign({ id, role }, getJwtSecret(), { expiresIn: '10m' }) };
+    return { id, token: await issueSession({ id, role, authVersion: 0 }) };
   };
   const coach = await makeUser('COACH'), other = await makeUser('COACH');
   const keeper = await makeUser('ATHLETE'), line = await makeUser('ATHLETE');

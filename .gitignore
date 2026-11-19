@@ -30,5 +30,6 @@ desktop.ini
 /ordem.txt
 
 # Evidências de testes de navegador
+/deploy
 /test-results/
 /playwright-report/

@@ -16,7 +16,7 @@ export function MyProfilePage({ currentUser, actions, onLogout }) {
   const roleLabel = athlete ? "Atleta" : "Treinador";
   const today = useTodayDate();
   const [form, setForm] = useState(() => ({ name: currentUser.name, email: currentUser.email,
-    photo: currentUser.photo || "", birthDate: currentUser.birthDate || "", password: "" }));
+    photo: currentUser.photo || "", birthDate: currentUser.birthDate || "", password: "", currentPassword: "" }));
   const [pending, setPending] = useState(false);
   const [feedback, setFeedback] = useState(null);
   const { confirmAction, confirmation } = useConfirmation();
@@ -40,8 +40,10 @@ export function MyProfilePage({ currentUser, actions, onLogout }) {
         if (form.password.length < 6 || new TextEncoder().encode(form.password).length > 72) throw new Error("A nova senha deve ter pelo menos 6 caracteres e no máximo 72 bytes.");
         patch.password = form.password;
       }
+      if (patch.password || patch.email !== currentUser.email) patch.currentPassword = form.currentPassword;
       await actions.updateUser({ patch });
       change("password", "");
+      change("currentPassword", "");
       setFeedback({ type: "success", text: "Perfil atualizado." });
     } catch (error) {
       setFeedback({ type: "error", text: error.message || "Não foi possível salvar o perfil." });
@@ -87,6 +89,7 @@ export function MyProfilePage({ currentUser, actions, onLogout }) {
               <label>Foto ou iniciais<input maxLength={3} value={form.photo} onChange={event => change("photo", event.target.value.toUpperCase())} /></label>
               <BirthDateField value={form.birthDate} required={Boolean(currentUser.birthDate)} onChange={value => change("birthDate", value)} />
             </> : <label>Nova senha<input type="password" minLength={6} autoComplete="new-password" placeholder="Preencha somente para alterar a senha" value={form.password} onChange={event => change("password", event.target.value)} /></label>}
+            {(form.password || form.email.trim().toLowerCase() !== currentUser.email) && <label>Senha atual<input required type="password" autoComplete="current-password" value={form.currentPassword} onChange={event => change("currentPassword", event.target.value)} /></label>}
             <Button type="submit" icon={Save}>{pending ? "Salvando..." : "Salvar perfil"}</Button>
           </fieldset>
         </form>

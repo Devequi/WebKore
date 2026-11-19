@@ -82,12 +82,12 @@ export function sendError(response, error, fallback = "Erro inesperado ao proces
   const status = error instanceof HttpError ? error.status
     : error.code === "P2002" || error.code === "P2034" ? 409 : error.code === "P2025" ? 404 : error.code === "P2003" ? 409
     : error.code === "P2000" || error.name === "PrismaClientValidationError" || error.type === "entity.parse.failed" ? 400
-    : error.type === "entity.too.large" ? 413 : 500;
+    : error.type === "entity.too.large" ? 413 : error.type === "encoding.unsupported" || error.type === "charset.unsupported" ? 415 : 500;
   const message = error instanceof HttpError ? error.message
     : status === 409 ? "Os dados entram em conflito com um registro existente."
     : status === 404 ? "Registro não encontrado."
     : status === 400 ? "Dados da requisição inválidos."
-    : status === 413 ? "Requisição muito grande." : fallback;
+    : status === 413 ? "Requisição muito grande." : status === 415 ? "Codificação não suportada." : fallback;
   if (status === 500) console.error(fallback, error.code || error.name);
   return response.status(status).json({ message });
 }

@@ -16,7 +16,7 @@ const run = randomUUID();
 const password = randomUUID();
 const createdUsers = [];
 const createdTeams = [];
-const models = ["user", "team", "membership", "training", "trainingRecord", "evaluation", "sportMetric",
+const models = ["authSession", "user", "team", "membership", "training", "trainingRecord", "evaluation", "sportMetric",
   "evaluationProfile", "profileCriterion", "evaluationCriterion", "goalkeeperStats", "trainingMeasurement"];
 async function snapshot() {
   return Promise.all(models.map(async (model) => {
@@ -57,8 +57,10 @@ try {
   const user = await prisma.user.findUnique({ where: { id: coach.user.id } });
   assert.notEqual(user.passwordHash, password);
   assert.ok(![...values.values()].some((value) => value.includes(password)));
+  await api.logout();
   clearSession();
   assert.equal(getAuthToken(), null);
+  await request("/auth/me", "GET", undefined, coach.token, 401);
   await authenticate({ email: coach.email, password, role: "coach" });
   assert.equal((await api.me()).user.id, coach.user.id);
   await request("/auth/login", "POST", { email: `missing-${run}@example.invalid`, password }, null, 401);

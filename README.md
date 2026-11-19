@@ -1,186 +1,41 @@
 # WebKore
 
-Consulte [Cards responsivos](Documentação/cards-responsivos.md) para os grids,
-breakpoints e validações da distribuição dos dashboards e estatísticas.
+Plataforma web para gestão de equipes e acompanhamento do desempenho esportivo. O WebKore reúne atletas, treinos, presenças e avaliações em um só lugar, com áreas próprias para treinadores e atletas.
 
-Plataforma web para gestão e acompanhamento de desempenho esportivo.
+## Para treinadores
 
-O WebKore permite que treinadores criem equipes, gerenciem atletas, registrem treinos e acompanhem métricas de desempenho. Atletas podem entrar em equipes através de código, visualizar seus dados, presença, histórico e evolução.
+- Criar e gerenciar equipes.
+- Compartilhar códigos de entrada e aprovar solicitações de atletas.
+- Organizar os atletas de cada equipe e seus dados esportivos.
+- Registrar treinos e controlar presenças.
+- Avaliar atletas com critérios qualitativos e medidas quantitativas.
+- Acompanhar médias, estatísticas, rankings e evolução ao longo dos treinos.
+- Consultar o histórico de avaliações e exportar relatórios.
 
-O projeto utiliza React no frontend, Express no backend e MySQL com Prisma para persistência dos dados.
+## Para atletas
 
----
+- Solicitar entrada em equipes por meio de um código.
+- Acessar os dados das equipes após a aprovação do treinador.
+- Consultar suas presenças, avaliações e histórico esportivo.
+- Acompanhar seu desempenho e evolução.
+- Atualizar suas informações pessoais em Meu Perfil.
 
-## Tecnologias
+## Treinos e avaliações
 
-### Frontend
+Os treinos reúnem os registros de presença, notas e medidas dos atletas. O histórico permite expandir e recolher os detalhes de cada treino para consultar as informações salvas.
 
-- React
-- Vite
-- JavaScript
-- Recharts
-- Lucide React
-- LocalStorage para o token de autenticação
+No futsal, as avaliações possuem critérios próprios para jogadores de linha e goleiros, com pesos configuráveis por equipe. As estatísticas são opcionais, e os rankings consideram as avaliações específicas de cada perfil esportivo.
 
-### Backend
+## Organização do site
 
-- Node.js
-- Express
-- Prisma ORM
-- MySQL
-- JWT
-- bcrypt
+- **Meu Perfil:** informações pessoais da conta, com acesso independente das equipes.
+- **Equipes:** informações e gerenciamento de cada equipe.
+- **Atletas:** dados esportivos e histórico dos atletas autorizados.
+- **Treinos:** planejamento, presenças, avaliações e histórico.
+- **Configurações da equipe:** critérios e preferências de avaliação.
 
----
+## Acesso e experiência
 
-## Arquitetura
+Cada pessoa acessa as informações permitidas ao seu perfil. Treinadores gerenciam suas próprias equipes, enquanto atletas acompanham os dados autorizados relacionados à sua participação.
 
-O frontend usa `useWebKoreData` e `src/services/api.js` para cadastro, login,
-equipes, vínculos, treinos e avaliações. A API é a fonte dos dados das sessões
-autenticadas no servidor. JWT é enviado como Bearer; `/auth/me` restaura a sessão.
-O backend limita equipes e registros conforme a conta e o perfil autenticados.
-
-As páginas usam URLs persistentes com `#`, incluindo equipe, atleta e treino
-selecionados. Meu Perfil usa uma única rota global `#/perfil` para a conta
-autenticada, independente das equipes. A restauração da sessão mantém o endereço ao atualizar. Consulte
-[Navegação e sessão](Documentação/navegacao-e-sessao.md) para rotas, decisões de UX,
-permissões e validação da refatoração.
-
-O sistema depende da API para cadastro, login, restauração de sessão e operações
-esportivas. Falhas de conexão são exibidas ao usuário; não há fallback de login,
-cadastro ou gravação local. O token continua no localStorage para permitir nova
-consulta autenticada após recarregar a página. As consultas usam `no-store`.
-
-Bases locais e filas legadas permanecem intactas no navegador para recuperação
-manual, sem serem carregadas ou sincronizadas pela aplicação. Somente as cópias
-antigas de consultas da API e os metadados redundantes de sessão são removidos.
-As demonstrações explícitas por seed no MySQL continuam disponíveis.
-
-O build não contém manifest, instalação ou suporte offline. `public/sw.js` é
-exclusivamente um worker de desativação na URL antiga: limpa os caches próprios,
-desregistra-se e atualiza as páginas antigas do WebKore. O frontend nunca o registra.
-Veja o [relatório da auditoria](Documentação/auditoria-geral.md) para implantação
-e validação da transição de instalações anteriores.
-
-O backend possui o seguinte fluxo:
-
-```text
-React
-  ↓
-API HTTP
-  ↓
-Express
-  ↓
-Prisma
-  ↓
-MySQL
-```
-
-## Execução local
-
-Use Node.js 22.12 ou superior e npm. As dependências são compartilhadas pelo
-frontend e pelo backend no `package.json` da raiz.
-
-1. Instale as dependências com `npm ci`.
-2. Se ainda não existir um `.env`, copie `.env.example` para `.env` e preencha
-   `DATABASE_URL` e `JWT_SECRET` com valores locais. Não sobrescreva seu `.env` existente.
-3. Execute `npm run prisma:generate` para gerar o client do Prisma.
-4. Inicie o frontend com `npm run dev` e, em outro terminal, a API com `npm run api`.
-
-O frontend abre em `http://127.0.0.1:5173` e a API usa a porta configurada em
-`PORT` (padrão 3333). `GET /api/health` verifica se a API está respondendo;
-não verifica a conexão com o banco. Novos cadastros e logins utilizam a API
-quando o servidor está disponível.
-
-`VITE_API_URL` configura a URL do serviço HTTP do frontend e pode usar o padrão
-`http://localhost:3333/api`. Variáveis com prefixo `VITE_` são públicas no build;
-nunca use esse prefixo para credenciais.
-
-`SEED_PASSWORD` é necessária apenas para `npm run prisma:seed`. Ela define a
-senha das contas de demonstração criadas pelo seed; contas existentes não são
-atualizadas por esse script. Execute o seed apenas em um banco de demonstração.
-
-O schema e as migrations existentes foram preservados. Antes de aplicar
-migrations em um banco com dados, revise seu conteúdo e mantenha um backup.
-
-O cadastro de atleta exige data de nascimento e a área Atletas do treinador
-calcula a idade automaticamente. Consulte [Data de nascimento e idade](Documentação/data-nascimento.md)
-para os arquivos alterados, testes e instruções de migration. Se a coluna
-`birthDate` ainda existir e a migration antiga `remove_birth_date` estiver
-pendente, siga as instruções de resolução antes de aplicar migrations para preservar a coluna.
-
-## Verificações
-
-### Suíte CT-01 a CT-20
-
-Execute `npm run test:ct20:install` uma vez para instalar o Chromium e depois
-`npm run test:ct20`. Para usar Edge ou Chrome já instalado, configure
-`WEBKORE_TEST_BROWSER_CHANNEL=msedge` ou `chrome` antes da execução.
-
-Os 20 casos combinam interface real, API, MySQL e regras unitárias. O executor
-cria um banco exclusivo `webkore_ct20_<identificador>`, usa API/frontend em portas
-livres e remove esse banco no encerramento. Não executa seed, limpeza ou consultas
-nas tabelas do banco principal. A conta MySQL precisa poder criar e remover bancos;
-`WEBKORE_TEST_DATABASE_URL` pode fornecer a conexão de um servidor de testes.
-Sem essa variável, usa a conexão do servidor configurado em `DATABASE_URL`
-somente para provisionar o banco temporário. Execução com `NODE_ENV=production`
-é recusada.
-
-O [relatório dos 20 casos](Documentação/testes-ct20.md) é atualizado a cada execução,
-com tabela de resultados, objetivos, pré-condições, entradas e passos. Evidências
-JSON, capturas e traces de falhas ficam em `test-results/ct20/`, fora do Git.
-
-### Banco exclusivo de desenvolvimento/testes
-
-`npm run prisma:seed:test` cria ou atualiza as fixtures abaixo sem limpar o banco.
-Para substituir todos os registros dos sete models pelo cenário de testes, use
-`npm run prisma:seed:test -- --clear`. Esse comando apaga registros na ordem
-Evaluation, SportMetric, TrainingRecord, Training, Membership, Team, User e cria
-as fixtures na mesma transação. Não altera schema, tabelas, relações ou migrations.
-Use somente em banco de desenvolvimento/teste; o modo recusa NODE_ENV=production.
-O seed de demonstração anterior continua disponível em `npm run prisma:seed`.
-
-| Perfil | Nome | E-mail | Senha de teste |
-| --- | --- | --- | --- |
-| Treinador | Treinador Teste | treinador@webkore.test | Teste123! |
-| Atleta | Atleta Teste | atleta@webkore.test | Teste123! |
-| Atleta | Atleta Dois | atleta2@webkore.test | Teste123! |
-
-Essas credenciais são públicas e exclusivas de testes. O seed grava somente hashes
-bcrypt com custo 10, igual ao backend. Reexecutar o modo de testes restaura essas
-senhas e os valores das fixtures. Não copie essas contas para produção.
-
-Equipe **WebKore Teste**, modalidade **Vôlei**, código **WK-TEAM-100**. Atleta Teste
-é APPROVED; Atleta Dois é PENDING. Treino misto em 30/09/2026 com presença do primeiro
-atleta, Pontos=4, Aces=1 e notas Técnica=0, Condicionamento físico=6,
-Participação=8, Trabalho em equipe=7.
-
-### Comandos de verificação
-
-- `npm run build`: build do frontend convencional, com páginas carregadas sob demanda.
-- `npm run test:build`: verifica o build e a ausência de artefatos ativos do PWA.
-- `npm test`: sessão conectada, transição PWA, nascimento, contratos, CSV, notas e proteção do seed, sem banco.
-- `npm run test:integration -- 7`: integração com o MySQL configurado; cria fixtures
-  exclusivas e remove somente seus IDs no finally. Não execute em produção.
-- `npx prisma validate`: validação do schema.
-- `npm run prisma:generate`: geração do client, sem aplicar migrations.
-
-Não há lint configurado. O relatório atual de problemas, correções, arquivos,
-testes e implantação está em [Documentação/auditoria-geral.md](Documentação/auditoria-geral.md).
-As revisões anteriores foram mantidas como histórico.
-
-## Avaliações de futsal por posição
-
-Estatísticas são opcionais. Na API, um campo omitido deixa o registro anterior como está,
-`null` limpa o valor e `0` registra uma contagem observada. Nas métricas legadas
-(`SportMetric`), a coluna inteira existente usa o valor reservado `-1` para uma
-limpeza explícita. A API sempre o apresenta como `null`.
-
-Zeros antigos permanecem registrados como zeros. O sistema antigo podia preencher
-alguns campos com zero automaticamente, e os registros históricos não indicam
-quais zeros foram preenchidos pelo treinador. Quando houver evidência de que um
-valor antigo não foi informado, ele pode ser limpo individualmente na edição do treino.
-
-O futsal agora possui critérios e pesos configuráveis por equipe para goleiros e jogadores de linha, estatísticas opcionais, histórico preservado e rankings separados (mínimo de três avaliações específicas). Notas ponderadas e validações são executadas no backend. As avaliações antigas e as demais modalidades continuam acessíveis.
-
-Consulte [as regras, a arquitetura, a migration, os arquivos alterados e os testes](Documentação/avaliacoes-por-posicao.md).
+O site possui interface responsiva para celular, tablet e computador, com navegação entre equipes, atletas e treinos. As informações salvas ficam disponíveis ao retornar à plataforma.
