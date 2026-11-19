@@ -1,11 +1,10 @@
 import { TrainingReview } from "../../componentes/ui/RevisaoTreino.jsx";
-import { CalendarPlus, ChevronDown, Trash2 } from "lucide-react";
+import { CalendarPlus, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import { useRef, useState } from "react";
 import { Button } from "../../componentes/ui/Botao.jsx";
 import { useConfirmation } from "../../componentes/ui/Confirmacao.jsx";
 import { EmptyState } from "../../componentes/ui/EstadoVazio.jsx";
 import { formatDate } from "../../utils/formatters.js";
-import { isPanelSurfaceClick } from "../../utils/panelInteraction.js";
 import { todayDateOnly } from "../../../shared/birthDate.js";
 import {
   getApprovedAthletes,
@@ -22,8 +21,10 @@ export function TrainingsPage({ actions, state, team, initialTrainingId, createM
     description: ""
   });
   const [drafts, setDrafts] = useState({});
-  const [treinoAberto, setTreinoAberto] = useState(initialTrainingId || null);
-  const [aba, setAba] = useState(createMode ? "add" : "history");
+  const [localTrainingId, setTreinoAberto] = useState(initialTrainingId || null);
+  const [localTab, setAba] = useState(createMode ? "add" : "history");
+  const treinoAberto = onNavigateTraining ? initialTrainingId || null : localTrainingId;
+  const aba = onNavigateTraining ? createMode ? "add" : "history" : localTab;
   const [feedback, setFeedback] = useState(null);
   const [saving, setSaving] = useState(false);
   const { confirmAction, confirmation } = useConfirmation();
@@ -79,10 +80,15 @@ export function TrainingsPage({ actions, state, team, initialTrainingId, createM
   }
 
   function abrirFechar(trainingId) {
-    if (onNavigateTraining) { onNavigateTraining(trainingId); return; }
+    if (onNavigateTraining) { onNavigateTraining(treinoAberto === trainingId ? "" : trainingId); return; }
     setTreinoAberto(
       treinoAberto === trainingId ? null : trainingId
     );
+  }
+
+  function voltarAoHistorico() {
+    if (onNavigateTraining) onNavigateTraining();
+    else { setTreinoAberto(null); setAba("history"); }
   }
 
   async function deletarTreino(trainingId) {
@@ -101,7 +107,7 @@ export function TrainingsPage({ actions, state, team, initialTrainingId, createM
   return (
     <div className="page-stack">
       {confirmation}
-      {initialTrainingId && <Button variant="ghost" onClick={() => onNavigateTraining?.()}>Voltar aos treinos</Button>}
+      {initialTrainingId && <Button variant="ghost" onClick={voltarAoHistorico}>Voltar aos treinos</Button>}
       {initialTrainingId && <p role="status">Detalhes e avaliação do treino</p>}
       {aba === "history" && feedback && <p className={`form-feedback form-feedback--${feedback.type}`}
         role={feedback.type === "error" ? "alert" : "status"}>{feedback.text}</p>}
@@ -121,7 +127,7 @@ export function TrainingsPage({ actions, state, team, initialTrainingId, createM
           aria-controls="training-history-panel"
           aria-selected={aba === "history"}
           className={`tab-button ${aba === "history" ? "active" : ""}`}
-          onClick={() => onNavigateTraining ? onNavigateTraining() : setAba("history")}
+          onClick={voltarAoHistorico}
           role="tab"
           type="button"
         >
@@ -235,7 +241,6 @@ export function TrainingsPage({ actions, state, team, initialTrainingId, createM
                 <article
                   className="training-card"
                   key={treino.id}
-                  onClick={(event) => { if (isPanelSurfaceClick(event)) abrirFechar(treino.id); }}
                 >
                   <button
                     aria-expanded={treinoAberto === treino.id}
@@ -261,6 +266,9 @@ export function TrainingsPage({ actions, state, team, initialTrainingId, createM
                   {treinoAberto === treino.id && (
                     <div className="training-editor" id={`training-editor-${treino.id}`}>
                       <div className="training-delete">
+                        <Button icon={ChevronUp} variant="ghost" type="button" onClick={() => abrirFechar(treino.id)}>
+                          Recolher treino
+                        </Button>
                         <Button
                           icon={Trash2}
                           variant="ghost"

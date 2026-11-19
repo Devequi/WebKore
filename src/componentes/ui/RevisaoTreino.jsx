@@ -27,7 +27,6 @@ export function TrainingReview({ training, athletes, team, actions, drafts, setD
   const current = rows.find((row) => row.athlete.id === selected) || rows[0];
   const status = (row) => !row.draft.present ? "Ausente" : row.draft.confirmed ? "Revisada para salvar" : row.saved && !row.draft.dirty ? "Avaliação salva" : "Pendente de revisão";
   const pending = rows.filter((row) => row.draft.present && !(row.draft.confirmed || row.saved && !row.draft.dirty)).length;
-  const reviewed = rows.filter((row) => row.draft.present && (row.draft.confirmed || row.saved && !row.draft.dirty));
   function patch(id, changes) {
     setMessage(null);
     const row = rows.find((item) => item.athlete.id === id);
@@ -116,14 +115,11 @@ export function TrainingReview({ training, athletes, team, actions, drafts, setD
         </div>}
       </section>
     </div>
-    <section className="review-summary" aria-label="Revisão e salvamento"><h3>4. Revisão e salvamento</h3>
-      <p>{reviewed.length} atleta(s) avaliado(s) ou revisado(s) · {pending} pendente(s)</p>
-      {reviewed.length > 0 && <ul>{reviewed.map((row) => <li key={row.athlete.id}>{row.athlete.name}: {scoreLabel(row.score)}</li>)}</ul>}
-      {pending > 0 && <p className="form-hint">Notas não revisadas ficam pendentes. Somente avaliações confirmadas serão registradas.</p>}
+    <div className="review-save-actions">
       <Button type="button" disabled={saving || rows.some((row) => row.draft.present && row.draft.measurementsDirty && row.measurementError) || !rows.some((row) => row.draft.present !== row.record.present || row.draft.present && row.draft.measurementsDirty || row.draft.present && row.draft.confirmed && (!row.saved || row.draft.dirty))} onClick={save}>
         {saving ? "Salvando…" : "Salvar presença, notas e medidas"}
       </Button>
       {message && <p className={`form-feedback form-feedback--${message.type}`} role={message.type === "error" ? "alert" : "status"}>{message.text}</p>}
-    </section>
+    </div>
   </div>;
 }

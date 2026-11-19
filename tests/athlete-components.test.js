@@ -330,9 +330,34 @@ test("revisão inicia em 5, mantém pendências explícitas e oculta avaliação
   assert.match(html, /Revisei e confirmo estas notas/);
   assert.match(html, /Estatísticas do goleiro/);
   assert.match(html, /button[^>]*disabled/);
+  assert.match(html, /Salvar presença, notas e medidas/);
+  assert.doesNotMatch(html, /4\. Revisão e salvamento|review-summary|atleta\(s\) avaliado\(s\) ou revisado\(s\)/);
   assert.doesNotMatch(html, /Finalização e ataque/);
   props.training.athletes.a.present = false;
   const absent = render(TrainingReview, props);
   assert.doesNotMatch(absent, /type="number"/);
   assert.match(absent, /Atleta ausente/);
+});
+
+test("histórico aberto oferece recolhimento e mantém somente a avaliação individual e o salvamento", async () => {
+  const team = { id: "t", name: "Equipe", modality: "Futsal" };
+  const athletes = [{ id: "a", name: "Ana", position: "Ala" }, { id: "b", name: "Bruno", position: "Ala" }];
+  const records = Object.fromEntries(athletes.map(athlete => [athlete.id, { present: true, modality: "Futsal", role: "OUTFIELD", position: "Ala", ratings: {} }]));
+  const state = { teams: [team], users: athletes,
+    memberships: athletes.map(athlete => ({ teamId: "t", athleteId: athlete.id, status: "approved", position: "Ala" })),
+    trainings: [{ id: "w", teamId: "t", date: "2026-11-18", type: "Misto", athletes: records }] };
+  const page = render(TrainingsPage, { team, state, actions: {}, initialTrainingId: "w", onNavigateTraining() {} });
+  assert.match(page, /aria-expanded="true"/);
+  assert.match(page, /Recolher treino/);
+  assert.match(page, /Salvar presença, notas e medidas/);
+  assert.doesNotMatch(page, /Revisão e salvamento|review-summary/);
+  const { TrainingReview } = await server.ssrLoadModule("/src/componentes/ui/RevisaoTreino.jsx");
+  const confirmed = render(TrainingReview, { team, training: state.trainings[0], athletes, actions: {}, setDrafts() {},
+    drafts: Object.fromEntries(athletes.map(athlete => [athlete.id, { present: true, confirmed: true, dirty: true, ratings: {
+      Posicionamento: 8, "Tomada de decisão": 7, "Trabalho em equipe": 9, "Disciplina tática": 6
+    }, measurements: {} }])) });
+  assert.doesNotMatch(confirmed, /<ul|review-summary|Revisão e salvamento/);
+  const saveButton = confirmed.match(/<button[^>]*><span>Salvar presença, notas e medidas<\/span><\/button>/)?.[0];
+  assert.ok(saveButton);
+  assert.doesNotMatch(saveButton, /disabled/);
 });

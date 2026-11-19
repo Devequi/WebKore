@@ -191,7 +191,7 @@ export function App() {
         <RequestsPage actions={actions} state={state} team={activeTeam} />
       )}
       {session.role === "coach" && activeView === "coach-trainings" && (
-        <TrainingsPage key={`${route.teamId}:${selectedTrainingId}:${route.createTraining}`} actions={actions} state={state} team={activeTeam}
+        <TrainingsPage key={route.teamId} actions={actions} state={state} team={activeTeam}
           initialTrainingId={selectedTrainingId} createMode={route.createTraining}
           onNavigateTraining={(id = "", message) => go(routePath("coach-trainings", route.teamId, id), false, message)} />
       )}
