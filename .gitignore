@@ -28,3 +28,7 @@ desktop.ini
 
 # Planejamento interno de documentação, sem uso pela aplicação
 /ordem.txt
+
+# Evidências de testes de navegador
+/test-results/
+/playwright-report/

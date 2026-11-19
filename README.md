@@ -111,6 +111,25 @@ pendente, siga as instruções de resolução antes de aplicar migrations para p
 
 ## Verificações
 
+### Suíte CT-01 a CT-20
+
+Execute `npm run test:ct20:install` uma vez para instalar o Chromium e depois
+`npm run test:ct20`. Para usar Edge ou Chrome já instalado, configure
+`WEBKORE_TEST_BROWSER_CHANNEL=msedge` ou `chrome` antes da execução.
+
+Os 20 casos combinam interface real, API, MySQL e regras unitárias. O executor
+cria um banco exclusivo `webkore_ct20_<identificador>`, usa API/frontend em portas
+livres e remove esse banco no encerramento. Não executa seed, limpeza ou consultas
+nas tabelas do banco principal. A conta MySQL precisa poder criar e remover bancos;
+`WEBKORE_TEST_DATABASE_URL` pode fornecer a conexão de um servidor de testes.
+Sem essa variável, usa a conexão do servidor configurado em `DATABASE_URL`
+somente para provisionar o banco temporário. Execução com `NODE_ENV=production`
+é recusada.
+
+O [relatório dos 20 casos](Documentação/testes-ct20.md) é atualizado a cada execução,
+com tabela de resultados, objetivos, pré-condições, entradas e passos. Evidências
+JSON, capturas e traces de falhas ficam em `test-results/ct20/`, fora do Git.
+
 ### Banco exclusivo de desenvolvimento/testes
 
 `npm run prisma:seed:test` cria ou atualiza as fixtures abaixo sem limpar o banco.

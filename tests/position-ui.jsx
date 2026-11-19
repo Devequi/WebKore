@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { PositionEvaluationEditor, PositionProfileSettings, GoalkeeperSummary, PositionRankings } from '../src/componentes/ui/AvaliacaoPosicao.jsx';
+import { PositionEvaluationEditor, PositionProfileSettings, GoalkeeperSummary } from '../src/componentes/ui/AvaliacaoPosicao.jsx';
+import { AverageRankings } from '../src/paginas/treinador/RankingMedias.jsx';
 import { profileFor, weightedEvaluation } from '../shared/evaluations.js';
 import '../src/styles/global.css';
 import '../src/styles/experience.css';
@@ -25,7 +26,7 @@ function QA() {
     <h1>WebKore: {role === 'GOALKEEPER' ? 'Goleiro' : 'Linha'}</h1>
     {view === 'evaluation' && <PositionEvaluationEditor key={role} record={record} team={team} onSave={save} />}
     {view === 'settings' && <PositionProfileSettings team={team} actions={{ updateTeam: async ({ patch }) => setTeam((t) => ({ ...t, ...patch })) }} />}
-    {view === 'dashboard' && <><GoalkeeperSummary records={[records.GOALKEEPER]} /><PositionRankings rankings={{ GOALKEEPER: [], OUTFIELD: [] }} /></>}
+    {view === 'dashboard' && <><GoalkeeperSummary records={[records.GOALKEEPER]} /><AverageRankings rankings={{ GOALKEEPER: [], OUTFIELD: [] }} athletes={[]} trainings={[]} /></>}
   </section></main></div>;
 }
 createRoot(document.getElementById('root')).render(<QA />);
