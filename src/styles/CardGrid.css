@@ -58,7 +58,8 @@
   height: clamp(2.25rem, calc(1.9rem + 1cqi), 2.75rem);
   flex: 0 0 auto;
   border-radius: var(--radius-sm);
-  color: var(--team-role-color, var(--primary));
+  color: var(--muted);
+  background: transparent;
 }
 :is(.app-shell, .team-lobby) .card-grid .kpi-card__icon svg {
   width: 55%;
@@ -69,8 +70,7 @@
   font-size: clamp(1.35rem, calc(1.15rem + .8cqi), 1.8rem);
 }
 :is(.app-shell, .team-lobby) .card-grid--primary .kpi-card {
-  border-color: var(--line-strong);
-  border-top: 2px solid var(--team-role-color, var(--primary));
+  border-color: var(--line);
 }
 :is(.app-shell, .team-lobby) .card-grid .athlete-performance__indicator {
   min-height: 8.5rem;

@@ -1,9 +1,9 @@
-/* Keep the coach Home as the reference. Page-local rules still own layout and data. */
-:is(.app-shell:not(.app-shell--coach-home) .main-content, .team-lobby, .auth-entry, .runtime-error) {
+/* Shared control and surface rules; page styles own layout and data. */
+:is(.app-shell .main-content, .team-lobby, .auth-entry, .runtime-error) {
   overflow-wrap: anywhere;
 }
 
-:is(.app-shell:not(.app-shell--coach-home) .main-content, .team-lobby, .auth-entry, .runtime-error) .button {
+:is(.app-shell .main-content, .team-lobby, .auth-entry, .runtime-error) .button {
   min-height: var(--control-height);
   max-width: 100%;
   border-radius: var(--control-radius);
@@ -11,34 +11,33 @@
   line-height: 1.35;
 }
 .button > svg { flex-shrink: 0; }
-:is(.app-shell:not(.app-shell--coach-home) .main-content, .team-lobby, .auth-entry, .runtime-error) .button--danger {
+:is(.app-shell .main-content, .team-lobby, .auth-entry, .runtime-error) .button--danger {
   border-style: solid;
   border-color: rgb(var(--error-rgb) / .45);
 }
 
-.app-shell:not(.app-shell--coach-home) .main-content .panel {
+.app-shell .main-content .panel {
   min-width: 0;
   padding: var(--panel-inset);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   background: var(--surface);
 }
-.app-shell:not(.app-shell--coach-home) .main-content .panel:hover { transform: none; }
-.app-shell:not(.app-shell--coach-home) .main-content .section-heading h2 { font-size: 1.2rem; line-height: 1.3; }
-.app-shell:not(.app-shell--coach-home) .main-content :is(.page-stack, .dashboard-grid) { gap: var(--content-gap); }
-.app-shell:not(.app-shell--coach-home) .main-content :is(.settings-grid, .review-workspace, .training-form, .rating-grid, .metric-grid) > * { min-width: 0; }
+.app-shell .main-content .section-heading h2 { font-size: 1.2rem; line-height: 1.3; }
+.app-shell .main-content :is(.page-stack, .dashboard-grid) { gap: var(--content-gap); }
+.app-shell .main-content :is(.settings-grid, .review-workspace, .training-form, .rating-grid, .metric-grid) > * { min-width: 0; }
 
-:is(.app-shell:not(.app-shell--coach-home) .main-content, .team-lobby, .auth-entry) :is(input:not([type="checkbox"],[type="radio"],[type="range"]), select, textarea) {
+:is(.app-shell .main-content, .team-lobby, .auth-entry) :is(input:not([type="checkbox"],[type="radio"],[type="range"]), select, textarea) {
   min-width: 0;
   max-width: 100%;
   border-radius: var(--control-radius);
   font-size: 1rem;
 }
-:is(.app-shell:not(.app-shell--coach-home) .main-content, .team-lobby, .auth-entry) :is(label, .form-hint) { line-height: 1.45; }
-.app-shell:not(.app-shell--coach-home) .athlete-table-scroll { border: 1px solid var(--line); border-radius: var(--control-radius); }
-.app-shell:not(.app-shell--coach-home) .athlete-table-scroll table { font-size: var(--text-sm); }
-.app-shell:not(.app-shell--coach-home) .athlete-table-scroll th { color: var(--ink); background: var(--surface-strong); }
-.app-shell:not(.app-shell--coach-home) .athlete-table-scroll tr:last-child td { border-bottom: 0; }
+:is(.app-shell .main-content, .team-lobby, .auth-entry) :is(label, .form-hint) { line-height: 1.45; }
+.app-shell .athlete-table-scroll { border: 1px solid var(--line); border-radius: var(--control-radius); }
+.app-shell .athlete-table-scroll table { font-size: var(--text-sm); }
+.app-shell .athlete-table-scroll th { color: var(--ink); background: var(--surface-strong); }
+.app-shell .athlete-table-scroll tr:last-child td { border-bottom: 0; }
 .athlete-training-dialog .section-heading {
   display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: .5rem;
 }
@@ -64,14 +63,14 @@ html:has(dialog:is(.confirm-dialog, .athlete-training-dialog)[open]) { overflow:
     padding-inline: var(--lobby-gutter);
     gap: clamp(1rem, 2.5vw, 1.5rem);
   }
-  .app-shell:not(.app-shell--coach-home) .topbar { gap: .5rem; padding-block: .25rem; }
-  .app-shell:not(.app-shell--coach-home) .topbar h1 { line-height: 1.2; }
+  .app-shell .topbar { gap: .5rem; padding-block: .25rem; }
+  .app-shell .topbar h1 { line-height: 1.2; }
 }
 @media (max-width: 640px) {
   .lobby-page.team-lobby .team-card { min-height: 0; gap: .75rem; padding: var(--panel-inset); }
   .team-lobby :is(.lobby-join, .create-team-form) { padding: var(--panel-inset); }
   .team-lobby .team-card-grid { gap: var(--content-gap); }
   .team-lobby .lobby-hero { gap: .75rem; }
-  .app-shell:not(.app-shell--coach-home) .athlete-table-scroll th,
-  .app-shell:not(.app-shell--coach-home) .athlete-table-scroll td { padding: .55rem; }
+  .app-shell .athlete-table-scroll th,
+  .app-shell .athlete-table-scroll td { padding: .55rem; }
 }

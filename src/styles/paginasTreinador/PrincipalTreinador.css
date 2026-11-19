@@ -29,11 +29,10 @@
   gap: .5rem;
   margin-bottom: .7rem;
 }
-.team-home :is(h2, h3) > svg { flex-shrink: 0; color: var(--team-role-color, var(--primary)); }
+.team-home :is(h2, h3) > svg { flex-shrink: 0; color: var(--muted); }
 .team-home__performance { display: grid; gap: var(--content-gap); min-width: 0; container: performance / inline-size; }
 .team-home .team-home__performance > h2 { margin-bottom: 0; }
 .team-home .team-home__keeper { --team-role-color: #a5b4fc; }
-.team-home .team-home__role-grid > .panel { border-top: 2px solid var(--team-role-color, var(--primary)); }
 .team-home .empty-content { margin: .25rem 0; color: var(--muted-strong); font-size: .95rem; }
 
 .team-home .collapsible-panel__identity .eyebrow:empty { display: none; }
@@ -97,7 +96,7 @@
   border-color: var(--line-strong);
   color: var(--primary);
   background: var(--primary-soft);
-  font-weight: 650;
+  font-weight: 600;
 }
 .team-home .team-evolution__area-plot { height: clamp(13rem, 33cqi, 18rem); }
 .team-home .athlete-chart-tooltip { font-size: .875rem; }
@@ -133,9 +132,7 @@
 .team-home__session-stats > div {
   min-width: 0;
   padding: .85rem .65rem; min-height: 5.5rem; align-content: center;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  background: var(--surface-strong);
+  border-bottom: 1px solid var(--line);
   text-align: center;
 }
 .team-home__session-stats dt { color: var(--muted-strong); font-size: .85rem; }
@@ -150,9 +147,7 @@
   align-items: baseline;
   gap: .25rem .5rem;
   padding: .55rem .7rem;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  background: var(--surface-strong);
+  border-bottom: 1px solid var(--line);
 }
 .team-home__score-list li > span { flex: 1 1 6rem; min-width: 0; }
 .team-home__score-list small, .team-home__criterion-list dt { color: var(--muted-strong); font-size: .875rem; }

@@ -10,7 +10,6 @@ body {
   min-width: 0;
   margin: 0;
   min-height: 100vh;
-  background: var(--bg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -21,13 +20,12 @@ select,
 textarea {
   font: inherit;
   width: 100%;
-  min-height: 48px;
+  min-height: var(--control-height);
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   padding: 0.78rem 0.9rem;
   color: var(--ink);
   background: rgb(var(--navy-rgb) / 0.78);
-  box-shadow: inset 0 1px 0 rgb(var(--ice-rgb) / 0.02);
   transition: var(--transition);
 }
 
@@ -50,21 +48,15 @@ p {
 label {
   display: grid;
   gap: 0.45rem;
-  color: var(--muted);
   font-size: 0.9rem;
-  font-weight: 700;
 }
 
 input,
 select,
 textarea {
   width: 100%;
-  min-height: 46px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
+  min-height: var(--control-height);
   padding: 0.75rem 0.85rem;
-  color: var(--ink);
-  background: var(--surface-strong);
   transition: var(--transition);
 }
 
@@ -79,19 +71,11 @@ textarea::placeholder {
   color: var(--muted);
 }
 
-input:hover,
-select:hover,
-textarea:hover {
-  border-color: var(--primary);
-}
-
 input:focus,
 select:focus,
 textarea:focus,
 button:focus-visible {
   outline: 0;
-  border-color: var(--primary);
-  box-shadow: var(--focus-ring);
 }
 
 .auth-page,
@@ -107,10 +91,9 @@ button:focus-visible {
   width: min(620px, calc(100% - 2rem));
   margin: 3rem auto;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius);
   padding: 1.2rem;
   background: var(--surface); /* Corrigido */
-  box-shadow: var(--shadow);
 }
 
 .runtime-error h1 {
@@ -119,18 +102,18 @@ button:focus-visible {
 
 .runtime-error p {
   color: var(--coral);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .runtime-error button {
   justify-self: start;
   min-height: 44px;
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--radius);
   padding: 0.72rem 1rem;
   color: var(--on-primary);
   background: var(--primary);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .public-header {
@@ -139,7 +122,7 @@ button:focus-visible {
   gap: 0.75rem;
   min-height: 56px;
   color: var(--primary);
-  font-weight: 950;
+  font-weight: 700;
   letter-spacing: -0.02em;
 }
 
@@ -154,7 +137,7 @@ button:focus-visible {
   min-height: 40px;
   margin-left: auto;
   padding: 0.45rem 0.8rem;
-  border-radius: 8px;
+  border-radius: var(--radius);
   font-size: 0.85rem;
   font-weight: 700;
   letter-spacing: 0;
@@ -197,8 +180,8 @@ button:focus-visible {
 .auth-copy h1,
 .lobby-hero h1,
 .topbar h1 {
-  font-size: clamp(2.1rem, 7vw, 4.5rem);
-  line-height: 0.98;
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  line-height: 1.2;
   letter-spacing: -0.045em;
   text-wrap: balance;
 }
@@ -225,71 +208,19 @@ button:focus-visible {
 .team-card,
 .kpi-card,
 .empty-state {
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background:
-    linear-gradient(180deg, rgb(var(--ice-rgb) / 0.025), transparent 38%),
-    var(--surface);
-  box-shadow: var(--glow);
   transition: var(--transition);
-}
-
-.auth-form:hover,
-.panel:hover,
-.team-card:hover,
-.empty-state:hover {
-  border-color: rgb(var(--accent-rgb) / 0.18);
-  box-shadow: 0 8px 24px rgb(var(--navy-rgb) / 0.2);
 }
 
 .team-card {
-  display: grid;
-  gap: 0.8rem;
-  min-height: 220px;
-  padding: 1rem;
-  cursor: pointer;
-}
-
-.team-card:hover {
-  border-color: rgb(var(--accent-rgb) / 0.34);
-  transform: translateY(-4px);
+  cursor: default;
 }
 
 .team-card > span {
-  justify-self: start;
-  border-radius: var(--radius);
-  padding: 0.32rem 0.55rem;
-  color: var(--primary);
-  background: var(--primary-soft);
   font-size: var(--text-xs);
-  font-weight: 900;
 }
 
-.request-card,
-.athlete-card,
-.training-card,
-.timeline article,
-.linked-team {
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 0.85rem;
-  background: var(--surface);
+.request-card, .athlete-card, .training-card {
   transition: var(--transition);
-}
-
-.request-card:hover,
-.athlete-card:hover,
-.training-card:hover {
-  border-color: var(--primary);
-  background: rgb(var(--positive-rgb) / 0.05);
-}
-
-.athlete-card--active {
-  border-color: rgb(var(--accent-rgb) / 0.4);
-  background:
-    linear-gradient(90deg, rgb(var(--accent-rgb) / 0.11), rgb(var(--accent-rgb) / 0.025)),
-    var(--surface);
-  box-shadow: inset 3px 0 0 var(--primary);
 }
 
 .button {
@@ -300,24 +231,13 @@ button:focus-visible {
   gap: var(--space-sm);
   min-height: 44px;
   border: 1px solid transparent;
-  border-radius: 12px;
   padding: 0.72rem 1rem;
-  font-weight: 850;
   font-size: var(--text-sm);
   letter-spacing: -0.01em;
   text-decoration: none;
   cursor: pointer;
   transition: var(--transition);
   user-select: none;
-}
-
-.button:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
-}
-
-.button:active {
-  transform: translateY(0);
 }
 
 .button:disabled {
@@ -327,62 +247,32 @@ button:focus-visible {
 
 .button--primary {
   color: var(--bg);
-  background: linear-gradient(135deg, var(--primary), var(--primary));
-  box-shadow: none;
-}
-
-.button--primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, var(--primary), var(--primary));
-  box-shadow: none;
-  transform: translateY(-1px);
 }
 
 .button--secondary {
   color: var(--blue);
-  background: var(--blue-soft);
-}
-
-.button--secondary:hover:not(:disabled) {
-  background: rgb(var(--accent-rgb) / 0.25);
 }
 
 .button--ghost {
   color: var(--ink);
-  background: var(--surface-strong);
-  border: 1px solid var(--line);
-}
-
-.button--ghost:hover:not(:disabled) {
-  background: var(--surface);
-  border-color: var(--primary);
 }
 
 .button--danger {
   color: var(--coral);
-  background: var(--coral-soft);
-}
-
-.button--danger:hover:not(:disabled) {
-  background: rgb(var(--ice-rgb) / 0.25);
 }
 
 .eyebrow {
-  color: var(--primary);
-  font-size: 0.72rem;
-  font-weight: 900;
   letter-spacing: 0.13em;
   text-transform: uppercase;
 }
 
 .form-feedback {
   border: 1px solid var(--coral);
-  border-radius: var(--radius);
   padding: 0.85rem;
   color: var(--coral);
   background: var(--coral-soft);
   font-weight: 700;
   font-size: var(--text-sm);
-  animation: slideIn 300ms ease;
 }
 
 .form-feedback--success {
@@ -391,7 +281,7 @@ button:focus-visible {
   background: var(--success-soft);
 }
 
-.form-feedback::before { content: "Atenção · "; font-weight: 800; }
+.form-feedback::before { content: "Atenção · "; font-weight: 700; }
 .form-feedback--success::before { content: "Concluído · "; }
 .form-feedback--error { border-style: dashed; }
 
@@ -405,19 +295,7 @@ button:focus-visible {
   border: 0;
   padding: 1rem 0;
   background: transparent;
-  box-shadow: none;
   text-align: left;
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .form-header {
@@ -429,16 +307,7 @@ button:focus-visible {
   font-size: var(--text-xl);
 }
 
-.form-header span,
-.profile-chip span,
-.sidebar__footer span,
-.team-card p,
-.request-card span,
-.athlete-card span,
-.training-card span,
-.timeline span,
-.timeline small,
-.linked-team span {
+.form-header span, .profile-chip span, .sidebar__footer span, .team-card p, .request-card span, .athlete-card span, .training-card span {
   color: var(--muted);
 }
 
@@ -477,8 +346,6 @@ button:focus-visible {
   gap: 0.8rem;
   border-bottom: 1px solid var(--line);
   padding: 0.8rem;
-  background: rgb(var(--navy-rgb) / 0.88);
-  backdrop-filter: blur(18px);
   transition: var(--transition);
 }
 
@@ -490,11 +357,8 @@ button:focus-visible {
   min-height: 44px;
   min-width: 50px;
   border: 1px solid transparent;
-  border-radius: 12px;
   padding: 0.6rem 0.8rem;
-  color: var(--muted);
   background: transparent;
-  font-weight: 800;
   white-space: nowrap;
   cursor: pointer;
   transition: var(--transition);
@@ -512,18 +376,6 @@ button:focus-visible {
   .nav-item span {
     display: block;
   }
-}
-
-.nav-item:hover {
-  color: var(--ink);
-  background: var(--surface-strong);
-}
-
-.nav-item--active {
-  border-color: rgb(var(--accent-rgb) / 0.22);
-  color: var(--primary);
-  background: linear-gradient(90deg, rgb(var(--accent-rgb) / 0.12), rgb(var(--accent-rgb) / 0.04));
-  box-shadow: inset 3px 0 0 var(--primary);
 }
 
 .sidebar__footer {
@@ -571,7 +423,7 @@ button:focus-visible {
 }
 
 .topbar h1 {
-  font-size: clamp(1.7rem, 6vw, 3rem);
+  font-size: clamp(1.5rem, 2vw, 2rem);
 }
 
 .topbar__title {
@@ -618,9 +470,6 @@ button:focus-visible {
     font-size: clamp(1.3rem, 5vw, 2rem);
   }
 }
-
-
-
 
 .page-stack {
   display: grid;
@@ -671,32 +520,13 @@ button:focus-visible {
   transition: var(--transition);
 }
 
-.kpi-card::after {
-  content: none;
-}
-
-.kpi-card:hover {
-  border-color: var(--primary);
-  transform: translateY(-2px);
-}
-
 .kpi-card__icon {
   display: grid;
   place-items: center;
   width: 44px;
   height: 44px;
   flex: 0 0 44px;
-  border: 1px solid rgb(var(--accent-rgb) / 0.14);
-  border-radius: 13px;
-  color: var(--primary);
-  background: rgb(var(--accent-rgb) / 0.08);
   transition: var(--transition);
-}
-
-.kpi-card:hover .kpi-card__icon {
-  background: var(--primary);
-  color: var(--ink);
-  transform: scale(1.1);
 }
 
 .kpi-card p,
@@ -714,15 +544,6 @@ button:focus-visible {
   margin: 0.1rem 0;
   font-size: clamp(1.4rem, 4vw, 2rem);
   line-height: 1.1;
-}
-
-.kpi-card-largo {
-  width: 100%;
-}
-
-.panel {
-  min-width: 0;
-  padding: 1rem;
 }
 
 .section-heading {
@@ -792,7 +613,7 @@ button:focus-visible {
 
 .last-training dd {
   margin: 0;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .team-card-grid {
@@ -824,12 +645,9 @@ button:focus-visible {
 
 .team-card > span {
   justify-self: start;
-  border-radius: 8px;
   padding: 0.32rem 0.55rem;
-  color: var(--primary);
-  background: var(--surface-strong);
   font-size: 0.78rem;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .team-card h2 {
@@ -844,11 +662,7 @@ button:focus-visible {
   gap: 1rem;
 }
 
-.profile-chip,
-.request-card,
-.athlete-card,
-.training-athlete__head,
-.linked-team {
+.profile-chip, .request-card, .athlete-card, .training-athlete__head {
   display: flex;
   align-items: center;
   gap: 0.8rem;
@@ -860,19 +674,10 @@ button:focus-visible {
   width: 44px;
   height: 44px;
   flex: 0 0 44px;
-  border: 1px solid rgb(var(--accent-rgb) / 0.24);
-  border-radius: 14px;
   color: var(--bg);
-  background: linear-gradient(135deg, var(--primary), var(--primary));
-  font-weight: 950;
+  font-weight: 700;
   font-size: var(--text-lg);
   transition: var(--transition);
-  box-shadow: none;
-}
-
-.avatar:hover {
-  transform: scale(1.05);
-  box-shadow: none;
 }
 
 .avatar--lg {
@@ -882,22 +687,9 @@ button:focus-visible {
   font-size: 1.35rem;
 }
 
-.request-list,
-.athlete-list,
-.accordion-list,
-.timeline,
-.linked-teams {
-  display: grid;
-  gap: 0.75rem;
-}
-
-.request-card,
-.athlete-card,
-.training-card,
-.timeline article,
-.linked-team {
+.request-card, .athlete-card, .training-card {
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius);
   padding: 0.85rem;
   background: var(--surface); /* Corrigido */
 }
@@ -913,15 +705,9 @@ button:focus-visible {
   text-align: left;
 }
 
-.athlete-card--active {
-  border-color: var(--primary);
-  background: var(--surface-strong);
-}
-
 .athlete-card small {
   margin-left: auto;
-  color: var(--primary);
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .athlete-profile-panel,
@@ -1037,59 +823,6 @@ button:focus-visible {
   }
 }
 
-.metric-stepper {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.7rem;
-  min-height: 54px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 0.55rem;
-  background: var(--surface-strong);
-  transition: var(--transition);
-}
-
-.metric-stepper:hover {
-  border-color: var(--primary);
-  background: var(--surface);
-}
-
-.metric-stepper > span {
-  color: var(--muted);
-  font-weight: 800;
-}
-
-.metric-stepper div {
-  display: inline-grid;
-  grid-template-columns: 34px 34px 34px;
-  align-items: center;
-  justify-items: center;
-}
-
-.metric-stepper button {
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  border: 0;
-  border-radius: var(--radius-sm);
-  color: var(--primary);
-  background: var(--primary-soft);
-  cursor: pointer;
-  transition: var(--transition);
-}
-
-.metric-stepper button:hover {
-  background: var(--primary);
-  color: var(--ink);
-  transform: scale(1.05);
-}
-
-.metric-stepper button:active {
-  transform: scale(0.95);
-}
-
 .rating-grid label {
   gap: 0.25rem;
 }
@@ -1106,20 +839,10 @@ button:focus-visible {
   accent-color: var(--primary);
 }
 
-.sync-box,
-.privacy-box,
-.team-result,
-.empty-state {
+.privacy-box, .team-result, .empty-state {
   display: grid;
   gap: 0.7rem;
   padding: 1rem;
-}
-
-.sync-box {
-  border: 1px dashed var(--line);
-  border-radius: 8px;
-  color: var(--muted);
-  background: var(--surface-strong);
 }
 
 .search-page {
@@ -1135,17 +858,8 @@ button:focus-visible {
   display: flex;
   align-items: center;
   gap: 0.45rem;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
   padding: 0 0.75rem;
-  background: var(--surface-strong);
   transition: var(--transition);
-}
-
-.search-input:hover,
-.search-input:focus-within {
-  border-color: var(--primary);
-  background: var(--surface);
 }
 
 .search-input input {
@@ -1162,66 +876,13 @@ button:focus-visible {
   transition: var(--transition);
 }
 
-.team-result:hover {
-  border-color: var(--primary);
-  box-shadow: var(--shadow-sm);
-}
-
 .team-result span {
   color: var(--amber);
-  font-weight: 900;
-}
-
-.timeline article {
-  position: relative;
-  display: grid;
-  gap: 0.3rem;
-  padding-left: 1.05rem;
-}
-
-.timeline article::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 1rem;
-  width: 6px;
-  height: calc(100% - 2rem);
-  border-radius: 999px;
-  background: linear-gradient(180deg, var(--primary), rgb(var(--accent-rgb) / 0.12));
-}
-
-.timeline small {
-  justify-self: start;
-  border-radius: 8px;
-  padding: 0.25rem 0.5rem;
-  color: var(--primary);
-  background: var(--surface-strong);
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .privacy-box {
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--surface-strong);
-}
-
-.linked-team {
-  justify-content: space-between;
-  transition: var(--transition);
-}
-
-.linked-teams {
-  align-content: start;
-}
-
-.linked-team > div {
-  display: grid;
-  gap: 0.2rem;
-  min-width: 0;
-}
-
-.linked-team strong {
-  overflow-wrap: anywhere;
+  border-radius: var(--radius);
 }
 
 .settings-grid {
@@ -1238,15 +899,7 @@ button:focus-visible {
   }
 }
 
-.linked-team:hover {
-  border-color: var(--primary);
-  background: rgb(var(--positive-rgb) / 0.05);
-}
-
 /* Componentes de suporte */
-.kpi-card-largo {
-  width: 100%;
-}
 
 .panel {
   min-width: 0;
@@ -1254,13 +907,7 @@ button:focus-visible {
   transition: var(--transition);
 }
 
-.panel:hover {
-  box-shadow: var(--shadow-lg);
-}
-
-.sync-box,
-.privacy-box,
-.empty-state {
+.privacy-box, .empty-state {
   display: grid;
   gap: 0.7rem;
   padding: 1rem;
@@ -1268,19 +915,8 @@ button:focus-visible {
   transition: var(--transition);
 }
 
-.sync-box {
-  border: 1px dashed var(--line);
-  background: var(--surface-strong);
-}
-
-.sync-box:hover {
-  border-color: var(--primary);
-  background: rgb(var(--positive-rgb) / 0.05);
-}
-
 .privacy-box {
   border: 1px solid var(--line);
-  background: var(--surface-strong);
 }
 
 .empty-state {
@@ -1290,11 +926,7 @@ button:focus-visible {
 }
 
 /* Listas */
-.request-list,
-.athlete-list,
-.accordion-list,
-.timeline,
-.linked-teams {
+.request-list, .athlete-list, .accordion-list {
   display: grid;
   gap: 0.75rem;
 }
@@ -1498,9 +1130,6 @@ summary:focus-visible { outline: 2px solid var(--primary); outline-offset: 4px; 
   }
 }
 
-
-/* ===== WebKore visual refresh ===== */
-
 ::selection {
   color: var(--bg);
   background: var(--primary);
@@ -1516,19 +1145,6 @@ a {
 
 .main-content::before {
   content: none;
-}
-
-.panel,
-.kpi-card,
-.team-card,
-.training-card,
-.request-card,
-.athlete-card,
-.linked-team,
-.team-result,
-.privacy-box,
-.empty-state {
-  backdrop-filter: blur(8px);
 }
 
 .panel {
@@ -1547,32 +1163,8 @@ a {
   overflow: hidden;
 }
 
-.team-card::before {
-  content: "";
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 3px;
-  background: linear-gradient(180deg, var(--primary), transparent 82%);
-  opacity: 0.7;
-}
-
-.team-card > span,
-.timeline small {
-  border: 1px solid rgb(var(--accent-rgb) / 0.12);
-  background: rgb(var(--accent-rgb) / 0.07);
-}
-
 .last-training strong {
   letter-spacing: -0.03em;
-}
-
-.metric-stepper {
-  border-color: rgb(var(--ice-rgb) / 0.12);
-  background: rgb(var(--navy-rgb) / 0.62);
-}
-
-.metric-stepper button {
-  border: 1px solid rgb(var(--accent-rgb) / 0.12);
 }
 
 .rating-grid input[type="range"] {
@@ -1581,14 +1173,6 @@ a {
 
 .search-input {
   min-height: 50px;
-  border-radius: 14px;
-  background: rgb(var(--navy-rgb) / 0.72);
-}
-
-.privacy-box {
-  background:
-    linear-gradient(135deg, rgb(var(--accent-rgb) / 0.05), transparent 45%),
-    rgb(var(--navy-rgb) / 0.68);
 }
 
 .auth-form {
@@ -1604,17 +1188,11 @@ a {
 @media (min-width: 1060px) {
   .sidebar {
     background:
-      linear-gradient(180deg, rgb(var(--accent-rgb) / 0.025), transparent 22%),
-      rgb(var(--navy-rgb) / 0.94);
-    box-shadow: 6px 0 18px rgb(var(--navy-rgb) / 0.12);
+      var(--navigation);
   }
 
   .sidebar .brand {
     margin-bottom: 0.45rem;
-  }
-
-  .nav-item:hover {
-    transform: translateX(3px);
   }
 
   .main-content {
@@ -1628,7 +1206,7 @@ a {
   .team-card,
   .kpi-card,
   .empty-state {
-    border-radius: 16px;
+    border-radius: var(--radius-lg);
   }
 
   .kpi-card {
@@ -1642,9 +1220,6 @@ a {
     flex-basis: 38px;
   }
 }
-
-
-/* ===== Ajuste final: WebKore clean / esportivo ===== */
 
 body {
   background: var(--bg);
@@ -1663,48 +1238,16 @@ body {
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   background: var(--surface);
-  box-shadow: var(--shadow);
-  backdrop-filter: none;
-}
-
-.auth-form:hover,
-.panel:hover,
-.empty-state:hover {
-  border-color: var(--line-strong);
-  box-shadow: var(--shadow);
-}
-
-.panel:hover {
-  transform: none;
 }
 
 .team-card {
   border: 1px solid var(--line);
   background: var(--surface);
-  box-shadow: var(--shadow-sm);
-}
-
-.team-card::before {
-  width: 2px;
-  background: var(--primary);
-  opacity: 0;
-  transition: var(--transition);
-}
-
-.team-card:hover {
-  border-color: var(--line-strong);
-  background: var(--surface-hover);
-  box-shadow: var(--shadow);
-  transform: translateY(-2px);
-}
-
-.team-card:hover::before {
-  opacity: 1;
 }
 
 .team-card > span {
   border: 0;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   color: var(--primary);
   background: var(--institutional);
 }
@@ -1713,13 +1256,6 @@ body {
   min-height: 112px;
   border: 1px solid var(--line);
   background: var(--surface);
-  box-shadow: none;
-}
-
-.kpi-card:hover {
-  border-color: var(--line-strong);
-  background: var(--surface-hover);
-  transform: none;
 }
 
 .kpi-card::after {
@@ -1731,15 +1267,9 @@ body {
   height: 40px;
   flex-basis: 40px;
   border: 0;
-  border-radius: 9px;
+  border-radius: var(--radius);
   color: var(--primary);
   background: var(--institutional);
-}
-
-.kpi-card:hover .kpi-card__icon {
-  color: var(--primary);
-  background: var(--surface-hover);
-  transform: none;
 }
 
 .kpi-card strong {
@@ -1752,8 +1282,6 @@ body {
 .sidebar {
   border-color: var(--line);
   background: var(--navigation);
-  backdrop-filter: none;
-  box-shadow: none;
 }
 
 .nav-list {
@@ -1761,7 +1289,7 @@ body {
 }
 
 .nav-item {
-  border-radius: 8px;
+  border-radius: var(--radius);
   color: var(--muted);
   font-weight: 700;
 }
@@ -1769,7 +1297,6 @@ body {
 .nav-item:hover {
   color: var(--ink);
   background: var(--surface-hover);
-  transform: none;
 }
 
 .nav-item--active {
@@ -1780,26 +1307,17 @@ body {
 }
 
 .button {
-  border-radius: 8px;
-  font-weight: 750;
-  box-shadow: none;
-}
-
-.button:hover {
-  box-shadow: none;
-  transform: translateY(-1px);
+  border-radius: var(--radius);
+  font-weight: 700;
 }
 
 .button--primary {
   color: var(--on-primary);
   background: var(--primary);
-  box-shadow: none;
 }
 
 .button--primary:hover:not(:disabled) {
   background: var(--primary-strong);
-  box-shadow: none;
-  transform: translateY(-1px);
 }
 
 .button--secondary {
@@ -1840,10 +1358,9 @@ select,
 textarea {
   min-height: 44px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius);
   color: var(--ink);
   background: var(--surface-strong);
-  box-shadow: none;
 }
 
 input:hover,
@@ -1873,7 +1390,7 @@ button:focus-visible {
 
 label {
   color: var(--muted);
-  font-weight: 650;
+  font-weight: 600;
 }
 
 input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="true"] {
@@ -1895,33 +1412,19 @@ a[href]:hover { color: var(--primary-strong); }
 .eyebrow {
   color: var(--primary);
   font-size: 0.72rem;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.08em;
 }
 
-.request-card,
-.athlete-card,
-.training-card,
-.timeline article,
-.linked-team,
-.team-result,
-.privacy-box,
-.empty-state {
+.request-card, .athlete-card, .training-card, .team-result, .privacy-box, .empty-state {
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: var(--radius);
   background: var(--surface);
-  box-shadow: none;
-  backdrop-filter: none;
 }
 
-.request-card:hover,
-.athlete-card:hover,
-.training-card:hover,
-.linked-team:hover,
-.team-result:hover {
+.athlete-card:hover {
   border-color: var(--line-strong);
   background: var(--surface-hover);
-  box-shadow: none;
 }
 
 .athlete-card--active {
@@ -1936,67 +1439,19 @@ a[href]:hover { color: var(--primary-strong); }
 
 .avatar {
   border: 0;
-  border-radius: 10px;
+  border-radius: var(--radius);
   color: var(--ink);
   background: var(--institutional);
-  box-shadow: none;
-}
-
-.avatar:hover {
-  transform: none;
-  box-shadow: none;
 }
 
 .avatar--lg {
-  border-radius: 14px;
-}
-
-.timeline article {
-  padding: 0.9rem 0.9rem 0.9rem 1.15rem;
-}
-
-.timeline article::before {
-  left: 0;
-  top: 0.8rem;
-  width: 2px;
-  height: calc(100% - 1.6rem);
-  background: var(--primary);
-}
-
-.timeline small {
-  border: 0;
-  color: var(--primary);
-  background: var(--institutional);
-}
-
-.metric-stepper {
-  border: 1px solid var(--line);
-  border-radius: 9px;
-  background: var(--surface-strong);
-}
-
-.metric-stepper:hover {
-  border-color: var(--line-strong);
-  background: var(--surface-hover);
-}
-
-.metric-stepper button {
-  border: 0;
-  border-radius: 6px;
-  color: var(--ink);
-  background: var(--institutional);
-}
-
-.metric-stepper button:hover {
-  color: var(--on-primary);
-  background: var(--primary);
-  transform: none;
+  border-radius: var(--radius-lg);
 }
 
 .search-input {
-  min-height: 46px;
+  min-height: var(--control-height);
   border: 1px solid var(--line);
-  border-radius: 9px;
+  border-radius: var(--radius);
   background: var(--surface-strong);
 }
 
@@ -2006,13 +1461,12 @@ a[href]:hover { color: var(--primary-strong); }
   background: var(--surface-strong);
 }
 
-.privacy-box,
-.sync-box {
+.privacy-box {
   background: var(--surface-strong);
 }
 
 .form-feedback {
-  border-radius: 8px;
+  border-radius: var(--radius);
   animation: none;
 }
 
@@ -2044,7 +1498,6 @@ a[href]:hover { color: var(--primary-strong); }
 
   .sidebar {
     background: var(--navigation);
-    box-shadow: none;
   }
 
   .main-content {
@@ -2060,6 +1513,6 @@ a[href]:hover { color: var(--primary-strong); }
   .team-card,
   .kpi-card,
   .empty-state {
-    border-radius: 12px;
+    border-radius: var(--radius-lg);
   }
 }

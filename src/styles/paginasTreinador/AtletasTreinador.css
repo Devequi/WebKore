@@ -15,7 +15,7 @@
 .athletes-layout .roster-search:focus-within { box-shadow: 0 0 0 2px rgb(var(--accent-rgb) / 0.15); }
 .athletes-layout .roster-search input:focus { outline: none; box-shadow: none; }
 .athletes-layout .roster-search input::-webkit-search-cancel-button { appearance: none; }
-.athletes-layout .roster-search .roster-search__clear { display: grid; place-items: center; flex: 0 0 32px; width: 32px; height: 32px; padding: 0; border: 0; border-radius: 6px; color: var(--muted-strong); background: transparent; cursor: pointer; }
+.athletes-layout .roster-search .roster-search__clear { display: grid; place-items: center; flex: 0 0 32px; width: 32px; height: 32px; padding: 0; border: 0; border-radius: var(--radius-sm); color: var(--muted-strong); background: transparent; cursor: pointer; }
 .athletes-layout .roster-search__clear:hover { color: var(--ink); background: var(--surface-strong); }
 .athletes-layout .roster-search__empty { padding: 0.75rem 0; overflow-wrap: break-word; }
 .athletes-layout .roster-search__empty strong { font-size: 0.9rem; }
@@ -23,18 +23,17 @@
 
 .athletes-layout .athlete-card {
   display: flex;
-  align-items: center;
   gap: 0.8rem;
   width: 100%;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius);
   padding: 0.85rem;
   background: var(--surface);
   color: inherit;
   text-align: left;
   text-decoration: none;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition);
   min-width: 0;
   min-height: 0;
   overflow: visible;
@@ -71,13 +70,12 @@
   margin-left: auto;
   flex: 0 0 auto;
   color: var(--primary);
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .athletes-layout .athlete-history__title { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
 .athletes-layout .athlete-history__title span { min-width: 0; overflow-wrap: normal; word-break: normal; }
 .athletes-layout .athlete-history[open] > .athlete-dashboard__toggle .athlete-history__title svg { transform: none; }
-.athletes-layout .athlete-history .timeline article { min-width: 0; overflow-wrap: anywhere; }
 
 @supports (interpolate-size: allow-keywords) {
   .athletes-layout .athlete-history::details-content {

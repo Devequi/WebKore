@@ -10,6 +10,7 @@ import { writeReport, jsonFile } from './report.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const security = process.argv.includes('--security');
+const visual = process.argv.includes('--visual');
 const dbName = `webkore_ct20_${randomUUID().replaceAll('-', '')}`;
 const cacheDir = resolve(root, 'tmp', dbName, 'vite-cache');
 let admin, created = false, apiServer, apiPrisma, vite, child;
@@ -74,7 +75,7 @@ try {
     await command('../../tests/integration-check.js', ['7']);
     await command('../../tests/position-integration-check.js', []);
   }
-  await command('../../node_modules/@playwright/test/cli.js', ['test', '--config', 'qa/ct20/playwright.config.mjs', ...process.argv.slice(2).filter(arg => arg !== '--security')]);
+  await command('../../node_modules/@playwright/test/cli.js', ['test', '--config', visual ? 'qa/ct20/visual.config.mjs' : 'qa/ct20/playwright.config.mjs', ...process.argv.slice(2).filter(arg => !['--security', '--visual'].includes(arg))]);
   if (security) await command('../../node_modules/@playwright/test/cli.js', ['test', '--config', 'qa/ct20/security-ui.config.mjs']);
   exitCode = 0;
 } catch (error) {
@@ -118,7 +119,7 @@ try {
     data = JSON.parse(await readFile(jsonFile, 'utf8'));
     if (!data.isolation?.includes(dbName)) data = undefined;
   } catch {}
-  await writeReport({ ...data, date: new Date().toISOString(), error: errorMessage, browser: process.env.WEBKORE_TEST_BROWSER_CHANNEL || 'chromium',
+  if (!visual) await writeReport({ ...data, date: new Date().toISOString(), error: errorMessage, browser: process.env.WEBKORE_TEST_BROWSER_CHANNEL || 'chromium',
     isolation: created ? `Banco exclusivo ${dbName}; API, JWT e portas independentes.` : 'Preflight interrompido antes de criar um banco de testes.', cleanup });
   process.exitCode = exitCode;
 }

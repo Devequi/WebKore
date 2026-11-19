@@ -6,10 +6,10 @@
 .collapsible-panel--surface .collapsible-panel__heading-toggle {
   display: flex; align-items: center; justify-content: space-between; gap: 1rem;
   width: 100%; min-width: 0; min-height: 44px; padding: 0; border: 0;
-  border-radius: var(--radius-sm); background: transparent; box-shadow: none;
+  border-radius: var(--radius-sm); background: transparent;
   color: var(--ink); font: inherit; text-align: left; cursor: pointer;
 }
-.collapsible-panel--surface .collapsible-panel__heading-toggle:hover { color: var(--ink); background: transparent; transform: none; }
+.collapsible-panel--surface .collapsible-panel__heading-toggle:hover { color: var(--ink); background: transparent; }
 .collapsible-panel__heading-toggle:focus-visible { outline: 2px solid var(--primary); outline-offset: 5px; }
 .collapsible-panel__identity { display: grid; gap: .5rem; min-width: 0; overflow-wrap: anywhere; }
 .collapsible-panel__heading-toggle > svg { flex-shrink: 0; color: var(--muted); transition: transform 220ms ease; }

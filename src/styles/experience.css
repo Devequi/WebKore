@@ -4,7 +4,6 @@
 .athlete-loading__cards span, .athlete-loading__panel { display: block; min-height: 120px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-hover); }
 .athlete-loading__panel { min-height: 280px; }
 :is(.athlete-experience, .coach-experience) .panel { padding: clamp(1rem, 2vw, 1.5rem); }
-:is(.athlete-experience, .coach-experience) .panel:hover { transform: none; }
 :is(.athlete-experience, .coach-experience) .collapsible-panel[data-collapsed="true"] { min-height: 0; }
 .collapsible-panel[data-collapsed="true"] > .section-heading { margin-bottom: 0; }
 .collapsible-panel__actions { display: flex; align-items: end; flex-wrap: wrap; gap: .75rem; min-width: 0; }
@@ -38,7 +37,7 @@
 .athlete-performance__indicator { display: flex; flex-direction: column; gap: .35rem; min-width: 0; padding: 1rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-strong); }
 .athlete-performance__indicator dt { order: 1; color: var(--muted-strong); font-size: var(--text-xs); }
 .athlete-performance__indicator dd { margin: 0; overflow-wrap: anywhere; }
-.athlete-performance__value { order: 2; font-weight: 650; font-size: clamp(1.1rem, 1.7vw, 1.4rem); line-height: 1.4; }
+.athlete-performance__value { order: 2; font-weight: 600; font-size: clamp(1.1rem, 1.7vw, 1.4rem); line-height: 1.4; }
 .athlete-performance__detail { order: 3; font-size: var(--text-xs); color: var(--muted-strong); }
 .athlete-performance__hint { margin-top: .85rem; color: var(--muted); font-size: var(--text-xs); line-height: 1.5; }
 .athlete-training-list { display: grid; gap: .75rem; margin-bottom: 1rem; }
@@ -57,8 +56,6 @@
 .athlete-profile-fields { display: grid; gap: 1rem; border: 0; padding: 0; margin: 0; min-width: 0; }
 :is(.athlete-experience, .coach-experience) .athlete-profile-header { align-items: center; }
 :is(.athlete-experience, .coach-experience) .athlete-profile-header > div { min-width: 0; overflow-wrap: anywhere; }
-:is(.athlete-experience, .coach-experience) .linked-team { flex-wrap: wrap; gap: .75rem; }
-:is(.athlete-experience, .coach-experience) .linked-team > div { min-width: 0; overflow-wrap: anywhere; }
 :is(.athlete-experience, .coach-experience) :is(button, input, select, summary):focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 @media (max-width: 1100px) { .athlete-dashboard-grid { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 700px) {

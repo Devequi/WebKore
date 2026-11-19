@@ -10,7 +10,6 @@
 
 .confirm-dialog::backdrop {
   background: var(--backdrop);
-  backdrop-filter: blur(4px);
 }
 
 .confirm-dialog__content {
