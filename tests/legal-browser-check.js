@@ -52,10 +52,11 @@ export async function runLegalBrowserChecks(apiBase, token) {
     await page.getByRole("heading", { name: "Termos de Uso", exact: true }).waitFor();
     await page.evaluate(value => localStorage.setItem("webkore-auth-token-v1", value), token);
     await page.goto(`${origin}/#/perfil`);
-    await page.getByRole("heading", { name: "Privacidade e dados pessoais" }).waitFor();
+    await page.getByRole("tab", { name: "Privacidade e segurança", exact: true }).click();
+    await page.getByRole("button", { name: /^Ver registros/ }).click();
     await page.getByText("Aceite dos Termos", { exact: true }).first().waitFor();
     const downloadEvent = page.waitForEvent("download");
-    await page.getByRole("button", { name: "Baixar meus dados" }).click();
+    await page.getByRole("button", { name: "Exportar meus dados" }).click();
     const download = await downloadEvent;
     const exported = JSON.parse(await readFile(await download.path(), "utf8"));
     assert.equal(exported.user.email, "athlete@example.invalid"); assert.equal(exported.user.passwordHash, undefined);
@@ -78,6 +79,8 @@ export async function runLegalBrowserChecks(apiBase, token) {
     await page.getByRole("button", { name: "Criar conta", exact: true }).click();
     await page.waitForURL("**/#/athlete/teams");
     console.log("PASS browser: cadastro real de criança, validação de decisões e login automático");
+    const { runProfileBrowserChecks } = await import("./profile-browser-check.js");
+    await runProfileBrowserChecks(browser, origin, apiBase);
     assert.deepEqual(errors, []);
   } finally { await browser?.close(); await vite.close(); }
 }

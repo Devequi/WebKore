@@ -1,7 +1,9 @@
 import { useEffect, useId, useRef, useState } from "react";
-import { ShieldCheck, X } from "lucide-react";
+import { Download, ExternalLink, ShieldCheck, X } from "lucide-react";
 import { api } from "../../services/api.js";
 import { Button } from "./Botao.jsx";
+import { CollapsiblePanel } from "./PainelRetratil.jsx";
+import { ProfileSection } from "./SecaoPerfil.jsx";
 import { calculateAge } from "../../../shared/birthDate.js";
 import "../../styles/Privacy.css";
 
@@ -86,30 +88,39 @@ export function PrivacyProfile({ currentUser }) {
       const link = document.createElement("a"); link.href = url; link.download = "webkore-meus-dados.json"; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch (e) { setError(e.message); } finally { setBusy(false); }
   }
-  return <section className="panel privacy-profile"><h2>Privacidade e dados pessoais</h2><LegalLinks />
+  return <div className="privacy-profile">
     {error && <p role="alert">{error} <Button type="button" onClick={load} variant="ghost">Atualizar</Button></p>}
     {!status && !error && <p role="status">Carregando suas decisões...</p>}
     {status && <>
-      {status.pending.length > 0 && <p role="status">Há documentos vigentes sem decisão correspondente. Consulte o conteúdo antes de confirmar.</p>}
+      <ProfileSection title="Documentos legais" description="Leia os documentos que orientam o uso do WebKore.">
+      {status.pending.length > 0 && <p className="profile-data-copy" role="status">Há novas versões para consultar e confirmar.</p>}
       {status.documents.filter(d => d.type !== "CONSENT").map(doc => <div className="legal-document-row" key={doc.id}>
-        <a href={href(doc)} target="_blank" rel="noopener">{doc.title} · {doc.version}</a><p>{doc.changeSummary}</p>
-        {status.pending.some(d => d.id === doc.id) ? <Button disabled={busy} type="button" variant="secondary" onClick={() => decide(doc.id, doc.type === "TERMS" ? "ACCEPT" : "ACKNOWLEDGE")}>{doc.type === "TERMS" ? "Aceitar esta versão dos Termos" : "Confirmar ciência desta Política"}</Button> : <span>Requisito desta versão já registrado.</span>}
+        <a className="profile-doc-title" href={href(doc)} target="_blank" rel="noopener" aria-label={`${doc.title} — ler documento completo`}>{doc.title}<ExternalLink size={14} aria-hidden="true" /></a>
+        <span className="profile-doc-status">{status.pending.some(d => d.id === doc.id) ? "Pendente" : doc.type === "TERMS" ? "Aceite registrado" : "Ciência registrada"}</span>
+        <p className="profile-doc-meta">Versão {doc.version} · Publicado em {new Date(doc.publishedAt).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })}</p>
+        <details className="profile-doc-changes"><summary>O que mudou nesta versão</summary><p>{doc.changeSummary}</p></details>
+        {status.pending.some(d => d.id === doc.id) && <Button disabled={busy} type="button" variant="secondary" onClick={() => decide(doc.id, doc.type === "TERMS" ? "ACCEPT" : "ACKNOWLEDGE")}>{doc.type === "TERMS" ? "Aceitar esta versão dos Termos" : "Confirmar ciência desta Política"}</Button>}
       </div>)}
-      <h3>Consentimentos opcionais</h3>
-      {!status.documents.some(d => d.type === "CONSENT") && !status.consents.length && <p>Não há finalidades opcionais publicadas. Ciência da Política e aceite dos Termos não são consentimento genérico.</p>}
+      </ProfileSection>
+      <ProfileSection title="Histórico de decisões" description="Versões e decisões registradas na sua conta.">
+        <CollapsiblePanel title={`Ver registros (${status.history.length})`} initialOpen={false} className="profile-history">
+          {!status.history.length && <p className="profile-data-copy">Nenhuma decisão registrada. Não foram criados aceites retroativos.</p>}
+          <ul className="legal-history">{status.history.map(e => <li key={e.id}><strong>{actionLabel[e.action]}</strong><br /><a href={href(e.document)} target="_blank" rel="noopener">{e.document.title} · versão {e.document.version}</a><time dateTime={e.occurredAt}>{date(e.occurredAt)}</time>{e.purpose && <span>{e.purpose}</span>}</li>)}</ul>
+        </CollapsiblePanel>
+      </ProfileSection>
+      {(status.documents.some(d => d.type === "CONSENT") || status.consents.length > 0) && <ProfileSection title="Consentimentos opcionais" description="Escolhas específicas, além do aceite dos Termos e da ciência da Política.">
       {status.documents.filter(d => d.type === "CONSENT").map(doc => <div key={doc.id} className="legal-document-row"><LegalText document={doc} />
         <p>Revogar encerra a autorização para esta finalidade. O acesso às demais funções permanece.</p>
         {optionalAllowed ? <Button disabled={busy} type="button" onClick={() => decide(doc.id, "GRANT")}>Autorizar esta finalidade</Button> : <p>Concessão opcional indisponível para menores ou atletas sem idade informada.</p>}{" "}
         <Button disabled={busy} type="button" variant="ghost" onClick={() => decide(doc.id, "DECLINE")}>Recusar</Button>
       </div>)}
       {status.consents.map(c => <div key={c.purpose}><p>{c.purpose}: {c.granted ? "Ativo" : "Inativo"}</p>{c.decision.action === "GRANT" && <Button disabled={busy} type="button" variant="secondary" onClick={() => decide(c.decision.documentId, "REVOKE")}>Revogar consentimento</Button>}</div>)}
-      <h3>Histórico das decisões</h3>
-      {!status.history.length && <p>Nenhuma decisão registrada. Não foram criados aceites retroativos para contas existentes.</p>}
-      <ul className="legal-history">{status.history.map(e => <li key={e.id}><strong>{actionLabel[e.action]}</strong> · <a href={href(e.document)} target="_blank" rel="noopener">{e.document.title}, versão {e.document.version}</a><br />{date(e.occurredAt)}{e.purpose && ` · ${e.purpose}`}</li>)}</ul>
+      </ProfileSection>}
     </>}
-    <h3>Acesso, correção e exclusão</h3><p>Corrija seus dados no formulário deste perfil. Baixe uma cópia dos seus dados abaixo. A exclusão de conta está disponível nesta página e remove dados do banco ativo; cópias exportadas e backups não são apagados por essa operação.</p>
-    <Button disabled={busy} type="button" variant="secondary" onClick={download}>Baixar meus dados</Button>
-    <p>Canal institucional para outros direitos: pendente de definição pelo responsável. Não há envio automático de solicitações.</p>
-    {currentUser.role === "athlete" && <p>Atletas de todas as idades podem se cadastrar. O aceite do atleta não comprova autorização de responsável. Consentimentos opcionais para menores dependem de definições e verificação ainda não disponíveis.</p>}
-  </section>;
+    <ProfileSection title="Controle de dados" description="Acesse uma cópia das suas informações.">
+      <p className="profile-data-copy">Baixe seus dados pessoais e os registros associados à sua conta.</p>
+      <Button disabled={busy} type="button" variant="secondary" icon={Download} onClick={download}>Exportar meus dados</Button>
+      <details className="profile-doc-changes" style={{ marginTop: "1rem" }}><summary>Correção, exclusão e contato</summary><p>Corrija informações na aba Dados pessoais. Para excluir a conta, use a opção ao final desta página. A exclusão remove dados do banco ativo, sem apagar backups ou arquivos já exportados.</p><p>O canal institucional para outros direitos ainda não foi definido pelo responsável. Consulte a Política de Privacidade para mais informações.</p></details>
+    </ProfileSection>
+  </div>;
 }

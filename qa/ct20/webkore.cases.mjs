@@ -111,7 +111,7 @@ define('CT-05', async ({ rig, browser }, info) => {
       await expect(page.getByText(privateAccount.email, { exact: true })).toHaveCount(0);
       await expect(page.getByText('Equipe atual', { exact: true })).toHaveCount(0);
       await page.getByLabel('Nome completo', { exact: true }).fill(`Perfil ${role} atualizado CT20`);
-      await page.getByRole('button', { name: 'Salvar perfil', exact: true }).click();
+      await page.getByRole('button', { name: 'Salvar alterações', exact: true }).click();
       await expect(page.getByRole('status')).toContainText('Perfil atualizado.');
       await page.reload();
       await expect(page.getByRole('heading', { name: `Perfil ${role} atualizado CT20`, exact: true })).toBeVisible();

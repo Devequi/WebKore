@@ -3,9 +3,11 @@ import { test, expect, session } from './harness.mjs';
 test('SEC UI — troca de senha exige senha atual e conduz a novo login', async ({ rig, page }) => {
   const account = await rig.register();
   await session(page, account, '/perfil');
+  await page.getByRole('tab', { name: 'Privacidade e segurança', exact: true }).click();
+  await page.locator('.profile-password > summary').click();
   await page.getByLabel('Nova senha', { exact: true }).fill('NovaFicticia!2026');
   await page.getByLabel('Senha atual', { exact: true }).fill(account.password);
-  await page.getByRole('button', { name: 'Salvar perfil', exact: true }).click();
+  await page.getByRole('button', { name: 'Alterar senha', exact: true }).click();
   await expect(page).toHaveURL(/#\/login$/);
   expect(await page.evaluate(() => localStorage.getItem('webkore-auth-token-v1'))).toBeNull();
   await rig.req('/auth/me', 'GET', undefined, account, 401);

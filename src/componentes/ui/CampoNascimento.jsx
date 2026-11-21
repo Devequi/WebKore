@@ -2,7 +2,7 @@ import { useTodayDate } from "../../hooks/useTodayDate.js";
 import { formatDate } from "../../utils/formatters.js";
 import { isDateOnly } from "../../../shared/birthDate.js";
 
-export function BirthDateField({ value, onChange, required = false }) {
+export function BirthDateField({ value, onChange, required = false, showFormattedDate = true }) {
   const today = useTodayDate();
   return (
     <label>
@@ -17,7 +17,7 @@ export function BirthDateField({ value, onChange, required = false }) {
         type="date"
         value={value}
       />
-      <small>{isDateOnly(value) ? formatDate(value) : "DD/MM/AAAA"}</small>
+      {showFormattedDate && <small>{isDateOnly(value) ? formatDate(value) : "DD/MM/AAAA"}</small>}
     </label>
   );
 }

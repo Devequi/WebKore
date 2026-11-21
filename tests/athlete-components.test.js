@@ -265,7 +265,10 @@ test("perfil pessoal do treinador funciona sem equipes e não existe nas configu
   assert.match(profile, /Treinador Teste/);
   assert.match(profile, /Perfil de acesso/);
   assert.match(profile, /coach@example.invalid/);
-  assert.match(profile, /Salvar perfil/);
+  assert.match(profile, /Salvar alterações/);
+  assert.match(profile, /role="tablist"/);
+  assert.match(profile, /Privacidade e segurança/);
+  assert.doesNotMatch(profile, /Identificação da conta|Informações da conta/);
   assert.doesNotMatch(profile, /Data de [Nn]ascimento|Minha equipe|Equipe privada|Equipe atual|Resumo esportivo|Minhas equipes/);
   const settings = render(SettingsPage, { currentUser, state, actions: {}, team: { ...state.teams[0], code: "WK-TEST", objectiveCriteria: [], qualitativeCriteria: [] } });
   assert.match(settings, /Salvar equipe/);
@@ -277,11 +280,11 @@ test("atleta usa a mesma página pessoal, sem vínculo esportivo, e Perfil fica 
   const currentUser = { id: "a", role: "athlete", name: "Ana", email: "ana@example.invalid", birthDate: "2004-02-29" };
   const profile = render(MyProfilePage, { currentUser, actions: {} });
   assert.match(profile, /Ana/);
-  assert.match(profile, /Data de nascimento/);
-  assert.match(profile, /Foto ou iniciais/);
-  assert.doesNotMatch(profile, /Equipe atual|Resumo esportivo|Minhas equipes|Sair da equipe|Nova senha/);
+  assert.match(profile, /Data de [Nn]ascimento/);
+  assert.match(profile, /Iniciais/);
+  assert.doesNotMatch(profile, /Equipe atual|Resumo esportivo|Minhas equipes|Sair da equipe|Identificação da conta|Informações da conta/);
   assert.match(profile, /Excluir conta/);
-  assert.match(profile, /Privacidade e dados pessoais/);
+  assert.match(profile, /Privacidade e segurança/);
   const Icon = () => null;
   const nav = render(NavigationItems, { activeView: "profile", tabs: [
     { id: "coach-lobby", label: "Equipes", icon: Icon }, { id: "profile", label: "Meu Perfil", icon: Icon }
