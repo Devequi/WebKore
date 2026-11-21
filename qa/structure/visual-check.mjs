@@ -13,6 +13,10 @@ const cssSuite = process.argv.includes('--css');
 const resume = process.argv.includes('--resume');
 const refresh = process.argv.includes('--refresh');
 const details = process.argv.includes('--details');
+const allowDifferences = process.argv.includes('--allow-differences');
+const widthsArgument = process.argv.find(arg => arg.startsWith('--widths='))?.slice(9);
+const widths = widthsArgument ? widthsArgument.split(',').map(Number) : cssSuite ? [390, 768, 1440, 1920] : [390, 1440];
+assert.ok(widths.every(width => Number.isInteger(width) && width >= 320), 'Larguras inválidas.');
 const output = process.argv.find(arg => arg.startsWith('--output='))?.slice(9) || (cssSuite ? 'tmp/css-visual' : 'tmp/structure-visual');
 const only = process.argv.find(arg => arg.startsWith('--only='))?.slice(7);
 const dist = process.argv.find(arg => arg.startsWith('--dist='))?.slice(7) || 'dist';
@@ -82,7 +86,7 @@ try {
       const data = pathname.endsWith('/legal/me') ? legal : pathname.endsWith('/legal/documents') ? { documents } : { user, state, legal };
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(data) });
     });
-    for (const width of cssSuite ? [390, 768, 1440, 1920] : [390, 1440]) {
+    for (const width of widths) {
       if (resume && results.some(result => result.file === `${name}-${width}.png`)) continue;
       await page.setViewportSize({ width, height: 1000 });
       await page.goto(name.startsWith('legal-') ? `${origin}${path}${cssSuite ? `?qaViewport=${width}` : ''}` : `${origin}/${cssSuite ? `?qaViewport=${width}` : ''}#${path}`);
@@ -127,6 +131,7 @@ try {
       if (cssSuite && ['register', 'privacy-modal'].includes(name)) await page.evaluate(() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' }));
       await page.evaluate(() => document.fonts.ready);
       await page.waitForTimeout(cssSuite ? 200 : 400);
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `${name} em ${width}px tem overflow horizontal.`);
       const file = `${name}-${width}.png`;
       let computed;
       if (cssSuite) computed = await page.evaluate(() => Array.from(document.body.querySelectorAll('*')).filter(el => !['SCRIPT', 'STYLE', 'LINK'].includes(el.tagName)).map(el => {
@@ -150,8 +155,10 @@ try {
     const differences = results.filter(result => before.find(b => b.file === result.file)?.sha256 !== result.sha256).map(r => r.file);
     const computedDifferences = results.filter(result => before.find(b => b.file === result.file)?.computedHash !== result.computedHash).map(r => r.file);
     await writeFile(`${output}/comparison.json`, JSON.stringify({ captures: results.length, differences, computedDifferences }, null, 2));
-    assert.deepEqual(differences, [], 'Capturas diferentes; inspecione antes de concluir.');
-    if (cssSuite) assert.deepEqual(computedDifferences, [], 'Estilos computados diferentes; inspecione antes de concluir.');
+    if (!allowDifferences) {
+      assert.deepEqual(differences, [], 'Capturas diferentes; inspecione antes de concluir.');
+      if (cssSuite) assert.deepEqual(computedDifferences, [], 'Estilos computados diferentes; inspecione antes de concluir.');
+    }
   }
   console.log(`PASS visual ${phase}: ${results.length} capturas de componentes reais, sem erros JavaScript.`);
 } finally { await browser?.close(); if (cssSuite) await new Promise(resolve => vite.httpServer.close(resolve)); else await vite.close(); }

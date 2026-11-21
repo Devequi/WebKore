@@ -46,13 +46,23 @@ try {
   loading=false; releaseSession();
   await page.locator('.sidebar').waitFor();
   console.log('PASS restoring session');
-  for(const width of [320,390,768,1059,1060,1440,1920]) {
+  for(const width of [320,390,768,1059,1060,1366,1440,1920]) {
     await page.setViewportSize({width,height:900}); await goto();
     if(width>=1060) {
       const sidebar=page.getByRole('complementary',{name:'Menu lateral'});
       assert.deepEqual(await sidebar.locator('.sidebar-group-title').allTextContents(),['Principal','Treinamento','Gerenciamento']);
       assert.equal(await sidebar.locator('.nav-item').count(),9);
       assert.equal(await sidebar.locator('.sidebar-brand img').getAttribute('src'),'/icons/logoWK.png');
+      assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).fontSize), '16px');
+      const bounds = await sidebar.evaluate(el => {
+        const box = el.getBoundingClientRect();
+        return [...el.querySelectorAll('.sidebar-heading button, .sidebar-team, .nav-item, .sidebar-account')]
+          .map(node => node.getBoundingClientRect())
+          .every(rect => rect.left >= box.left && rect.right <= box.right && rect.bottom <= box.bottom);
+      });
+      assert.equal(bounds, true, 'Controles da sidebar devem caber na largura e altura disponíveis.');
+      assert.equal(await sidebar.locator('.nav-list').evaluate(el => el.scrollHeight > el.clientHeight), false,
+        'O menu padrão deve caber em 900px de altura.');
       const expanded=await page.locator('.main-content').boundingBox();
       await page.getByRole('button',{name:'Recolher menu lateral'}).click();
       await expect.poll(async () => (await page.locator('.main-content').boundingBox()).width).toBeGreaterThan(expanded.width);
@@ -91,6 +101,19 @@ try {
   assert.equal(await page.getByRole('dialog').isVisible(),false);
   assert.ok(page.url().endsWith('/perfil'));
   console.log('PASS short mobile viewport and footer navigation');
+  teams[0].name = 'Equipe de desenvolvimento e acompanhamento esportivo WebKore';
+  await page.reload();
+  for (const width of [390, 1366, 1920]) {
+    await page.setViewportSize({width,height:900}); await goto();
+    if (width < 1060) await page.getByRole('button',{name:'Abrir menu'}).click();
+    const teamName = page.locator('.sidebar-team strong').filter({visible:true});
+    await expect(teamName).toHaveText(teams[0].name);
+    assert.equal(await teamName.evaluate(el => el.scrollWidth > el.clientWidth), false);
+    await noOverflow();
+    if (width < 1060) await page.keyboard.press('Escape');
+  }
+  teams[0].name = 'Equipe A';
+  console.log('PASS long team name without clipping');
   await page.setViewportSize({width:1440,height:900}); await goto();
   const nav=page.locator('aside.sidebar');
   for(const [label,suffix] of [['Atletas','/athletes'],['Solicitações','/requests'],['Treinos','/trainings'],['Avaliações','/evaluations'],['Configurações','/settings'],['Visão geral','']]) {

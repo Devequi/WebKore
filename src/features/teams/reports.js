@@ -30,15 +30,3 @@ export function teamReportRows(state, team) {
   }));
   return [header, ...rows];
 }
-export function downloadTeamReport(state, team) {
-  if (!team) return;
-  const [header, ...rows] = teamReportRows(state, team);
-  const content = [header, ...rows.filter(Boolean)].map((row) => row.map(csvCell).join(";")).join("\n");
-  const blob = new Blob([`\uFEFF${content}`], { type: "text/csv;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `webkore-${team.code}-relatorio.csv`;
-  link.click();
-  URL.revokeObjectURL(url);
-}

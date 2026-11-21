@@ -225,8 +225,7 @@ teamsRouter.patch(
 teamsRouter.patch("/:teamId", async (request, response) => {
   try {
     const { teamId } = request.params;
-    const { modality: rawModality, name, objectiveCriteria, qualitativeCriteria, evaluationProfiles, expectedUpdatedAt } = request.body;
-    const modality = rawModality === undefined ? undefined : normalizeModality(rawModality);
+    const { name, objectiveCriteria, qualitativeCriteria, evaluationProfiles, expectedUpdatedAt } = request.body;
 
     if (request.user.role !== "COACH") {
       return response.status(403).json({ message: "Apenas treinadores podem editar equipes." });
@@ -243,13 +242,17 @@ teamsRouter.patch("/:teamId", async (request, response) => {
       return response.status(404).json({ message: "Equipe nao encontrada." });
     }
 
+    if (Object.hasOwn(request.body, "modality")) {
+      throw new HttpError(400, "A modalidade da equipe é definida na criação e não pode ser alterada.");
+    }
+
     let profiles;
     if (evaluationProfiles !== undefined) {
       try {
         if (!Array.isArray(evaluationProfiles) || evaluationProfiles.length !== 2 ||
             new Set(evaluationProfiles.map((profile) => profile?.role)).size !== 2 ||
             evaluationProfiles.some((profile) => profile?.modality !== "Futsal" || !["GOALKEEPER", "OUTFIELD"].includes(profile.role)) ||
-            (modality || normalizeModality(team.modality)) !== "Futsal") throw new Error("Informe os dois perfis: Jogadores de Linha e Goleiros.");
+            normalizeModality(team.modality) !== "Futsal") throw new Error("Informe os dois perfis: Jogadores de Linha e Goleiros.");
         profiles = evaluationProfiles.map((profile) => ({ role: profile.role, criteria: validateTypedCriteria(profile.criteria) }));
         const ids = profiles.flatMap((profile) => profile.criteria.map((item) => item.id));
         if (new Set(ids).size !== ids.length) throw new Error("Cada critério deve ter um identificador exclusivo.");
@@ -257,7 +260,6 @@ teamsRouter.patch("/:teamId", async (request, response) => {
     }
     const data = {};
     if (name !== undefined && (typeof name !== "string" || !name.trim())) return response.status(400).json({ message: "Informe o nome da equipe." });
-    if (modality !== undefined && (typeof modality !== "string" || !modality.trim())) return response.status(400).json({ message: "Informe a modalidade da equipe." });
     for (const [kind, value] of [["objective", objectiveCriteria], ["qualitative", qualitativeCriteria]]) {
       if (value !== undefined) {
         const error = criteriaError(value, kind);
@@ -265,7 +267,6 @@ teamsRouter.patch("/:teamId", async (request, response) => {
       }
     }
     if (name !== undefined) data.name = text(name, "Nome da equipe");
-    if (modality !== undefined) data.modality = modality;
     if (objectiveCriteria !== undefined) data.objectiveCriteria = objectiveCriteria;
     if (qualitativeCriteria !== undefined) data.qualitativeCriteria = qualitativeCriteria;
 

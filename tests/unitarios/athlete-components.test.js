@@ -271,6 +271,8 @@ test("perfil pessoal do treinador funciona sem equipes e não existe nas configu
   assert.doesNotMatch(profile, /Data de [Nn]ascimento|Minha equipe|Equipe privada|Equipe atual|Resumo esportivo|Minhas equipes/);
   const settings = render(SettingsPage, { currentUser, state, actions: {}, team: { ...state.teams[0], code: "WK-TEST", objectiveCriteria: [], qualitativeCriteria: [] } });
   assert.match(settings, /Salvar equipe/);
+  assert.match(settings, /Dados da equipe|Acesso e gerenciamento/);
+  assert.doesNotMatch(settings, /Modalidade esportiva|Exportar relatório/);
   assert.match(settings, /Excluir equipe/);
   assert.doesNotMatch(settings, /Salvar perfil|Editar perfil|coach@example.invalid|Excluir conta|Critérios por posição|Novo critério/);
 });

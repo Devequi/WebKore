@@ -4,7 +4,7 @@
   container: cards / inline-size;
   width: 100%;
   min-width: 0;
-  --card-gap: clamp(.85rem, 1.5cqi, 1.5rem);
+  --card-gap: .8rem;
 }
 :is(.app-shell, .team-lobby) .card-region > .card-grid {
   display: grid;
@@ -18,10 +18,10 @@
 :is(.app-shell, .team-lobby) .card-grid .kpi-card {
   align-items: flex-start;
   min-width: 0;
-  min-height: 8.5rem;
+  min-height: 7rem;
   height: 100%;
-  gap: clamp(.75rem, 1.5cqi, 1rem);
-  padding: clamp(1rem, calc(.95rem + .5cqi), 1.5rem);
+  gap: .65rem;
+  padding: 1rem;
   border-radius: var(--radius-lg);
   background: var(--surface-strong);
 }
@@ -44,7 +44,7 @@
 :is(.app-shell, .team-lobby) .card-grid .kpi-card strong {
   margin: 0;
   color: var(--ink);
-  font-size: clamp(1.55rem, calc(1.25rem + 1.5cqi), 2.25rem);
+  font-size: clamp(1.35rem, calc(1.15rem + 1cqi), 1.8rem);
   line-height: 1.2;
   font-variant-numeric: tabular-nums;
   overflow-wrap: break-word;
@@ -54,8 +54,8 @@
   line-height: 1.5;
 }
 :is(.app-shell, .team-lobby) .card-grid .kpi-card__icon {
-  width: clamp(2.25rem, calc(1.9rem + 1cqi), 2.75rem);
-  height: clamp(2.25rem, calc(1.9rem + 1cqi), 2.75rem);
+  width: 2.25rem;
+  height: 2.25rem;
   flex: 0 0 auto;
   border-radius: var(--radius-sm);
   color: var(--muted);
@@ -65,7 +65,7 @@
   width: 55%;
   height: 55%;
 }
-:is(.app-shell, .team-lobby) .card-grid--metrics .kpi-card { min-height: 7.5rem; }
+:is(.app-shell, .team-lobby) .card-grid--metrics .kpi-card { min-height: 0; }
 :is(.app-shell, .team-lobby) .card-grid--metrics .kpi-card strong {
   font-size: clamp(1.35rem, calc(1.15rem + .8cqi), 1.8rem);
 }
@@ -73,8 +73,8 @@
   border-color: var(--line);
 }
 :is(.app-shell, .team-lobby) .card-grid .athlete-performance__indicator {
-  min-height: 8.5rem;
-  padding: clamp(1rem, calc(.95rem + .5cqi), 1.5rem);
+  min-height: 7rem;
+  padding: 1rem;
   gap: var(--space-sm);
 }
 .card-grid .athlete-performance__indicator dt,
@@ -98,11 +98,4 @@
 }
 @container cards (min-width: 64rem) {
   :is(.app-shell, .team-lobby) .card-region > .card-grid--summary[data-columns="4"] { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-}
-
-/* A little more presence on wide screens, without scaling forms or navigation. */
-@media (min-width: 1600px) {
-  .app-shell .main-content { max-width: 1840px; padding: clamp(1.5rem, 2vw, 2.5rem); gap: var(--space-lg); }
-  .lobby-page.team-lobby { max-width: 1840px; padding-inline: clamp(2rem, 3vw, 3rem); }
-  :is(.app-shell, .team-lobby) { --content-gap: 1.25rem; --panel-inset: 1.5rem; }
 }

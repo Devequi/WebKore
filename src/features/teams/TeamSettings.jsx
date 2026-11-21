@@ -3,9 +3,7 @@ import { normalizeModality } from "../../../shared/criteria.js";
 import {
   Clipboard,
   Plus,
-  RefreshCw,
   Save,
-  ShieldCheck,
   Trash2
 } from "lucide-react";
 
@@ -13,27 +11,16 @@ import { useEffect, useState } from "react";
 import { Button } from "../../components/ui/Button.jsx";
 import { useConfirmation } from "../../components/ui/ConfirmDialog.jsx";
 import { CollapsiblePanel } from "../../components/ui/CollapsiblePanel.jsx";
-import { downloadTeamReport } from "./reports.js";
 import "./TeamSettings.css";
-
-const modalidades = [
-  "Futebol",
-  "Vôlei",
-  "Basquete",
-  "Futsal",
-  "Handebol"
-];
 
 export function SettingsPage({
   actions,
-  state,
   team,
   onDeleted,
   view = "team"
 }) {
   const [formTime, setFormTime] = useState({
-    name: team?.name || "",
-    modality: team?.modality || "Futebol"
+    name: team?.name || ""
   });
 
   const [nomeObjetivo, setNomeObjetivo] = useState("");
@@ -44,10 +31,9 @@ export function SettingsPage({
 
   useEffect(() => {
     setFormTime({
-      name: team?.name || "",
-      modality: team?.modality || "Futebol"
+      name: team?.name || ""
     });
-  }, [team?.id, team?.name, team?.modality]);
+  }, [team?.id, team?.name]);
 
   async function salvarTime(event) {
     event.preventDefault();
@@ -170,53 +156,34 @@ export function SettingsPage({
               aria-busy={savingTeam}
             >
               <fieldset className="athlete-profile-fields" disabled={savingTeam}>
-              <label>
-                Nome da equipe
+                <legend>Dados da equipe</legend>
+                <label>
+                  Nome da equipe
 
-                <input
-                  onChange={(event) =>
-                    setFormTime((current) => ({
-                      ...current,
-                      name: event.target.value
-                    }))
-                  }
-                  required
-                  maxLength={191}
-                  value={formTime.name}
-                />
-              </label>
+                  <input
+                    onChange={(event) =>
+                      setFormTime((current) => ({
+                        ...current,
+                        name: event.target.value
+                      }))
+                    }
+                    required
+                    maxLength={191}
+                    value={formTime.name}
+                  />
+                </label>
 
-              <label>
-                Modalidade esportiva
-
-                <select
-                  onChange={(event) =>
-                    setFormTime((current) => ({
-                      ...current,
-                      modality: event.target.value
-                    }))
-                  }
-                  value={formTime.modality}
+                <Button
+                  icon={Save}
+                  type="submit"
                 >
-                  {modalidades.map((modalidade) => (
-                    <option key={modalidade}>
-                      {modalidade}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <Button
-                icon={Save}
-                type="submit"
-              >
-                {savingTeam ? "Salvando..." : "Salvar equipe"}
-              </Button>
+                  {savingTeam ? "Salvando..." : "Salvar equipe"}
+                </Button>
               </fieldset>
             </form>
 
-            <div className="privacy-box">
-              <ShieldCheck size={28} />
+            <section className="team-access" aria-label="Acesso e gerenciamento">
+              <h3>Acesso e gerenciamento</h3>
 
               <strong>Código de acesso</strong>
 
@@ -240,9 +207,8 @@ export function SettingsPage({
                 >
                   Excluir equipe
                 </Button>
-                <Button icon={RefreshCw} onClick={() => downloadTeamReport(state, team)} type="button" variant="secondary">Exportar relatório</Button>
               </div>
-            </div>
+            </section>
           </div>
           {feedbackPara("team")}
         </section>
