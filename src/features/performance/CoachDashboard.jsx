@@ -79,8 +79,10 @@ function CriterionHighlights({ performance }) {
 
 function PerformancePanel({ title, icon: Icon, performance, role, records, team }) {
   const measurements = role ? positionMeasurements(records, role, criteriaFor(team, role, "QUANTITATIVE") || []) : [];
-  return <section className={`panel team-home__performance${role === "GOALKEEPER" ? " team-home__keeper" : ""}`}>
-    <h2><Icon size={21} aria-hidden="true" />{title}</h2>
+  const Panel = role ? CollapsiblePanel : "section";
+  const panelProps = role ? { title, icon: Icon } : {};
+  return <Panel {...panelProps} className={`panel team-home__performance${role === "GOALKEEPER" ? " team-home__keeper" : ""}`}>
+    {!role && <h2><Icon size={21} aria-hidden="true" />{title}</h2>}
     <CardGrid className="team-home__metrics" layout="primary">
       <KpiCard icon={TrendingUp} label="Média" value={Number.isFinite(performance.averageScore) ? scoreLabel(performance.averageScore) : "—"} />
       <KpiCard icon={BarChart3} label="Avaliações" value={performance.evaluationCount} />
@@ -93,7 +95,7 @@ function PerformancePanel({ title, icon: Icon, performance, role, records, team 
           detail={trainingCoverage(validTrainings, totalTrainings)} />)}</CardGrid>
     </details>}
     <CriterionHighlights performance={performance} />
-  </section>;
+  </Panel>;
 }
 
 export function TeamHome({ state, team, onOpenTraining }) {

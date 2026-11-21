@@ -15,6 +15,7 @@
     "test:structure:visual": "node qa/structure/visual-check.mjs after",
     "test:integration": "node tests/integracao/api.check.js",
     "test:build": "node scripts/check-build.mjs",
+    "test:navigation": "node qa/navigation/sidebar.check.mjs",
     "test:privacy": "node tests/integracao/privacy.check.js",
     "test:privacy:browser": "node tests/integracao/privacy.check.js --browser",
     "api": "node server/index.js",

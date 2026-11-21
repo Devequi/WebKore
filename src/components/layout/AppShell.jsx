@@ -1,8 +1,8 @@
 import { LogOut, Users } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Avatar } from "../ui/Avatar.jsx";
 import { Button } from "../ui/Button.jsx";
-import { MobileNavigation, NavigationItems, useCompactNavigation } from "./MobileNavigation.jsx";
+import { CoachNavigation, MobileNavigation, NavigationItems, useCompactNavigation } from "./MobileNavigation.jsx";
 
 export function AppShell({
   activeView,
@@ -15,6 +15,7 @@ export function AppShell({
   team
 }) {
   const navRef = useRef(null);
+  const [collapsed, setCollapsed] = useState(false);
   const coach = currentUser.role === "coach";
   const mobile = useCompactNavigation();
   const shellClassName = coach ? "app-shell coach-experience" : "app-shell";
@@ -23,12 +24,14 @@ export function AppShell({
   useEffect(() => {
     if (mobile) return;
     navRef.current?.querySelector('[aria-current="page"]')?.scrollIntoView({ block: "nearest", inline: "nearest" });
-  }, [selectedView, mobile]);
+  }, [selectedView, mobile, collapsed]);
 
   return (
-    <div className={activeView === "coach-home" ? `${shellClassName} app-shell--coach-home` : shellClassName}>
+    <div className={`${shellClassName}${activeView === "coach-home" ? " app-shell--coach-home" : ""}${coach ? " app-shell--coach-navigation" : ""}${coach && collapsed ? " app-shell--sidebar-collapsed" : ""}`}>
       {mobile ? <MobileNavigation tabs={tabs} activeView={selectedView} onNavigate={setActiveView}
-        onLogoClick={onLogoClick} onLogout={onLogout} /> : <aside className="sidebar">
+        onLogoClick={onLogoClick} onLogout={onLogout} currentUser={currentUser} team={team} /> : <aside className={`sidebar${coach ? " coach-navigation" : ""}`} aria-label="Menu lateral">
+        {coach ? <CoachNavigation tabs={tabs} activeView={selectedView} onNavigate={setActiveView} onLogoClick={onLogoClick}
+          onLogout={onLogout} currentUser={currentUser} team={team} collapsed={collapsed} onToggle={() => setCollapsed(value => !value)} navRef={navRef} /> : <>
         <button className="brand" onClick={onLogoClick} type="button">
           <img src="/icons/logoWK.png" alt="WebKore" />
           <div>
@@ -51,6 +54,7 @@ export function AppShell({
             Sair
           </Button>
         </div>
+      </>}
       </aside>}
 
       <main className="main-content">

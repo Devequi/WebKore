@@ -26,14 +26,14 @@ const SettingsPage = lazy(() => import("../features/teams/TeamSettings.jsx").the
 const TrainingDetails = lazy(() => import("../features/training/TrainingHistory.jsx").then((page) => ({ default: page.TrainingDetails })));
 
 const coachTabs = [
-  { id: "coach-lobby", label: "Equipes", icon: Users },
-  { id: "coach-home", label: "Home", icon: Home },
-  { id: "coach-athletes", label: "Atletas", icon: Users },
-  { id: "coach-requests", label: "Solicitações", icon: ShieldCheck },
-  { id: "coach-trainings", label: "Treinos", icon: ClipboardList },
-  { id: "coach-evaluations", label: "Avaliação de Treinos", icon: BarChart3 },
+  { id: "coach-home", label: "Visão geral", icon: Home, group: "Principal" },
+  { id: "coach-athletes", label: "Atletas", icon: Users, group: "Principal" },
+  { id: "coach-requests", label: "Solicitações", icon: ShieldCheck, group: "Principal" },
+  { id: "coach-trainings", label: "Treinos", icon: ClipboardList, group: "Treinamento" },
+  { id: "coach-evaluations", label: "Avaliações", icon: BarChart3, group: "Treinamento" },
+  { id: "coach-lobby", label: "Minhas equipes", icon: Users, group: "Gerenciamento" },
   { id: "profile", label: "Meu Perfil", icon: Activity },
-  { id: "coach-settings", label: "Configurações da equipe", icon: Settings }
+  { id: "coach-settings", label: "Configurações", icon: Settings, group: "Gerenciamento" }
 ];
 
 const athleteTabs = [
@@ -112,7 +112,7 @@ export function App() {
 
   function lobbyHeader() {
     return compact ? <MobileNavigation tabs={tabs} activeView={activeView} onNavigate={navigate}
-      onLogoClick={() => navigate(`${session.role}-lobby`)} onLogout={logout} /> : null;
+      onLogoClick={() => navigate(`${session.role}-lobby`)} onLogout={logout} currentUser={currentUser} /> : null;
   }
 
   if (state.loadingSession) return <main className="auth-page"><LoadingState message="Restaurando sessão..." /></main>;

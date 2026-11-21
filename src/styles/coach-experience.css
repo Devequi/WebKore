@@ -37,15 +37,5 @@
 }
 
 @media (min-width: 1060px) {
-  .app-shell.coach-experience { grid-template-columns: 238px minmax(0, 1fr); }
   .app-shell.coach-experience .topbar h1 { font-size: clamp(1.5rem, 2vw, 2rem); line-height: 1.25; }
-  .app-shell.coach-experience .sidebar { padding: 1.25rem 1rem; gap: var(--space-lg); }
-  .app-shell.coach-experience .sidebar .brand { flex-direction: column; align-items: flex-start; gap: .35rem; padding: 0 .5rem 1rem; margin: 0; }
-  .app-shell.coach-experience .brand img { width: 64px; height: 36px; object-position: left center; }
-  .app-shell.coach-experience .brand strong { font-size: 1.125rem; line-height: 1.5; }
-  .app-shell.coach-experience .sidebar .brand span { color: var(--muted); font-size: var(--text-sm); line-height: 1.6; }
-  .app-shell.coach-experience .nav-list { gap: var(--space-sm); }
-  .app-shell.coach-experience .nav-item { min-height: 48px; justify-content: flex-start; }
-  .app-shell.coach-experience .nav-item:nth-child(5) { margin-top: .75rem; border-top: 1px solid var(--line); }
-  .app-shell.coach-experience .sidebar__footer { border-top: 1px solid var(--line); padding-top: var(--space-md); gap: .85rem; }
 }

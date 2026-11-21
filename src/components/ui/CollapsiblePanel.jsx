@@ -3,7 +3,7 @@ import { ChevronDown } from "lucide-react";
 import { isPanelSurfaceClick } from "./panelInteraction.js";
 import "./CollapsiblePanel.css";
 
-export function CollapsiblePanel({ title, eyebrow, children, actions, className = "", headingClassName = "", initialOpen = true }) {
+export function CollapsiblePanel({ title, icon: Icon, eyebrow, children, actions, className = "", headingClassName = "", initialOpen = true }) {
   const [open, setOpen] = useState(initialOpen);
   const contentId = useId();
   const headingRef = useRef(null);
@@ -21,7 +21,7 @@ export function CollapsiblePanel({ title, eyebrow, children, actions, className 
       <div className="collapsible-panel__heading"><h2>
         <button ref={headingRef} type="button" className="collapsible-panel__heading-toggle" aria-label={title}
           aria-expanded={open} aria-controls={contentId} onClick={toggle}>
-          <span className="collapsible-panel__identity"><span className="eyebrow">{eyebrow}</span><span className="collapsible-panel__title">{title}</span></span>
+          <span className="collapsible-panel__identity"><span className="eyebrow">{eyebrow}</span><span className="collapsible-panel__title">{Icon && <Icon size={21} aria-hidden="true" />}{title}</span></span>
           <ChevronDown size={18} aria-hidden="true" />
         </button>
       </h2></div>

@@ -214,7 +214,7 @@ test("dashboard do treinador usa gráfico compartilhado e distingue equipe sem n
   assert.match(html, /Desempenho da equipe/);
   assert.match(html, /Sem avaliação/);
   assert.doesNotMatch(html, /Destaque da equipe/);
-  assert.match(html, /Melhores médias do histórico/);
+  assert.match(html, /Ranking de atletas/);
   assert.match(html, /Ainda não há avaliações suficientes/);
   assert.doesNotMatch(html, /Melhores do treino/);
 });
@@ -236,9 +236,8 @@ test("último treino mostra destaque da sessão e melhor atleta ocupa um card in
   assert.match(latest, /8,5\/10/);
   assert.doesNotMatch(latest, /Destaque da equipe|Melhor atleta|<strong>Ana<\/strong>/);
   const best = html.split('class="panel best-athlete-panel"')[1].split('</section>')[0];
-  assert.match(best, /<span>Ana<\/span>/);
-  assert.match(best, /Ala/);
-  assert.match(best, /9,0\/10/);
+  assert.match(best, /class="team-home__ranking-athlete">Ana<\/span>/);
+  assert.match(best, /aria-label="Média: 9,0 de 10">9,0<\/strong>/);
   const summary = html.split('aria-label="Resumo da equipe"')[1].split("</section>")[0];
   assert.equal((summary.match(/class="kpi-card"/g) || []).length, 4);
   assert.match(html, /Desempenho médio<\/p><strong>7,3\/10/);
