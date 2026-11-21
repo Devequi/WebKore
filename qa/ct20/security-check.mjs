@@ -2,10 +2,10 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { writeFile, mkdir } from 'node:fs/promises';
 import jwt from 'jsonwebtoken';
-import { createApp } from '../../server/src/aplicativo.js';
-import { prisma } from '../../server/src/lib/prisma.js';
-import { getJwtSecret } from '../../server/src/lib/environment.js';
-import { issueSession, tokenOptions } from '../../server/src/lib/sessions.js';
+import { createApp } from '../../server/src/app.js';
+import { prisma } from '../../server/src/db/prisma.js';
+import { getJwtSecret } from '../../server/src/config/environment.js';
+import { issueSession, tokenOptions } from '../../server/src/auth/sessions.js';
 
 const db = new URL(process.env.DATABASE_URL).pathname.slice(1);
 if (process.env.WEBKORE_CT20_ISOLATED !== '1' || !/^webkore_ct20_[a-f0-9]{32}$/.test(db) || db !== process.env.WEBKORE_CT20_DB_NAME) throw new Error('Banco isolado obrigatório.');

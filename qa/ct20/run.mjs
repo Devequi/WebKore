@@ -5,7 +5,7 @@ import { readFile, rm } from 'node:fs/promises';
 import { createServer as createSocketServer } from 'node:net';
 import { resolve, sep } from 'node:path';
 import { PrismaClient } from '@prisma/client';
-import '../../server/src/lib/environment.js';
+import '../../server/src/config/environment.js';
 import { writeReport, jsonFile } from './report.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
@@ -59,8 +59,8 @@ try {
   const frontendPort = socket.address().port;
   await new Promise(resolve => socket.close(resolve));
   process.env.APP_ORIGINS = `http://127.0.0.1:${frontendPort}`;
-  const { createApp } = await import('../../server/src/aplicativo.js');
-  ({ prisma: apiPrisma } = await import('../../server/src/lib/prisma.js'));
+  const { createApp } = await import('../../server/src/app.js');
+  ({ prisma: apiPrisma } = await import('../../server/src/db/prisma.js'));
   apiServer = createApp().listen(0, '127.0.0.1');
   await new Promise((resolve, reject) => { apiServer.once('listening', resolve); apiServer.once('error', reject); });
   process.env.WEBKORE_CT20_API = `http://127.0.0.1:${apiServer.address().port}/api`;
@@ -73,8 +73,8 @@ try {
   process.env.WEBKORE_CT20_ORIGIN = `http://127.0.0.1:${vite.httpServer.address().port}`;
   if (security) {
     await command('./security-check.mjs', []);
-    await command('../../tests/integration-check.js', ['7']);
-    await command('../../tests/position-integration-check.js', []);
+    await command('../../tests/integracao/api.check.js', ['7']);
+    await command('../../tests/integracao/positions.check.js', []);
   }
   await command('../../node_modules/@playwright/test/cli.js', ['test', '--config', visual ? 'qa/ct20/visual.config.mjs' : 'qa/ct20/playwright.config.mjs', ...process.argv.slice(2).filter(arg => !['--security', '--visual'].includes(arg))]);
   if (security) await command('../../node_modules/@playwright/test/cli.js', ['test', '--config', 'qa/ct20/security-ui.config.mjs']);

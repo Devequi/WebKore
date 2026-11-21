@@ -1,0 +1,108 @@
+/* Shared sizing for summary, performance and position cards. No viewport-wide
+   column assumptions: a grid nested in a narrow panel must stay readable. */
+.card-region {
+  container: cards / inline-size;
+  width: 100%;
+  min-width: 0;
+  --card-gap: clamp(.85rem, 1.5cqi, 1.5rem);
+}
+:is(.app-shell, .team-lobby) .card-region > .card-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: stretch;
+  gap: var(--card-gap);
+  min-width: 0;
+  margin: 0;
+}
+.card-region > .card-grid > * { min-width: 0; grid-column: auto; }
+:is(.app-shell, .team-lobby) .card-grid .kpi-card {
+  align-items: flex-start;
+  min-width: 0;
+  min-height: 8.5rem;
+  height: 100%;
+  gap: clamp(.75rem, 1.5cqi, 1rem);
+  padding: clamp(1rem, calc(.95rem + .5cqi), 1.5rem);
+  border-radius: var(--radius-lg);
+  background: var(--surface-strong);
+}
+:is(.app-shell, .team-lobby) .card-grid .kpi-card > div:last-child {
+  display: grid;
+  align-content: start;
+  gap: .4rem;
+  min-width: 0;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+:is(.app-shell, .team-lobby) .card-grid .kpi-card p {
+  margin: 0;
+  color: var(--muted-strong);
+  font-size: clamp(.875rem, calc(.8rem + .25cqi), 1rem);
+  font-weight: 600;
+  line-height: 1.45;
+  overflow-wrap: normal;
+}
+:is(.app-shell, .team-lobby) .card-grid .kpi-card strong {
+  margin: 0;
+  color: var(--ink);
+  font-size: clamp(1.55rem, calc(1.25rem + 1.5cqi), 2.25rem);
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: break-word;
+}
+:is(.app-shell, .team-lobby) .card-grid .kpi-card span {
+  font-size: clamp(.8125rem, calc(.78rem + .15cqi), .875rem);
+  line-height: 1.5;
+}
+:is(.app-shell, .team-lobby) .card-grid .kpi-card__icon {
+  width: clamp(2.25rem, calc(1.9rem + 1cqi), 2.75rem);
+  height: clamp(2.25rem, calc(1.9rem + 1cqi), 2.75rem);
+  flex: 0 0 auto;
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  background: transparent;
+}
+:is(.app-shell, .team-lobby) .card-grid .kpi-card__icon svg {
+  width: 55%;
+  height: 55%;
+}
+:is(.app-shell, .team-lobby) .card-grid--metrics .kpi-card { min-height: 7.5rem; }
+:is(.app-shell, .team-lobby) .card-grid--metrics .kpi-card strong {
+  font-size: clamp(1.35rem, calc(1.15rem + .8cqi), 1.8rem);
+}
+:is(.app-shell, .team-lobby) .card-grid--primary .kpi-card {
+  border-color: var(--line);
+}
+:is(.app-shell, .team-lobby) .card-grid .athlete-performance__indicator {
+  min-height: 8.5rem;
+  padding: clamp(1rem, calc(.95rem + .5cqi), 1.5rem);
+  gap: var(--space-sm);
+}
+.card-grid .athlete-performance__indicator dt,
+.card-grid .athlete-performance__detail { font-size: var(--text-sm); line-height: 1.5; }
+.card-grid .athlete-performance__value { font-size: clamp(1.25rem, calc(1rem + 1cqi), 1.8rem); line-height: 1.3; overflow-wrap: break-word; }
+
+@container cards (max-width: 33.999rem) {
+  :is(.app-shell, .team-lobby) .card-grid--summary .kpi-card { min-height: 7rem; }
+}
+@container cards (min-width: 28rem) {
+  :is(.app-shell, .team-lobby) .card-region > :is(.card-grid--primary, .card-grid--metrics) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@container cards (min-width: 34rem) {
+  :is(.app-shell, .team-lobby) .card-region > .card-grid--summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@container cards (min-width: 46rem) {
+  :is(.app-shell, .team-lobby) .card-region > .card-grid--metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@container cards (min-width: 52rem) {
+  :is(.app-shell, .team-lobby) .card-region > .card-grid--summary:not([data-columns="4"]) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@container cards (min-width: 64rem) {
+  :is(.app-shell, .team-lobby) .card-region > .card-grid--summary[data-columns="4"] { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+/* A little more presence on wide screens, without scaling forms or navigation. */
+@media (min-width: 1600px) {
+  .app-shell .main-content { max-width: 1840px; padding: clamp(1.5rem, 2vw, 2.5rem); gap: var(--space-lg); }
+  .lobby-page.team-lobby { max-width: 1840px; padding-inline: clamp(2rem, 3vw, 3rem); }
+  :is(.app-shell, .team-lobby) { --content-gap: 1.25rem; --panel-inset: 1.5rem; }
+}

@@ -1,0 +1,297 @@
+
+
+body {
+  background: var(--bg);
+}
+
+.auth-page,
+.lobby-page {
+  background: var(--bg);
+}
+
+.auth-form,
+.panel,
+.team-card,
+.kpi-card,
+.empty-state {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+.team-card {
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.team-card > span {
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: var(--primary);
+  background: var(--institutional);
+}
+
+.kpi-card {
+  min-height: 112px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.kpi-card::after {
+  content: none;
+}
+
+.kpi-card__icon {
+  width: 40px;
+  height: 40px;
+  flex-basis: 40px;
+  border: 0;
+  border-radius: var(--radius);
+  color: var(--primary);
+  background: var(--institutional);
+}
+
+.kpi-card strong {
+  font-size: clamp(1.35rem, 3vw, 1.8rem);
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.sidebar {
+  border-color: var(--line);
+  background: var(--navigation);
+}
+
+.nav-list {
+  gap: 0.4rem;
+}
+
+.nav-item {
+  border-radius: var(--radius);
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.nav-item:hover {
+  color: var(--ink);
+  background: var(--surface-hover);
+}
+
+.nav-item--active {
+  border-color: var(--line-strong);
+  color: var(--primary);
+  background: var(--selected);
+  box-shadow: inset 3px 0 0 var(--primary);
+}
+
+.button {
+  border-radius: var(--radius);
+  font-weight: 700;
+}
+
+.button--primary {
+  color: var(--on-primary);
+  background: var(--primary);
+}
+
+.button--primary:hover:not(:disabled) {
+  background: var(--primary-strong);
+}
+
+.button--secondary {
+  color: var(--ink);
+  background: var(--institutional);
+  border-color: var(--line);
+}
+
+.button--secondary:hover:not(:disabled) {
+  background: var(--surface-hover);
+}
+
+.button--ghost {
+  color: var(--muted-strong);
+  border: 1px solid var(--line);
+  background: transparent;
+}
+
+.button--ghost:hover:not(:disabled) {
+  color: var(--ink);
+  border-color: var(--line-strong);
+  background: var(--surface-hover);
+}
+
+.button--danger {
+  color: var(--error);
+  background: var(--coral-soft);
+  border-color: var(--error);
+  border-style: dashed;
+}
+
+.button--danger:hover:not(:disabled) {
+  background: var(--error-hover);
+}
+
+input,
+select,
+textarea {
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--ink);
+  background: var(--surface-strong);
+}
+
+input:hover,
+select:hover,
+textarea:hover {
+  border-color: var(--line-strong);
+}
+
+input:focus,
+select:focus,
+textarea:focus,
+button:focus-visible {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: var(--focus-ring);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto;
+    animation-duration: 0.01ms;
+    transition-duration: 0.01ms;
+  }
+}
+
+label {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="true"] {
+  border-color: var(--error);
+  border-style: dashed;
+}
+
+button:focus-visible, a:focus-visible, summary:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+
+input:disabled, select:disabled, textarea:disabled { opacity: .65; cursor: not-allowed; }
+input[type="checkbox"], input[type="range"], progress { accent-color: var(--primary); }
+input::placeholder, textarea::placeholder { opacity: 1; }
+a[href]:hover { color: var(--primary-strong); }
+.athlete-performance__value { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+.eyebrow {
+  color: var(--primary);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.request-card, .athlete-card, .training-card, .team-result, .privacy-box, .empty-state {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.athlete-card:hover {
+  border-color: var(--line-strong);
+  background: var(--surface-hover);
+}
+
+.athlete-card--active {
+  border-color: var(--primary);
+  background: var(--selected);
+  box-shadow: inset 2px 0 0 var(--primary);
+}
+
+.athlete-card small {
+  color: var(--primary);
+}
+
+.avatar {
+  border: 0;
+  border-radius: var(--radius);
+  color: var(--ink);
+  background: var(--institutional);
+}
+
+.avatar--lg {
+  border-radius: var(--radius-lg);
+}
+
+.search-input {
+  min-height: var(--control-height);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-strong);
+}
+
+.search-input:hover,
+.search-input:focus-within {
+  border-color: var(--primary);
+  background: var(--surface-strong);
+}
+
+.privacy-box {
+  background: var(--surface-strong);
+}
+
+.form-feedback {
+  border-radius: var(--radius);
+  animation: none;
+}
+
+.section-heading {
+  margin-bottom: 0.85rem;
+}
+
+.section-heading h2 {
+  font-size: 1.2rem;
+  letter-spacing: -0.02em;
+}
+
+.auth-copy h1,
+.lobby-hero h1,
+.topbar h1 {
+  letter-spacing: -0.035em;
+}
+
+.auth-copy p,
+.lobby-hero p {
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+@media (min-width: 1060px) {
+  .app-shell {
+    grid-template-columns: 250px minmax(0, 1fr);
+  }
+
+  .sidebar {
+    background: var(--navigation);
+  }
+
+  .main-content {
+    width: 100%;
+    max-width: 1680px;
+    padding: var(--space-lg);
+  }
+}
+
+@media (max-width: 640px) {
+  .auth-form,
+  .panel,
+  .team-card,
+  .kpi-card,
+  .empty-state {
+    border-radius: var(--radius-lg);
+  }
+}

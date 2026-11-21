@@ -1,0 +1,108 @@
+
+
+* {
+  box-sizing: border-box;
+}
+
+html { scrollbar-gutter: stable; }
+
+body {
+  min-width: 0;
+  margin: 0;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  width: 100%;
+  min-height: var(--control-height);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 0.78rem 0.9rem;
+  color: var(--ink);
+  background: rgb(var(--navy-rgb) / 0.78);
+  transition: var(--transition);
+}
+
+button {
+  cursor: pointer;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+label {
+  display: grid;
+  gap: 0.45rem;
+  font-size: 0.9rem;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 0.75rem 0.85rem;
+  transition: var(--transition);
+}
+
+textarea {
+  resize: vertical;
+  font-family: var(--font-family);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted);
+}
+
+.auth-page,
+.lobby-page {
+  min-height: 100vh;
+  padding: var(--space-md);
+  overflow-x: hidden;
+}
+
+.runtime-error {
+  display: grid;
+  gap: var(--space-md);
+  width: min(620px, calc(100% - 2rem));
+  margin: 3rem auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.2rem;
+  background: var(--surface); /* Corrigido */
+}
+
+.runtime-error h1 {
+  font-size: 1.7rem;
+}
+
+.runtime-error p {
+  color: var(--coral);
+  font-weight: 700;
+}
+
+.runtime-error button {
+  justify-self: start;
+  min-height: 44px;
+  border: 0;
+  border-radius: var(--radius);
+  padding: 0.72rem 1rem;
+  color: var(--on-primary);
+  background: var(--primary);
+  font-weight: 700;
+}

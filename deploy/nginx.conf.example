@@ -1,0 +1,34 @@
+# Exemplo para domínio único (SPA + API). Substitua domínio, caminhos e certificados.
+# Não publique o diretório do repositório; apenas dist/.
+server {
+    listen 80;
+    server_name webkore.example;
+    return 301 https://$host$request_uri;
+}
+server {
+    listen 443 ssl;
+    server_name webkore.example;
+    ssl_certificate /etc/letsencrypt/live/webkore.example/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/webkore.example/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    root /srv/webkore/dist;
+    server_tokens off;
+    client_max_body_size 100k;
+    add_header Strict-Transport-Security "max-age=31536000" always;
+    add_header X-Content-Type-Options nosniff always;
+    add_header X-Frame-Options DENY always;
+    add_header Referrer-Policy no-referrer always;
+    add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+    # A UI usa estilos inline do React/Recharts. Scripts permanecem restritos a self.
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests" always;
+    location /api/ {
+        proxy_pass http://127.0.0.1:3333;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        # Sobrescreve cabeçalhos fornecidos pelo cliente.
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+    location ~ /\. { deny all; }
+    location / { try_files $uri $uri/ /index.html; }
+}

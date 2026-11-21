@@ -1,0 +1,239 @@
+
+
+/* Tipografia adicional */
+.auth-form {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.brand:hover {
+  color: var(--primary);
+}
+
+.brand div,
+.profile-chip div {
+  display: grid;
+  min-width: 0;
+}
+
+.brand > div,
+.profile-chip > div:last-child { flex: 1; min-width: 0; }
+.brand strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.button > svg, .nav-item > svg { flex-shrink: 0; }
+button.button > span { color: inherit; }
+.sidebar .brand span { font-size: 0.8rem; }
+input, select, textarea { min-width: 0; max-width: 100%; font-weight: 400; }
+summary:focus-visible { border-radius: var(--radius-sm); }
+
+.brand span,
+.profile-chip span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nav-list {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: max-content;
+  overflow-x: auto;
+  padding-bottom: 0.2rem;
+  scroll-behavior: smooth;
+  scrollbar-color: var(--line-strong) transparent;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (min-width: 1060px) {
+  .app-shell {
+    display: grid;
+  }
+
+  .sidebar {
+    position: sticky;
+    top: 0;
+    height: 100dvh;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    align-content: stretch;
+    border-right: 1px solid var(--line);
+    border-bottom: 0;
+    padding: var(--space-md);
+    overflow: hidden;
+  }
+
+  .nav-list {
+    grid-auto-flow: row;
+    grid-auto-columns: auto;
+    align-content: start;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .nav-item {
+    justify-content: flex-start;
+  }
+
+  .sidebar__footer {
+    display: grid;
+    gap: 0.55rem;
+    min-width: 0;
+    margin-top: auto;
+  }
+
+  .sidebar__footer .button {
+    width: 100%;
+  }
+
+  .profile-chip {
+    min-width: 0;
+  }
+
+  .profile-chip strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 640px) {
+  .auth-page,
+  .lobby-page {
+    padding: var(--space-md);
+  }
+
+  .auth-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .lobby-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .kpi-grid {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .auth-page,
+  .lobby-page {
+    padding: var(--space-lg);
+  }
+
+  .auth-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .lobby-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 1025px) {
+  .auth-hero {
+    grid-template-columns: minmax(0, 1.1fr) minmax(340px, 0.75fr);
+    min-height: calc(100vh - 120px);
+  }
+
+  .lobby-hero {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
+  }
+
+  .settings-grid {
+    grid-template-columns: minmax(0, 0.75fr) minmax(320px, 1fr);
+  }
+}
+
+::selection {
+  color: var(--bg);
+  background: var(--primary);
+}
+
+a {
+  color: inherit;
+}
+
+.main-content {
+  position: relative;
+}
+
+.main-content::before {
+  content: none;
+}
+
+.panel {
+  border-color: rgb(var(--ice-rgb) / 0.12);
+}
+
+.section-heading h2,
+.team-card h2,
+.form-header strong,
+.athlete-profile-header h2 {
+  letter-spacing: -0.025em;
+}
+
+.team-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.last-training strong {
+  letter-spacing: -0.03em;
+}
+
+.rating-grid input[type="range"] {
+  accent-color: var(--primary);
+}
+
+.auth-form {
+  padding: 1.25rem;
+}
+
+@media (min-width: 1060px) {
+
+  .sidebar .brand {
+    margin-bottom: 0.45rem;
+  }
+}
+
+@media (max-width: 640px) {
+
+  .kpi-card {
+    padding: 0.85rem;
+  }
+}

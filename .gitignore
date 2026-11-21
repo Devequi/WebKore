@@ -30,6 +30,7 @@ desktop.ini
 /ordem.txt
 
 # Evidências de testes de navegador
-/deploy
+/deploy/*
+!/deploy/*.example
 /test-results/
 /playwright-report/

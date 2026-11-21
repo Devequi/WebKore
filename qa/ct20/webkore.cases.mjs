@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { define, expect, obtained, login, session, teamPath, openTraining, selectAthlete, password } from './harness.mjs';
 import { criteriaFor, goalkeeperIndicators, aggregateGoalkeeperStats, arithmeticEvaluation, weightedEvaluation } from '../../shared/evaluations.js';
 import { initialRatings } from '../../shared/evaluations.js';
-import { teamPerformance, positionMeasurements } from '../../src/utils/teamPerformance.js';
+import { teamPerformance, positionMeasurements } from '../../src/features/performance/model/teamPerformance.js';
 
 const ratings = (team, role, value) => Object.fromEntries(criteriaFor(team, role, 'QUALITATIVE').map(item => [item.name, value]));
 const patchPath = (training, athlete) => `/trainings/${training.id}/athletes/${athlete.user.id}`;
@@ -112,7 +112,7 @@ define('CT-05', async ({ rig, browser }, info) => {
       await expect(page.getByText('Equipe atual', { exact: true })).toHaveCount(0);
       await page.getByLabel('Nome completo', { exact: true }).fill(`Perfil ${role} atualizado CT20`);
       await page.getByRole('button', { name: 'Salvar alterações', exact: true }).click();
-      await expect(page.getByRole('status')).toContainText('Perfil atualizado.');
+      await expect(page.getByRole('status')).toContainText('Alterações salvas.');
       await page.reload();
       await expect(page.getByRole('heading', { name: `Perfil ${role} atualizado CT20`, exact: true })).toBeVisible();
       expect(await rig.prisma.team.count({ where: { coachId: account.user.id } })).toBe(0);

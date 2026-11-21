@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
-import { prisma } from "../server/src/lib/prisma.js";
-import { canonicalJSON, documentData } from "../server/src/lib/legal.js";
+import { prisma } from "../server/src/db/prisma.js";
+import { canonicalJSON, documentData } from "../server/src/domain/legal.js";
 import { initialLegalDocuments } from "../shared/legalDocuments.js";
 // Local operator CLI only; no unauthenticated publication route.
 try {

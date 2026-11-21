@@ -2,14 +2,14 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import bcrypt from "bcryptjs";
 import { PrismaClient } from "@prisma/client";
-import "../server/src/lib/environment.js";
-import { createApp } from "../server/src/aplicativo.js";
-import { prisma as apiPrisma } from "../server/src/lib/prisma.js";
-import { recordContext, prepareEvaluation, prepareMeasurements, prepareStats } from "../server/src/lib/avaliacoes.js";
+import "../server/src/config/environment.js";
+import { createApp } from "../server/src/app.js";
+import { prisma as apiPrisma } from "../server/src/db/prisma.js";
+import { recordContext, prepareEvaluation, prepareMeasurements, prepareStats } from "../server/src/domain/evaluations.js";
 import { defaultQualitativeCriteria, metricCatalog } from "../shared/criteria.js";
 import { criteriaFor, positionRankings } from "../shared/evaluations.js";
 import { isDateOnly, todayDateOnly } from "../shared/birthDate.js";
-import { filterEvolution } from "../src/utils/athletePerformance.js";
+import { filterEvolution } from "../src/features/performance/model/athletePerformance.js";
 
 const dbUrl = new URL(process.env.DATABASE_URL);
 if (process.env.NODE_ENV === "production" || !["localhost", "127.0.0.1", "[::1]"].includes(dbUrl.hostname)) {

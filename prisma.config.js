@@ -1,5 +1,5 @@
 import { defineConfig } from 'prisma/config';
-import './server/src/lib/environment.js';
+import './server/src/config/environment.js';
 
 export default defineConfig({
   schema: 'prisma/schema.prisma',

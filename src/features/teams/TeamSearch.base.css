@@ -1,0 +1,33 @@
+/* Shared cascade base: imported by global.css before feature overrides. */
+.search-page {
+  display: grid;
+  place-items: start center;
+}
+
+.search-panel {
+  width: min(680px, 100%);
+}
+
+.search-input {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0 0.75rem;
+  transition: var(--transition);
+}
+
+.search-input input {
+  border: 0;
+  padding-left: 0.2rem;
+  background: transparent;
+}
+
+.team-result {
+  margin-top: var(--space-md);
+  transition: var(--transition);
+}
+
+.team-result span {
+  color: var(--amber);
+  font-weight: 700;
+}

@@ -1,0 +1,39 @@
+/* Shared cascade base: imported by global.css before feature overrides. */
+.team-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-md);
+}
+
+@media (max-width: 640px) {
+  .team-card-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 768px) {
+  .team-card-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.8rem;
+  }
+}
+
+.team-card {
+  display: grid;
+  gap: 0.8rem;
+  min-height: 220px;
+  padding: var(--space-md);
+}
+
+.team-card > span {
+  justify-self: start;
+  padding: 0.32rem 0.55rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.team-card h2 {
+  font-size: 1.35rem;
+  overflow-wrap: anywhere;
+}

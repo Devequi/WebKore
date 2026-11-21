@@ -1,0 +1,344 @@
+
+
+.public-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 56px;
+  color: var(--primary);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.public-header--lobby {
+  display: flex;
+  width: min(1120px, 100%);
+  margin-inline: auto;
+}
+
+.public-header__logout.button {
+  width: auto;
+  min-height: 40px;
+  margin-left: auto;
+  padding: 0.45rem 0.8rem;
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  max-width: 200px;
+}
+
+.public-header img,
+.brand img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+}
+
+.auth-hero,
+.lobby-hero {
+  display: grid;
+  gap: 1.25rem;
+  align-items: center;
+  width: min(1120px, 100%);
+  margin: 1rem auto 0;
+}
+
+.lobby-hero {
+  margin-bottom: var(--space-lg);
+}
+
+.lobby-page > .team-card-grid,
+.lobby-page > .empty-state {
+  width: min(1120px, 100%);
+  margin-inline: auto;
+}
+
+.auth-copy {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.auth-copy h1,
+.lobby-hero h1,
+.topbar h1 {
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+.auth-copy p,
+.lobby-hero p {
+  max-width: 650px;
+  font-size: 1.05rem;
+}
+
+.lobby-actions,
+.team-card__actions,
+.request-card__actions,
+.settings-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+
+.auth-form,
+.panel,
+.team-card,
+.kpi-card,
+.empty-state {
+  transition: var(--transition);
+}
+
+.team-card {
+  cursor: default;
+}
+
+.request-card, .athlete-card, .training-card {
+  transition: var(--transition);
+}
+
+.button {
+  display: inline-flex;
+  width: auto;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  min-height: 44px;
+  border: 1px solid transparent;
+  padding: 0.72rem 1rem;
+  font-size: var(--text-sm);
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  cursor: pointer;
+  transition: var(--transition);
+  user-select: none;
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+}
+
+.form-feedback {
+  border: 1px solid var(--coral);
+  padding: 0.85rem;
+  color: var(--coral);
+  background: var(--coral-soft);
+  font-weight: 700;
+  font-size: var(--text-sm);
+}
+
+.form-feedback--success {
+  border-color: var(--success);
+  color: var(--success);
+  background: var(--success-soft);
+}
+
+.form-feedback::before { content: "Atenção · "; font-weight: 700; }
+.form-feedback--success::before { content: "Concluído · "; }
+.form-feedback--error { border-style: dashed; }
+
+.empty-content {
+  padding: 1rem 0;
+  color: var(--muted-strong);
+  font-size: var(--text-sm);
+}
+
+.panel .empty-state {
+  border: 0;
+  padding: 1rem 0;
+  background: transparent;
+  text-align: left;
+}
+
+.form-header {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.form-header strong {
+  font-size: var(--text-xl);
+}
+
+.form-header span, .profile-chip span, .sidebar__footer span, .team-card p, .request-card span, .athlete-card span, .training-card span {
+  color: var(--muted);
+}
+
+.checkbox-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  color: var(--ink);
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.checkbox-line input {
+  width: 18px;
+  min-height: 18px;
+  margin-top: 0.2rem;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+.checkbox-line:hover {
+  color: var(--primary);
+}
+
+.app-shell {
+  min-height: 100vh;
+}
+
+.sidebar {
+  min-width: 0;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: grid;
+  gap: 0.8rem;
+  border-bottom: 1px solid var(--line);
+  padding: 0.8rem;
+  transition: var(--transition);
+}
+
+.nav-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  min-height: 44px;
+  min-width: 50px;
+  border: 1px solid transparent;
+  padding: 0.6rem 0.8rem;
+  background: transparent;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: var(--text-sm);
+}
+
+@media (max-width: 640px) {
+  .nav-item {
+    min-height: 44px;
+    min-width: max-content;
+    padding: 0.45rem 0.65rem;
+    font-size: 0.8rem;
+  }
+
+  .nav-item span {
+    display: block;
+  }
+}
+
+.sidebar__footer {
+  display: none;
+}
+
+.main-content {
+  display: grid;
+  align-content: start;
+  gap: var(--space-md);
+  width: 100%;
+  max-width: 1280px;
+  min-width: 0;
+  margin: 0 auto;
+  padding: var(--space-md);
+}
+
+@media (max-width: 640px) {
+  .main-content {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 768px) {
+  .main-content {
+    padding: var(--space-md);
+    gap: 0.9rem;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .main-content {
+    padding: 1.2rem;
+  }
+}
+
+.topbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: 0.5rem 0;
+  flex-wrap: wrap;
+}
+
+.topbar h1 {
+  font-size: clamp(1.5rem, 2vw, 2rem);
+}
+
+.topbar__title {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.topbar__actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.topbar__actions .button {
+  min-height: 36px;
+  padding: 0.4rem 0.7rem;
+}
+
+.topbar__logout {
+  display: none;
+}
+
+@media (max-width: 1059px) {
+  .topbar__logout.button {
+    display: inline-flex;
+    width: 36px;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .topbar__logout span {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .topbar {
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+  }
+
+  .topbar h1 {
+    font-size: clamp(1.3rem, 5vw, 2rem);
+  }
+}
+
+.page-stack {
+  display: grid;
+  align-content: start;
+  gap: var(--space-md);
+  min-width: 0;
+}
+
+.dashboard-grid,
+.settings-grid {
+  display: grid;
+  gap: var(--space-md);
+  min-width: 0;
+}

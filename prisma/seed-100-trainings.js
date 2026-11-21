@@ -2,12 +2,12 @@
 import bcrypt from 'bcryptjs';
 import { randomUUID } from 'node:crypto';
 import { PrismaClient } from '@prisma/client';
-import '../server/src/lib/environment.js';
-import { createApp } from '../server/src/aplicativo.js';
+import '../server/src/config/environment.js';
+import { createApp } from '../server/src/app.js';
 import { defaultQualitativeCriteria, metricCatalog, qualitativeFields } from '../shared/criteria.js';
 import { isDateOnly, todayDateOnly } from '../shared/birthDate.js';
-import { toClientTraining } from '../server/src/lib/serializadores.js';
-import { athletePerformance } from '../src/utils/athletePerformance.js';
+import { toClientTraining } from '../server/src/lib/serializers.js';
+import { athletePerformance } from '../src/features/performance/model/athletePerformance.js';
 
 if (process.env.NODE_ENV === 'production' || !['localhost', '127.0.0.1', '[::1]'].includes(new URL(process.env.DATABASE_URL).hostname)) {
   throw new Error('Esta demonstração exige banco local de desenvolvimento/teste.');

@@ -1,0 +1,156 @@
+
+.coach-settings .settings-grid {
+  display: grid;
+  gap: var(--space-md);
+}
+.coach-settings .settings-form {
+  display: grid;
+  gap: var(--space-md);
+  min-width: 0;
+  max-width: 34rem;
+}
+.coach-settings .settings-panel {
+  display: grid;
+  gap: var(--space-md);
+}
+.coach-settings .settings-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin-top: var(--space-md);
+}
+.coach-settings .privacy-box {
+  display: grid;
+  gap: 0.7rem;
+  padding: var(--space-md);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-strong);
+}
+.coach-settings .privacy-box h3 {
+  font-size: 1.1rem;
+  margin-bottom: var(--space-sm);
+}
+.coach-settings .privacy-box p {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.coach-settings .criteria-grid {
+  display: grid;
+  gap: var(--space-md);
+}
+.coach-settings .criteria-panel {
+  gap: 0;
+}
+.coach-settings .criteria-panel .section-heading {
+  flex-direction: row;
+  margin-bottom: 0;
+}
+.coach-settings .criteria-column {
+  display: grid;
+  gap: 0.85rem;
+  min-width: 0;
+}
+.coach-settings .criteria-column h3 {
+  font-size: var(--text-base);
+}
+.coach-settings .criterion-add-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.7rem;
+  align-items: end;
+}
+.coach-settings .criteria-list {
+  display: grid;
+  gap: 0.65rem;
+}
+.coach-settings .criterion-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 0.55rem;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.65rem;
+  background: var(--surface-strong);
+}
+
+@media (max-width: 640px) {
+.coach-settings .settings-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+.coach-settings .settings-form {
+    gap: 0.8rem;
+  }
+.coach-settings .settings-panel {
+    gap: 0.8rem;
+  }
+.coach-settings .privacy-box {
+    padding: 0.75rem;
+    gap: var(--space-sm);
+  }
+.coach-settings .privacy-box h3 {
+    font-size: var(--text-base);
+    margin-bottom: 0.3rem;
+  }
+.coach-settings .privacy-box p {
+    font-size: 0.85rem;
+  }
+.coach-settings .settings-actions {
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+.coach-settings .criterion-add-form,
+.coach-settings .criterion-row {
+    grid-template-columns: 1fr;
+  }
+.coach-settings .settings-actions .button {
+    width: 100%;
+  }
+
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+.coach-settings .settings-grid {
+    grid-template-columns: 1fr;
+  }
+.coach-settings .settings-form {
+    gap: 1.2rem;
+  }
+}
+
+@media (min-width: 780px) {
+.coach-settings .settings-grid {
+    grid-template-columns: minmax(0, 0.75fr) minmax(320px, 1fr);
+  }
+.coach-settings .criteria-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+.coach-settings .settings-form {
+    gap: var(--space-lg);
+  }
+.coach-settings .privacy-box {
+    padding: 1.2rem;
+  }
+}
+
+@media (min-width: 1060px) {
+.coach-settings .settings-panel {
+    gap: var(--space-lg);
+  }
+.coach-settings .settings-actions {
+    gap: 0.8rem;
+  }
+}
+
+@media (min-width: 1280px) {
+.coach-settings .privacy-box {
+    padding: var(--space-lg);
+  }
+.coach-settings .settings-actions .button {
+    min-height: 44px;
+    padding: 0.75rem 1.2rem;
+  }
+
+}

@@ -4,12 +4,12 @@ import bcrypt from 'bcryptjs';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { PrismaClient } from '@prisma/client';
-import '../server/src/lib/environment.js';
-import { createApp } from '../server/src/aplicativo.js';
-import { prisma as apiPrisma } from '../server/src/lib/prisma.js';
+import '../server/src/config/environment.js';
+import { createApp } from '../server/src/app.js';
+import { prisma as apiPrisma } from '../server/src/db/prisma.js';
 import { defaultQualitativeCriteria, qualitativeFields } from '../shared/criteria.js';
 import { isDateOnly, todayDateOnly } from '../shared/birthDate.js';
-import { athletePerformance } from '../src/utils/athletePerformance.js';
+import { athletePerformance } from '../src/features/performance/model/athletePerformance.js';
 
 if (process.env.NODE_ENV === 'production' || !['localhost', '127.0.0.1', '[::1]'].includes(new URL(process.env.DATABASE_URL).hostname)) {
   throw new Error('Demonstração exclusiva de banco local de desenvolvimento/testes.');

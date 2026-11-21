@@ -1,0 +1,164 @@
+/* Shared cascade base: imported by global.css before feature overrides. */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.8rem;
+}
+
+@media (max-width: 640px) {
+  .kpi-grid {
+    gap: var(--space-sm);
+  }
+}
+
+@media (min-width: 641px) and (max-width: 768px) {
+  .kpi-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.7rem;
+  }
+}
+
+.kpi-card {
+  position: relative;
+  display: flex;
+  gap: 0.9rem;
+  padding: 1.05rem;
+  overflow: hidden;
+  transition: var(--transition);
+}
+
+.kpi-card__icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 44px;
+  transition: var(--transition);
+}
+
+.kpi-card p,
+.kpi-card span {
+  color: var(--muted);
+}
+
+.kpi-card > div:last-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.kpi-card strong {
+  display: block;
+  margin: 0.1rem 0;
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  line-height: 1.1;
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .section-heading {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+}
+
+.chart-panel {
+  min-height: 360px;
+}
+
+.create-team-form,
+.training-form,
+.settings-form {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.profile-chip,
+.request-card,
+.athlete-card {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  font-weight: 700;
+  font-size: var(--text-lg);
+  transition: var(--transition);
+}
+
+.avatar--lg {
+  width: 72px;
+  height: 72px;
+  flex-basis: 72px;
+  font-size: 1.35rem;
+}
+
+.request-card, .athlete-card, .training-card {
+  padding: 0.85rem; /* Corrigido */
+}
+
+.request-card {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.athlete-card {
+  width: 100%;
+  color: inherit;
+  text-align: left;
+}
+
+.athlete-card small {
+  margin-left: auto;
+  font-weight: 700;
+}
+
+.athlete-profile-panel,
+.settings-panel {
+  display: grid;
+  gap: var(--space-md);
+}
+
+.athlete-profile-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.privacy-box, .team-result, .empty-state {
+  display: grid;
+  gap: 0.7rem;
+  padding: var(--space-md);
+}
+
+.panel {
+  min-width: 0;
+  padding: var(--space-md);
+  transition: var(--transition);
+}
+
+.privacy-box, .empty-state {
+  display: grid;
+  gap: 0.7rem;
+  padding: var(--space-md);
+  transition: var(--transition);
+}
+
+.empty-state {
+  text-align: center;
+}
+.request-list, .athlete-list, .accordion-list {
+  display: grid;
+  gap: 0.75rem;
+}

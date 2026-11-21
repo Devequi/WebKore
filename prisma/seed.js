@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import { PrismaClient } from "@prisma/client";
-import "../server/src/lib/environment.js";
+import "../server/src/config/environment.js";
 import { defaultQualitativeCriteria, metricCatalog } from "../shared/criteria.js";
 
 const testMode = process.argv.includes("--test");

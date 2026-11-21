@@ -1,10 +1,10 @@
 import bcrypt from "bcryptjs";
 import { PrismaClient } from "@prisma/client";
-import "../server/src/lib/environment.js";
+import "../server/src/config/environment.js";
 import { isDateOnly, todayDateOnly } from "../shared/birthDate.js";
 import { getTeamCriteria, qualitativeFields } from "../shared/criteria.js";
-import { toClientTraining } from "../server/src/lib/serializadores.js";
-import { athletePerformance, filterEvolution } from "../src/utils/athletePerformance.js";
+import { toClientTraining } from "../server/src/lib/serializers.js";
+import { athletePerformance, filterEvolution } from "../src/features/performance/model/athletePerformance.js";
 
 if (process.env.NODE_ENV === "production") throw new Error("Fixture exclusiva de desenvolvimento/teste.");
 const today = process.argv[2] || todayDateOnly();

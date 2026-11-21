@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { cases } from './catalogue.mjs';
 
-export const reportFile = new URL('../../Documentação/testes-ct20.md', import.meta.url);
+export const reportFile = new URL('../../docs/testes-ct20.md', import.meta.url);
 export const jsonFile = new URL('../../test-results/ct20/results.json', import.meta.url);
 const cell = text => String(text || '').replaceAll('|', '\\|').replaceAll('\n', ' ');
 
@@ -36,11 +36,11 @@ export async function writeReport(data) {
     '- As medições de CT-20 cobrem os tamanhos listados em Chromium/Edge/Chrome conforme o canal escolhido. Não equivalem a uma matriz completa de navegadores ou dispositivos.',
     '- Falhas geram saída não zero; não há retries nem resultados esperados rebaixados. Evidências de navegador (captura e trace em falhas) ficam em test-results/ct20.', '',
     '## Diagnóstico e correções', '',
-    'Na primeira execução, CT-02 usava um nome acessível exato que excluía o texto auxiliar do campo de nascimento, e CT-14 procurava um status global em uma página com dois status. Os seletores foram corrigidos para o campo correto e para a área de salvamento, mantendo todas as asserções funcionais. A referência obsoleta a PositionRankings na página antiga tests/position-ui.jsx foi substituída pelo componente atual AverageRankings. Não foi necessário alterar cálculos ou regras de negócio.', '',
+    'Na primeira execução, CT-02 usava um nome acessível exato que excluía o texto auxiliar do campo de nascimento, e CT-14 procurava um status global em uma página com dois status. Os seletores foram corrigidos para o campo correto e para a área de salvamento, mantendo todas as asserções funcionais. A referência obsoleta a PositionRankings na página antiga tests/dadosFicticios/position-ui.jsx foi substituída pelo componente atual AverageRankings. Não foi necessário alterar cálculos ou regras de negócio.', '',
     ...(data.dependencyAudit?.counts ? ['## Auditoria de dependências', '',
       `A auditoria npm, separada dos 20 casos funcionais, registrou ${data.dependencyAudit.counts.total} alertas na árvore existente: ${data.dependencyAudit.counts.critical} crítico(s), ${data.dependencyAudit.counts.high} alto(s), ${data.dependencyAudit.counts.moderate} moderado(s) e ${data.dependencyAudit.counts.low} baixo(s).`,
       `Pacotes: ${data.dependencyAudit.packages.map(item => `${item.name} (${item.severity})`).join(', ')}.`,
-      'As dependências foram revisadas na auditoria de segurança; consulte Documentação/auditoria-seguranca.md. O resultado bruto desta execução está em test-results/ct20/dependency-audit.json.', ''] : []),
+      'As dependências foram revisadas na auditoria de segurança; consulte docs/auditoria-seguranca.md. O resultado bruto desta execução está em test-results/ct20/dependency-audit.json.', ''] : []),
     '## Especificação dos casos', '',
     ...rows.flatMap(item => [`### ${item.id} — ${item.title}`, '', `- Camada: ${item.layer}`, `- Objetivo: ${item.objective}`, `- Pré-condições: ${item.preconditions}`, `- Entrada: ${item.input}`, `- Passos: ${item.steps}`, `- Esperado: ${item.expected}`, `- Obtido: ${item.obtained || data.error || 'Não executado.'}`, `- Status: ${status(item)}`, ''])
   ].join('\n');

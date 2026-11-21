@@ -1,0 +1,14 @@
+/* Shared cascade base: imported by global.css before feature overrides. */
+.settings-grid {
+  align-items: start;
+}
+
+.settings-form > .button {
+  justify-self: start;
+}
+
+@media (max-width: 640px) {
+  .settings-form > .button {
+    justify-self: stretch;
+  }
+}

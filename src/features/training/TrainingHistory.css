@@ -1,0 +1,33 @@
+/* Shared cascade base: imported by global.css before feature overrides. */
+.training-history {
+  min-width: 0;
+}
+
+.training-card__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  width: 100%;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  text-align: left;
+}
+
+.training-card__summary div {
+  display: grid;
+  min-width: 0;
+}
+
+.training-card__summary span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.training-editor {
+  display: grid;
+  gap: var(--space-md);
+  margin-top: var(--space-md);
+}
