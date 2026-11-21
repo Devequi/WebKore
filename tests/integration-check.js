@@ -43,8 +43,10 @@ async function request(path, method = "GET", body, token = getAuthToken(), expec
 }
 async function register(role, suffix) {
   const email = `webkore-test-${run}-${suffix}@example.invalid`;
+  const { documents } = await api.legalDocuments();
+  const legal = { termsId: documents.find(d => d.type === "TERMS").id, privacyId: documents.find(d => d.type === "PRIVACY").id, acceptTerms: true, acknowledgePrivacy: true };
   const result = await authenticate({ name: `Teste ${suffix}`, email, password, role,
-    ...(role === "athlete" ? { birthDate: "2004-02-29" } : {}) }, true);
+    legal, ...(role === "athlete" ? { birthDate: "2004-02-29" } : {}) }, true);
   createdUsers.push(result.user.id);
   return { ...result, email, token: getAuthToken() };
 }

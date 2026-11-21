@@ -27,8 +27,10 @@ export const test = base.extend({
     const track = id => { if (!users.includes(id)) users.push(id); };
     async function register(role = 'coach', name = role === 'coach' ? 'Treinador CT20' : 'Atleta CT20') {
       const email = `ct20-${randomUUID()}@example.invalid`;
+      const { documents } = await req('/legal/documents');
+      const legal = { termsId: documents.find(d => d.type === 'TERMS').id, privacyId: documents.find(d => d.type === 'PRIVACY').id, acceptTerms: true, acknowledgePrivacy: true };
       const payload = await req('/auth/register', 'POST', { name, email, password, role,
-        ...(role === 'athlete' ? { birthDate: '2000-02-29' } : {}) }, undefined, 201);
+        legal, ...(role === 'athlete' ? { birthDate: '2000-02-29' } : {}) }, undefined, 201);
       track(payload.user.id);
       return { ...payload, email, password };
     }

@@ -8,6 +8,7 @@ import { sendError } from "./lib/validacao.js";
 import { authRouter } from "./rotas/autenticacao.rotas.js";
 import { teamsRouter } from "./rotas/times.rotas.js";
 import { trainingsRouter } from "./rotas/treinamentos.rotas.js";
+import { legalRouter } from "./rotas/legal.rotas.js";
 
 export function createApp() {
   getJwtSecret();
@@ -46,6 +47,7 @@ export function createApp() {
   });
 
   app.use("/api/auth", authRouter);
+  app.use("/api/legal", legalRouter);
   app.use("/api/teams", teamsRouter);
   app.use("/api/trainings", trainingsRouter);
   app.use("/api", (_request, response) => response.status(404).json({ message: "Endpoint não encontrado." }));

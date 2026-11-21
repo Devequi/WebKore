@@ -1,6 +1,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App.jsx";
+import { LegalDocumentPage } from "./paginas/DocumentoLegal.jsx";
 import "./styles/global.css";
 import "./styles/UiConsistency.css";
 import { ErrorFallback } from "./componentes/ErrorFallback.jsx";
@@ -13,7 +14,7 @@ catch { console.warn("Não foi possível limpar o cache de consultas antigo."); 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <ErrorFallback>
-      <App />
+      {["/privacidade", "/termos"].includes(window.location.pathname) ? <LegalDocumentPage /> : <App />}
     </ErrorFallback>
   </React.StrictMode>
 );

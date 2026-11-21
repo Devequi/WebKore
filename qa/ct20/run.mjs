@@ -53,6 +53,7 @@ try {
   process.env.API_RATE_LIMIT = '10000';
   console.log(`CT20: schema e dados exclusivamente no banco temporário ${dbName}.`);
   await command('../../node_modules/prisma/build/index.js', ['db', 'push', '--skip-generate']);
+  await command('../../prisma/publish-legal.js', []);
   const socket = createSocketServer();
   await new Promise((resolve, reject) => { socket.once('error', reject); socket.listen(0, '127.0.0.1', resolve); });
   const frontendPort = socket.address().port;

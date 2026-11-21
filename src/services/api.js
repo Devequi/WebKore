@@ -57,6 +57,11 @@ async function request(path, options = {}) {
 }
 
 export const api = {
+  legalDocuments() { return request("/legal/documents"); },
+  legalDocument(type, version) { return request(`/legal/documents/${encodeURIComponent(type)}/${encodeURIComponent(version)}`); },
+  legalMe() { return request("/legal/me"); },
+  legalDecision(body) { return request("/legal/me/decisions", { method: "POST", body }); },
+  personalData() { return request("/auth/me/data"); },
   logout() {
     return request("/auth/logout", { method: "POST", body: {} });
   },

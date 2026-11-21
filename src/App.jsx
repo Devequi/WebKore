@@ -80,7 +80,7 @@ export function App() {
   function withNotice(content) {
     return <>{navigationMessage && <p className="form-feedback form-feedback--success" role="status">{navigationMessage}</p>}{state.sessionMessage && <div className="form-feedback session-notice" role="status">
       <span>{state.sessionMessage}</span><Button type="button" variant="ghost" onClick={() => actions.refresh().catch(() => undefined)}>Atualizar painel</Button>
-    </div>}{content}</>;
+    </div>}{state.legal?.pending?.length > 0 && activeView !== "profile" && <p className="form-feedback" role="status">Há documentos legais para consultar. <button type="button" onClick={() => navigate("profile")}>Ver em Meu Perfil</button></p>}{content}</>;
   }
 
   useEffect(() => {

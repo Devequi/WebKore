@@ -1,0 +1,27 @@
+.legal-links,.legal-actions{display:flex;flex-wrap:wrap;gap:.75rem 1.25rem;align-items:center}
+.legal-links a,.legal-text a,.legal-history a,.legal-document-row>a{color:var(--primary);text-decoration:underline;text-underline-offset:3px}
+.registration-privacy{display:grid;gap:.75rem;font-size:.95rem;min-width:0}
+.registration-privacy p{margin:0}
+.privacy-dialog{width:min(850px,calc(100% - 1.5rem));max-height:calc(100dvh - 1.5rem);padding:0;border:1px solid var(--line-strong);border-radius:var(--radius);background:var(--surface);color:var(--ink)}
+.privacy-dialog[open]{display:flex;flex-direction:column}
+.privacy-dialog::backdrop{background:var(--backdrop)}
+.privacy-dialog header{display:flex;gap:1rem;align-items:flex-start;justify-content:space-between;padding:1rem;border-bottom:1px solid var(--line);flex-shrink:0}
+.privacy-dialog header h2{display:flex;gap:.6rem;margin:0;font-size:1.25rem}
+.privacy-dialog header button{background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:var(--radius);min-width:44px;min-height:44px;flex-shrink:0}
+.auth-entry .auth-form .privacy-dialog header button{width:44px;max-width:44px;height:44px;min-height:44px;flex:0 0 44px;padding:0;display:grid;place-items:center}
+.auth-entry .auth-form .privacy-dialog header h2{flex:1;min-width:0;line-height:1.4;overflow-wrap:normal;word-break:normal;align-items:flex-start}
+.privacy-dialog header h2 svg{flex:0 0 22px;margin-top:.2rem}
+.auth-entry .auth-form .privacy-dialog .legal-actions .button{width:auto;flex:1 1 10rem;min-height:44px}
+html:has(.privacy-dialog[open]){overflow:hidden}
+.privacy-dialog__body{overflow-y:auto;overscroll-behavior:contain;padding:1.25rem;min-height:0}
+.privacy-dialog footer{display:grid;gap:.75rem;padding:1rem;border-top:1px solid var(--line);flex-shrink:0}
+.privacy-dialog .checkbox-line{display:flex;align-items:flex-start;gap:.6rem;font-size:.95rem}
+.privacy-dialog input[type=checkbox]{width:20px;height:20px;flex-shrink:0;accent-color:var(--primary);margin-top:2px}
+.privacy-dialog :focus-visible,.legal-page :focus-visible,.privacy-profile :focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+.legal-text{font-size:1rem;line-height:1.75;overflow-wrap:anywhere}
+.legal-text h2{font-size:1.5rem}.legal-text h3{font-size:1.125rem;margin:1.5rem 0 .5rem}.legal-text p{margin:.5rem 0 1rem}
+.legal-meta{color:var(--muted);font-size:.9rem}.legal-text code{white-space:normal;word-break:break-all;font-size:.875rem}
+.legal-page{width:min(920px,100%);margin:auto;padding:clamp(.75rem,3vw,2rem);display:grid;gap:1.5rem}
+.legal-document-row{padding:1rem 0;border-bottom:1px solid var(--line)}
+.privacy-profile{overflow-wrap:anywhere}.privacy-profile h3{margin-top:1.5rem}.legal-history{padding-left:1.25rem}.legal-history li{margin:.8rem 0}
+@media(max-width:540px){.privacy-dialog header,.privacy-dialog footer,.privacy-dialog__body{padding:.75rem}.privacy-dialog header h2{font-size:1.05rem}.privacy-dialog footer{font-size:.875rem}.legal-actions button{flex:1}.privacy-dialog{max-height:calc(100dvh - .75rem)}}

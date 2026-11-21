@@ -39,6 +39,40 @@ model User {
   memberships  Membership[]
   authVersion  Int          @default(0)
   sessions     AuthSession[]
+  legalDecisions LegalDecision[]
+}
+
+// Append-only through the application. Publication creates new rows, never edits text.
+model LegalDocument {
+  id String @id
+  type String
+  version String
+  title String
+  content Json
+  contentHash String @db.Char(64)
+  publishedAt DateTime @default(now())
+  effectiveAt DateTime
+  requirementKey String
+  changeSummary String @db.Text
+  purpose String @default("")
+  decisions LegalDecision[]
+  @@unique([type, version])
+  @@index([type, effectiveAt])
+}
+
+model LegalDecision {
+  id String @id @default(cuid())
+  sequence Int @unique @default(autoincrement())
+  userId String
+  documentId String
+  action String
+  purpose String @default("")
+  requestKey String
+  occurredAt DateTime @default(now())
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  document LegalDocument @relation(fields: [documentId], references: [id], onDelete: Restrict)
+  @@unique([userId, requestKey])
+  @@index([userId, occurredAt])
 }
 
 model AuthSession {

@@ -2,10 +2,12 @@ import bcrypt from "bcryptjs";
 import { Router } from "express";
 import { positionRankings } from "../../../shared/evaluations.js";
 import { normalizeModality } from "../../../shared/criteria.js";
+import { calculateAge } from "../../../shared/birthDate.js";
 
 import { requireAuth } from "../intermediario/autenticacao.js";
 import { prisma } from "../lib/prisma.js";
 import { issueSession } from "../lib/sessions.js";
+import { registrationDocuments, assertConsentAge, legalStatus, strictKeys } from "../lib/legal.js";
 import { profileInclude, publicUserSelect, teamRelations, visibleRecords, visibleTeams, visibleTrainings } from "../lib/acesso.js";
 import { birthDate as validateBirthDate, email as validateEmail, HttpError, password as validatePassword, sendError, text } from "../lib/validacao.js";
 import {
@@ -72,6 +74,7 @@ async function buildSessionPayload(userId) {
     )])) : {};
   return {
     user: toPublicUser(user),
+    legal: await legalStatus(prisma, user.id),
     state: {
       users: Array.from(visibleUserMap.values()),
       teams: teams.map((team) => toClientTeam(team, user)),
@@ -84,6 +87,7 @@ async function buildSessionPayload(userId) {
 
 authRouter.post("/register", async (request, response) => {
   try {
+    strictKeys(request.body, ["email", "name", "password", "role", "birthDate", "legal"]);
     const { email, name, password, role, birthDate } = request.body;
 
     if (!name || !email || !password || !role) {
@@ -114,7 +118,10 @@ authRouter.post("/register", async (request, response) => {
 
     const passwordHash = await bcrypt.hash(password, 10);
 
-    const user = await prisma.user.create({
+    const user = await prisma.$transaction(async transaction => {
+      const choices = await registrationDocuments(transaction, request.body.legal);
+      assertConsentAge({ role: normalizedRole, birthDate: normalizedBirthDate }, choices);
+      const created = await transaction.user.create({
       data: {
         name: normalizedName,
         email: normalizedEmail,
@@ -128,12 +135,18 @@ authRouter.post("/register", async (request, response) => {
           .join("")
           .toUpperCase()
       }
+      });
+      await transaction.legalDecision.createMany({ data: choices.map(({ doc, action }) => ({
+        userId: created.id, documentId: doc.id, action, purpose: doc.purpose, requestKey: `registration-${doc.id}`
+      })) });
+      return created;
     });
 
     const payload = await buildSessionPayload(user.id);
 
     return response.status(201).json({
       token: await issueSession(user),
+      legal: payload.legal,
       user: payload.user,
       state: payload.state
     });
@@ -167,6 +180,7 @@ authRouter.post("/login", async (request, response) => {
 
     return response.json({
       token: await issueSession(user),
+      legal: payload.legal,
       user: payload.user,
       state: payload.state
     });
@@ -225,6 +239,17 @@ authRouter.patch("/me", requireAuth, async (request, response) => {
         data: { ...data, ...(password !== undefined ? { authVersion: { increment: 1 } } : {}) }
       });
       if (password !== undefined) await transaction.authSession.deleteMany({ where: { userId: request.user.id } });
+      if (birthDate !== undefined && updated.role === "ATHLETE" && (calculateAge(updated.birthDate?.toISOString().slice(0, 10)) ?? -1) < 18) {
+        const history = await transaction.legalDecision.findMany({ where: { userId: updated.id, purpose: { not: "" } }, orderBy: { sequence: "desc" } });
+        const seen = new Set();
+        for (const decision of history) {
+          if (seen.has(decision.purpose)) continue;
+          seen.add(decision.purpose);
+          if (decision.action === "GRANT") await transaction.legalDecision.create({ data: {
+            userId: updated.id, documentId: decision.documentId, purpose: decision.purpose, action: "REVOKE_AGE", requestKey: `age-correction-${decision.id}`
+          } });
+        }
+      }
       return updated;
     });
 
@@ -239,6 +264,8 @@ authRouter.patch("/me", requireAuth, async (request, response) => {
 authRouter.delete("/me", requireAuth, async (request, response) => {
   try {
     await prisma.$transaction(async (transaction) => {
+      // TrainingRecord.athleteId is a legacy scalar, not a User foreign key.
+      await transaction.trainingRecord.deleteMany({ where: { athleteId: request.user.id } });
       if (request.user.role === "COACH") {
         await transaction.team.deleteMany({
           where: {
@@ -256,4 +283,22 @@ authRouter.delete("/me", requireAuth, async (request, response) => {
   } catch (error) {
     return sendError(response, error, "Erro ao excluir conta.");
   }
+});
+
+authRouter.get("/me/data", requireAuth, async (request, response) => {
+  try {
+    const userId = request.user.id;
+    const data = await prisma.$transaction(async tx => ({
+      exportedAt: new Date().toISOString(),
+      user: await tx.user.findUnique({ where: { id: userId }, select: publicUserSelect }),
+      memberships: await tx.membership.findMany({ where: { athleteId: userId } }),
+      ownedTeams: await tx.team.findMany({ where: { coachId: userId }, select: { id: true, name: true, modality: true, createdAt: true } }),
+      records: await tx.trainingRecord.findMany({ where: { athleteId: userId }, include: {
+        metrics: true, measurements: true, goalkeeperStats: true, evaluation: { include: { criteria: true } },
+        training: { select: { date: true, type: true, teamId: true } }
+      } }),
+      legal: await legalStatus(tx, userId)
+    }), { isolationLevel: "RepeatableRead" });
+    return response.json(data);
+  } catch (error) { return sendError(response, error, "Erro ao exportar dados pessoais."); }
 });

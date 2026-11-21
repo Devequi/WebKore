@@ -38,7 +38,10 @@ define('CT-02', async ({ rig, browser }, info) => {
       await page.getByLabel('E-mail', { exact: true }).fill(email);
       await page.getByLabel('Senha', { exact: true }).fill(password);
       if (role === 'athlete') await page.getByLabel('Data de Nascimento').fill('2000-02-29');
-      await page.getByRole('checkbox', { name: /Autorizo o tratamento/ }).check();
+      await page.getByRole('button', { name: 'Privacidade e proteção de dados', exact: true }).click();
+      await page.getByRole('checkbox', { name: /Tomei ciência/ }).check();
+      await page.getByRole('checkbox', { name: /Aceito os Termos/ }).check();
+      await page.getByRole('button', { name: 'Confirmar decisões', exact: true }).click();
       const registered = page.waitForResponse(response => response.url().endsWith('/auth/register') && response.request().method() === 'POST');
       await page.getByRole('button', { name: 'Criar conta', exact: true }).click();
       const response = await registered;

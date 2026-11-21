@@ -20,8 +20,10 @@ async function req(path, method = 'GET', body, account, status = 200, headers = 
   return { payload, response };
 }
 async function register(role = 'coach') {
+  const { payload: { documents } } = await req('/legal/documents');
+  const legal = { termsId: documents.find(d => d.type === 'TERMS').id, privacyId: documents.find(d => d.type === 'PRIVACY').id, acceptTerms: true, acknowledgePrivacy: true };
   const credentials = { name: 'Segurança fictícia', email: `${randomUUID()}@example.invalid`, password: randomUUID(), role, ...(role === 'athlete' ? { birthDate: '2000-01-01' } : {}) };
-  const { payload } = await req('/auth/register', 'POST', credentials, null, 201);
+  const { payload } = await req('/auth/register', 'POST', { ...credentials, legal }, null, 201);
   users.push(payload.user.id);
   return { ...payload, credentials };
 }

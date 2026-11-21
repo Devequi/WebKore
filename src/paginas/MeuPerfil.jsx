@@ -7,6 +7,7 @@ import { useConfirmation } from "../componentes/ui/Confirmacao.jsx";
 import { formatAge, isDateOnly, validateBirthDate } from "../../shared/birthDate.js";
 import { formatDate } from "../utils/formatters.js";
 import { useTodayDate } from "../hooks/useTodayDate.js";
+import { PrivacyProfile } from "../componentes/ui/Privacidade.jsx";
 import "../styles/paginasAtleta/AthleteExperience.css";
 import "../styles/paginasTreinador/ConfigsTreinador.css";
 
@@ -52,7 +53,7 @@ export function MyProfilePage({ currentUser, actions, onLogout }) {
 
   async function deleteAccount() {
     if (pending || !await confirmAction({ title: "Excluir conta?", label: "Excluir conta",
-      description: "A exclusão da conta também remove todas as equipes que você criou." })) return;
+      description: athlete ? "A exclusão remove sua conta, vínculos, registros esportivos e decisões legais do banco ativo. Cópias já exportadas e backups não são apagados por esta operação." : "A exclusão remove sua conta, decisões legais e todas as equipes e treinos que você criou. Cópias já exportadas e backups não são apagados por esta operação." })) return;
     setPending(true);
     setFeedback(null);
     try { await actions.deleteUser(); onLogout(); }
@@ -96,9 +97,10 @@ export function MyProfilePage({ currentUser, actions, onLogout }) {
         <div className="privacy-box">
           <ShieldCheck size={28} aria-hidden="true" /><strong>Informações da conta</strong>
           <p>{roleLabel}. Seus dados pessoais são atualizados na sua própria conta.</p>
-          {!athlete && <div className="settings-actions"><Button type="button" variant="danger" icon={Trash2} disabled={pending} onClick={deleteAccount}>Excluir conta</Button></div>}
+          <div className="settings-actions"><Button type="button" variant="danger" icon={Trash2} disabled={pending} onClick={deleteAccount}>Excluir conta</Button></div>
         </div>
       </div>
     </section>
+    <PrivacyProfile currentUser={currentUser} />
   </div>;
 }

@@ -279,7 +279,9 @@ test("atleta usa a mesma página pessoal, sem vínculo esportivo, e Perfil fica 
   assert.match(profile, /Ana/);
   assert.match(profile, /Data de nascimento/);
   assert.match(profile, /Foto ou iniciais/);
-  assert.doesNotMatch(profile, /Equipe atual|Resumo esportivo|Minhas equipes|Sair da equipe|Excluir conta|Nova senha/);
+  assert.doesNotMatch(profile, /Equipe atual|Resumo esportivo|Minhas equipes|Sair da equipe|Nova senha/);
+  assert.match(profile, /Excluir conta/);
+  assert.match(profile, /Privacidade e dados pessoais/);
   const Icon = () => null;
   const nav = render(NavigationItems, { activeView: "profile", tabs: [
     { id: "coach-lobby", label: "Equipes", icon: Icon }, { id: "profile", label: "Meu Perfil", icon: Icon }

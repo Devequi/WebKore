@@ -17,7 +17,7 @@ export function useWebKoreData() {
   const authRequest = useRef(null);
 
   const applySession = useCallback((payload) => {
-    setState(payload.state);
+    setState({ ...payload.state, legal: payload.legal });
     setSession(payload.session);
     setSessionMessage("");
   }, []);

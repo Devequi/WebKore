@@ -3,10 +3,11 @@ import { useId, useRef, useState } from "react";
 import { PublicHeader } from "../componentes/layout/CabecalhoPublico.jsx";
 import { Button } from "../componentes/ui/Botao.jsx";
 import { BirthDateField } from "../componentes/ui/CampoNascimento.jsx";
+import { LegalLinks, RegistrationPrivacy } from "../componentes/ui/Privacidade.jsx";
 import "../styles/paginasPublicas/LoginPage.css";
 
 const initialLogin = { email: "", password: "", role: "coach" };
-const initialRegister = { birthDate: "", name: "", email: "", password: "", role: "coach", consent: false };
+const initialRegister = { birthDate: "", name: "", email: "", password: "", role: "coach", legal: null };
 
 function PasswordField({ value, onChange, autoComplete, minLength, disabled }) {
   const [visible, setVisible] = useState(false);
@@ -61,8 +62,8 @@ export function LoginPage({ onLogin, onRegister, notice }) {
   async function submitRegistro(event) {
     event.preventDefault();
     if (pending.current) return;
-    if (!registerForm.consent) {
-      setFeedback("Aceite o consentimento LGPD para criar a conta.");
+    if (!registerForm.legal?.acceptTerms || !registerForm.legal?.acknowledgePrivacy) {
+      setFeedback("Consulte os documentos e confirme separadamente os Termos e a ciência da Política.");
       return;
     }
     pending.current = true;
@@ -143,11 +144,7 @@ export function LoginPage({ onLogin, onRegister, notice }) {
             onChange={event => setRegisterForm(current => ({ ...current, password: event.target.value }))} />
           {registerForm.role === "athlete" && <BirthDateField value={registerForm.birthDate} required
             onChange={birthDate => setRegisterForm(current => ({ ...current, birthDate }))} />}
-          <label className="checkbox-line">
-            <input name="consent" type="checkbox" checked={registerForm.consent}
-              onChange={event => setRegisterForm(current => ({ ...current, consent: event.target.checked }))} />
-            <span>Autorizo o tratamento dos meus dados para fins de gestão esportiva.</span>
-          </label>
+          <RegistrationPrivacy role={registerForm.role} birthDate={registerForm.birthDate} value={registerForm.legal} onChange={legal => setRegisterForm(current => ({ ...current, legal }))} />
         </fieldset>
         {feedback && <p className="form-feedback" id={feedbackId} role="alert">{feedback}</p>}
         <Button disabled={submitting} icon={UserPlus} type="submit">{submitting ? "Criando..." : "Criar conta"}</Button>
@@ -157,5 +154,6 @@ export function LoginPage({ onLogin, onRegister, notice }) {
         </div>
       </form>}
     </section>
+    <LegalLinks />
   </main>;
 }
