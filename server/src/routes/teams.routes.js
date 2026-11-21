@@ -283,6 +283,24 @@ teamsRouter.patch("/:teamId", async (request, response) => {
         await transaction.training.count({ where: { teamId } })) {
         throw new HttpError(409, "Um critério qualitativo usado em treinos não pode ser removido. Renomeie-o para preservar as notas.");
       }
+      // Critérios legados usam nomes na API. Mantenha as metas vinculadas ao renomear um critério.
+      if (normalizeModality(team.modality) !== "Futsal" && (objectiveCriteria || qualitativeCriteria)) {
+        const renamed = new Map();
+        for (const [kind, next, source] of [["qualitative", qualitativeCriteria, "qualitative"], ["quantitative", objectiveCriteria, "objective"]]) {
+          const before = getTeamCriteria(team, source);
+          if (next?.length !== before.length) continue;
+          before.forEach((label, index) => {
+            if (label !== next[index]) renamed.set(kind + ":" + label, { metric: kind + ":" + next[index], label: next[index] });
+          });
+        }
+        if (renamed.size) {
+          const goals = await transaction.personalGoal.findMany({ where: { membership: { teamId }, metric: { in: [...renamed.keys()] } }, select: { id: true, metric: true } });
+          for (const goal of goals) {
+            const data = renamed.get(goal.metric);
+            if (data) await transaction.personalGoal.update({ where: { id: goal.id }, data });
+          }
+        }
+      }
       const previous = getTeamCriteria(team, "objective");
       if (objectiveCriteria && objectiveCriteria.length === previous.length) {
         for (const [index, nextName] of objectiveCriteria.entries()) {

@@ -80,6 +80,7 @@ async function buildSessionPayload(userId) {
       teams: teams.map((team) => toClientTeam(team, user)),
       memberships: memberships.map(toClientMembership),
       trainings: clientTrainings,
+      goals: user.role === "ATHLETE" ? await prisma.personalGoal.findMany({ where: { membership: { athleteId: user.id, status: "APPROVED" } }, orderBy: { createdAt: "desc" } }) : [],
       teamRankings
     }
   };
@@ -292,6 +293,7 @@ authRouter.get("/me/data", requireAuth, async (request, response) => {
       exportedAt: new Date().toISOString(),
       user: await tx.user.findUnique({ where: { id: userId }, select: publicUserSelect }),
       memberships: await tx.membership.findMany({ where: { athleteId: userId } }),
+      goals: await tx.personalGoal.findMany({ where: { membership: { athleteId: userId } } }),
       ownedTeams: await tx.team.findMany({ where: { coachId: userId }, select: { id: true, name: true, modality: true, createdAt: true } }),
       records: await tx.trainingRecord.findMany({ where: { athleteId: userId }, include: {
         metrics: true, measurements: true, goalkeeperStats: true, evaluation: { include: { criteria: true } },

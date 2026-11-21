@@ -1,5 +1,6 @@
-import { getTeamCriteria, normalizeModality, criterionKey } from "../../../../shared/criteria.js";
-import { criteriaFor, evaluationRole, goalkeeperFields, recordScore } from "../../../../shared/evaluations.js";
+import { normalizeModality, criterionKey } from "../../../../shared/criteria.js";
+import { evaluationRole, goalkeeperFields, recordScore } from "../../../../shared/evaluations.js";
+import { configuredMetrics } from "../../../../shared/personalGoals.js";
 import { isDateOnly } from "../../../../shared/birthDate.js";
 import { filterEvolution } from "./athletePerformance.js";
 
@@ -17,12 +18,7 @@ export function individualEvolution({ trainings, athlete, team, period, today })
   const role = evaluationRole(modality, athlete.position);
   const isGoalkeeper = role === "GOALKEEPER";
   const base = { qualitative: new Map(), quantitative: new Map(), statistics: new Map() };
-  for (const [kind, unit, type] of [["qualitative", "score", "QUALITATIVE"], ["quantitative", "count", "QUANTITATIVE"]]) {
-    const configured = futsal
-      ? (criteriaFor(team, role, type) || []).map(({ id, name }) => ({ id: savedId(kind, id, name), label: name, unit }))
-      : getTeamCriteria(team, kind === "qualitative" ? "qualitative" : "objective").map((name) => ({ id: nameId(kind, name), label: name, unit }));
-    for (const metric of configured) base[kind].set(metric.id, metric);
-  }
+  for (const metric of configuredMetrics(team, athlete.position)) base[metric.kind].set(metric.id, metric);
 
   const points = filterEvolution(trainings.filter((training) => training.teamId === team.id && isDateOnly(training.date)), period, today)
     .filter((training) => training.athletes?.[athlete.id])

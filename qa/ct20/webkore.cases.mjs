@@ -49,7 +49,7 @@ define('CT-02', async ({ rig, browser }, info) => {
       if (payload.user?.id) rig.track(payload.user.id);
       expect(response.status()).toBe(201);
       await expect(page).toHaveURL(new RegExp(`/#/${role}/teams$`));
-      await expect(page.getByRole('heading', { name: `Olá, Cadastro ${role} CT20`, exact: true })).toBeVisible();
+      await expect(page.getByRole('heading', { name: `Olá, Cadastro ${role} CT20`, exact: true, level: 1 })).toBeVisible();
       const token = await page.evaluate(() => localStorage.getItem('webkore-auth-token-v1'));
       expect(token).toBe(payload.token);
       const me = await rig.req('/auth/me', 'GET', undefined, { token });
@@ -107,7 +107,7 @@ define('CT-05', async ({ rig, browser }, info) => {
       const page = await context.newPage();
       await session(page, account, '/perfil');
       await expect(page.getByRole('heading', { name: account.user.name, exact: true })).toBeVisible();
-      await expect(page.locator('.nav-item[aria-current="page"]')).toHaveText('Meu Perfil');
+      await expect(page.locator('.nav-item[aria-current="page"]')).toHaveText(role === 'athlete' ? 'Meu perfil' : 'Meu Perfil');
       await expect(page.getByText(privateAccount.email, { exact: true })).toHaveCount(0);
       await expect(page.getByText('Equipe atual', { exact: true })).toHaveCount(0);
       await page.getByLabel('Nome completo', { exact: true }).fill(`Perfil ${role} atualizado CT20`);
@@ -423,9 +423,23 @@ define('CT-20', async ({ rig, page }, info) => {
   await session(page, fixture.athletes[0], `/athlete/teams/${fixture.team.id}`);
   for (const width of [360, 768, 1366, 1920]) {
     await page.setViewportSize({ width, height: 900 });
-    await expect(page.getByRole('heading', { name: 'Resumo de desempenho', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Evolução da média geral', exact: true })).toBeVisible();
     await layout();
   }
   expect(errors).toEqual([]);
+  await page.getByRole('button', { name: 'Consultar metas' }).click();
+  await page.getByRole('button', { name: 'Criar meta', exact: true }).click();
+  await page.getByLabel('Valor-alvo').fill('7.5');
+  await page.getByRole('button', { name: 'Salvar meta' }).click();
+  await expect(page.getByText('Sem dados · 0 registros')).toBeVisible();
+  await page.reload();
+  await page.getByRole('button', { name: 'Editar', exact: true }).click();
+  await page.getByLabel('Valor-alvo').fill('8');
+  await page.getByRole('button', { name: 'Salvar meta' }).click();
+  await expect(page.getByText(/Alvo a partir de 8 pts/)).toBeVisible();
+  await page.getByRole('button', { name: 'Arquivar', exact: true }).click();
+  await page.getByText('Arquivadas (1)').click();
+  await expect(page.getByText(/Alvo a partir de 8 pts/)).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Editar', exact: true })).toHaveCount(0);
   obtained(info, 'Navegação real e reload conferidos em mobile/tablet/desktop (360, 768, 1366 e 1920 px), nos dois perfis; sem erros JavaScript, overflow, cards cortados ou alvos de menu abaixo de 44 px.');
 });

@@ -1,6 +1,5 @@
 import { ArrowLeftRight, LogOut, Menu, PanelLeftClose, PanelLeftOpen, X } from "lucide-react";
 import { useId, useRef, useState, useSyncExternalStore } from "react";
-import { Button } from "../ui/Button.jsx";
 import { Avatar } from "../ui/Avatar.jsx";
 import "./MobileNavigation.css";
 import "./CoachNavigation.css";
@@ -49,7 +48,7 @@ export function CoachNavigation({ tabs, activeView, onNavigate, onLogoClick, onL
     <div className="sidebar-heading">
       <button className="sidebar-brand" type="button" onClick={onLogoClick} aria-label="WebKore — Minhas equipes">
         <img src="/icons/logoWK.png" alt="" />
-        {!collapsed && <span><strong>WebKore</strong><small>Painel do treinador</small></span>}
+        {!collapsed && <span><strong>WebKore</strong><small>{currentUser.role === "coach" ? "Painel do treinador" : "Painel do atleta"}</small></span>}
       </button>
       {onToggle && <button type="button" className="sidebar-collapse" onClick={onToggle}
         aria-label={collapsed ? "Expandir menu lateral" : "Recolher menu lateral"} aria-expanded={!collapsed}>
@@ -63,8 +62,9 @@ export function CoachNavigation({ tabs, activeView, onNavigate, onLogoClick, onL
     <NavigationItems tabs={tabs.filter(tab => tab.id !== "profile")} activeView={activeView} onNavigate={onNavigate}
       navRef={navRef} grouped collapsed={collapsed} />
     <div className="sidebar-account">
+      {!collapsed && currentUser.role === "athlete" && <h2 className="sidebar-group-title">Conta</h2>}
       {!collapsed && <div className="profile-chip"><Avatar name={currentUser.name} photo={currentUser.photo} />
-        <div><strong title={currentUser.name}>{currentUser.name}</strong><span>Treinador</span></div>
+        <div><strong title={currentUser.name}>{currentUser.name}</strong><span>{currentUser.role === "coach" ? "Treinador" : "Atleta"}</span></div>
       </div>}
       {profile && <NavigationItem tab={profile} activeView={activeView} onNavigate={onNavigate} collapsed={collapsed} />}
       <NavigationItem tab={{ id: "logout", label: "Sair", icon: LogOut }} onNavigate={onLogout} collapsed={collapsed} />
@@ -104,18 +104,15 @@ export function MobileNavigation({ tabs, activeView, onNavigate, onLogoClick, on
     </header>
     <dialog ref={dialogRef} id={menuId} className="mobile-app-drawer" aria-labelledby={menuId + "-title"}
       onClose={() => setOpen(false)} onClick={(event) => { if (event.target === event.currentTarget) closeMenu(); }}>
-      <div className={`mobile-app-drawer__inner${currentUser?.role === "coach" ? " coach-navigation" : ""}`}>
+      <div className="mobile-app-drawer__inner coach-navigation">
         <div className="mobile-app-drawer__heading">
           <h2 id={menuId + "-title"}>Menu</h2>
           <button ref={closeRef} className="mobile-app-icon" type="button" aria-label="Fechar menu" onClick={closeMenu}>
             <X size={24} aria-hidden="true" />
           </button>
         </div>
-        {currentUser?.role === "coach" ? <CoachNavigation tabs={tabs} activeView={activeView} onNavigate={navigate}
-          onLogoClick={() => { closeMenu(); onLogoClick(); }} onLogout={() => { closeMenu(); onLogout(); }} currentUser={currentUser} team={team} /> : <>
-          <NavigationItems tabs={tabs} activeView={activeView} onNavigate={navigate} />
-          <Button icon={LogOut} onClick={() => { closeMenu(); onLogout(); }} type="button" variant="ghost">Sair</Button>
-        </>}
+        <CoachNavigation tabs={tabs} activeView={activeView} onNavigate={navigate}
+          onLogoClick={() => { closeMenu(); onLogoClick(); }} onLogout={() => { closeMenu(); onLogout(); }} currentUser={currentUser} team={team} />
       </div>
     </dialog>
   </>;

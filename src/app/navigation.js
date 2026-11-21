@@ -4,12 +4,12 @@ export function parseRoute(hash = "") {
   if (path === "/") return { view: "root" };
   if (path === "/perfil") return { view: "profile" };
   if (path === "/login") return { view: "login" };
-  const match = path.match(/^\/(coach|athlete)\/(teams|profile|search)(?:\/([A-Za-z0-9_-]{1,191})(?:\/(athletes|trainings|requests|evaluations|settings)(?:\/([A-Za-z0-9_-]{1,191}))?)?)?$/);
+  const match = path.match(/^\/(coach|athlete)\/(teams|profile|search)(?:\/([A-Za-z0-9_-]{1,191})(?:\/(athletes|trainings|requests|evaluations|settings|performance|goals)(?:\/([A-Za-z0-9_-]{1,191}))?)?)?$/);
   if (!match) return { view: "not-found" };
   const [, role, section, teamId, detail, recordId] = match;
   if (section !== "teams" && teamId || recordId && !["athletes", "trainings"].includes(detail)) return { view: "not-found" };
   if (role === "coach" && section === "search" || role === "athlete" && detail &&
-      (detail !== "trainings" || !recordId || recordId === "new")) return { view: "not-found" };
+      (!["trainings", "performance", "goals"].includes(detail) || recordId === "new") || role === "coach" && ["performance", "goals"].includes(detail)) return { view: "not-found" };
   if (section === "profile") return { view: "profile", redirect: "/perfil" };
   return { role, teamId, athleteId: detail === "athletes" ? recordId : undefined,
     trainingId: detail === "trainings" && recordId !== "new" ? recordId : undefined,

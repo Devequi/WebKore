@@ -1,1 +1,31 @@
 @import "../../styles/experience.css";
+
+.personal-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: .85rem;
+  align-items: start;
+}
+.personal-filters { border: 0; padding: 0; margin: 0; }
+.personal-filters > * { min-width: 0; overflow-wrap: anywhere; }
+.personal-filters input, .personal-filters select { width: 100%; min-width: 0; }
+.personal-actions, .personal-tabs, .personal-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .6rem;
+}
+.personal-tabs button { width: auto; padding: .5rem .85rem; }
+.personal-tabs [aria-current="page"] { color: var(--primary); border-color: currentColor; }
+.personal-row { justify-content: space-between; border-bottom: 1px solid var(--line); padding-block: .55rem; }
+.personal-row > div, .personal-criterion { min-width: 0; overflow-wrap: anywhere; }
+.personal-criterion summary { cursor: pointer; }
+.personal-criterion p { padding-block: .3rem; }
+.personal-row .button { justify-self: start; width: auto; }
+
+.personal-goals { width: 100%; max-width: 60rem; }
+.personal-goals .panel > .button { justify-self: start; width: auto; }
+.athlete-facts.personal-attendance { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 768px) {
+  .athlete-facts.personal-attendance { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}

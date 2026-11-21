@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
-import { Activity, BarChart3, ClipboardList, Home, Settings, ShieldCheck, Users } from "lucide-react";
+import { Activity, BarChart3, ClipboardList, Home, Settings, ShieldCheck, Target, Users } from "lucide-react";
 import { AppShell } from "../components/layout/AppShell.jsx";
 import { MobileNavigation, useCompactNavigation } from "../components/layout/MobileNavigation.jsx";
 import { Button } from "../components/ui/Button.jsx";
@@ -37,10 +37,18 @@ const coachTabs = [
 ];
 
 const athleteTabs = [
-  { id: "athlete-home", label: "Dados", icon: BarChart3 },
-  { id: "athlete-lobby", label: "Equipes", icon: Users },
-  { id: "profile", label: "Meu Perfil", icon: Activity }
+  { id: "athlete-home", label: "Visão geral", icon: Home, group: "Principal" },
+  { id: "athlete-performance", label: "Meu desempenho", icon: BarChart3, group: "Principal" },
+  { id: "athlete-trainings", label: "Meus treinos", icon: ClipboardList, group: "Principal" },
+  { id: "athlete-goals", label: "Minhas metas", icon: Target, group: "Acompanhamento" },
+  { id: "athlete-lobby", label: "Minhas equipes", icon: Users, group: "Acompanhamento" },
+  { id: "profile", label: "Meu perfil", icon: Activity }
 ];
+
+function athleteTeamContext(teams, userId) {
+  const savedId = sessionStorage.getItem(`webkore-team:${userId}`);
+  return teams.find(team => team.id === savedId) || (teams.length === 1 ? teams[0] : null);
+}
 
 function LoadingState({ message = "Carregando página..." }) {
   return <div className="page-stack athlete-loading" role="status" aria-busy="true">
@@ -61,7 +69,13 @@ export function App() {
   const coachTeams = useMemo(() => getCoachTeams(state, session.userId), [state, session.userId]);
   const athleteTeams = useMemo(() => getAthleteTeams(state, session.userId), [state, session.userId]);
   const availableTeams = session.role === "coach" ? coachTeams : athleteTeams;
-  const activeTeam = availableTeams.find((team) => team.id === route.teamId) || null;
+  useEffect(() => {
+    if (session.role === "athlete" && athleteTeams.some(team => team.id === route.teamId)) {
+      sessionStorage.setItem(`webkore-team:${session.userId}`, route.teamId);
+    }
+  }, [route.teamId, athleteTeams, session.role, session.userId]);
+  const contextTeamId = route.teamId || (session.role === "athlete" && athleteTeamContext(athleteTeams, session.userId)?.id);
+  const activeTeam = availableTeams.find((team) => team.id === contextTeamId) || null;
 
   function go(path, replace = false, message = "") {
     setNavigationMessage(message);
@@ -105,7 +119,7 @@ export function App() {
     try { await actions.logout(); go("/login", true); }
     catch { /* O aviso de falha permanece visível; o servidor não confirmou a revogação. */ }
   }
-  function navigate(view) { go(routePath(view, route.teamId)); }
+  function navigate(view) { go(routePath(view, contextTeamId)); }
   function setSelectedAthleteId(id, message) { go(routePath("coach-athletes", route.teamId, id), false, message); }
 
   const tabs = (session.role === "coach" ? coachTabs : athleteTabs).filter(tab => activeTeam || [ `${session.role}-lobby`, "profile" ].includes(tab.id));
@@ -145,19 +159,9 @@ export function App() {
   }
 
   if (session.role === "athlete" && activeView === "athlete-lobby") {
-    return withNotice(
-      <AthleteLobby
-        header={lobbyHeader()}
-        currentUser={currentUser}
-        actions={actions}
-        onLogout={logout}
-        onOpenTeam={openTeam}
-        onSearch={() => navigate("athlete-search")}
-        state={state}
-        teams={athleteTeams}
-        onProfile={() => navigate("profile")}
-      />
-    );
+    return withNotice(<AthleteLobby header={lobbyHeader()} selectedId={activeTeam?.id}
+      currentUser={currentUser} actions={actions} onOpenTeam={openTeam} onSearch={() => navigate("athlete-search")}
+      onProfile={() => navigate("profile")} onLogout={logout} state={state} teams={athleteTeams} />);
   }
 
   const error = routeError(route, state, session);
@@ -205,13 +209,13 @@ export function App() {
         <SettingsPage key={route.teamId} onDeleted={() => go(routePath("coach-lobby"), true, "Equipe excluída.")} actions={actions} state={state} team={activeTeam} />
       )}
       {activeView === "profile" && <MyProfilePage key={session.userId} currentUser={currentUser} actions={actions} onLogout={logout} />}
-      {session.role === "athlete" && activeView === "athlete-home" && (
-        <AthleteDashboard athleteId={session.userId} state={state} team={activeTeam}
+      {session.role === "athlete" && ["athlete-home", "athlete-performance", "athlete-trainings", "athlete-goals"].includes(activeView) && !route.trainingId && (
+        <AthleteDashboard key={`${session.userId}-${route.teamId}`} view={activeView} navigate={navigate} actions={actions} athleteId={session.userId} state={state} team={activeTeam}
           onOpenTraining={(id) => go(routePath("athlete-trainings", route.teamId, id))} />
       )}
-      {session.role === "athlete" && activeView === "athlete-trainings" && <TrainingDetails inline
+      {session.role === "athlete" && activeView === "athlete-trainings" && route.trainingId && <TrainingDetails inline team={activeTeam}
         selected={state.trainings.find(item => item.id === route.trainingId && item.teamId === route.teamId)}
-        athleteId={session.userId} onClose={() => go(routePath("athlete-home", route.teamId))} />}
+        athleteId={session.userId} onClose={() => navigate("athlete-trainings")} />}
       {session.role === "athlete" && activeView === "athlete-search" && (
         <TeamSearch actions={actions} athleteId={session.userId} state={state} />
       )}

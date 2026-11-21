@@ -8,7 +8,7 @@ import "./AthleteLobby.css";
 import "./LobbyLayout.css";
 
 export function AthleteLobby({
-  header,
+  header, selectedId,
   actions,
   currentUser,
   onLogout,
@@ -24,7 +24,7 @@ export function AthleteLobby({
 
   async function leaveTeam(team) {
     if (pending || !await confirmAction({ title: "Sair da equipe?", label: "Sair da equipe",
-      description: `Seu vínculo com ${team.name} será removido. Seu histórico de treinos e avaliações será preservado.` })) return;
+      description: `Seu vínculo com ${team.name} será removido. Seu histórico de treinos e avaliações será preservado. As metas pessoais desta equipe serão removidas.` })) return;
     setPending(true);
     setFeedback(null);
     try {
@@ -83,25 +83,25 @@ export function AthleteLobby({
               (user) => user.id === team.coachId
             );
 
+            const link = state.memberships?.find(m => m.athleteId === currentUser.id && m.teamId === team.id);
             return (
               <article
                 className="team-card"
                 key={team.id}
               >
-                <span className="modality-badge">
-                  {team.modality}
-                </span>
+                <header className="athlete-team-heading">
+                  <div><h3>{team.name}</h3><span>{team.modality}</span></div>
+                  {selectedId === team.id && <small>Selecionada</small>}
+                </header>
 
-                <h2>
-                  {team.name}
-                </h2>
+                <dl className="athlete-team-facts">
+                  <div><dt>Treinador</dt><dd>{treinador?.name || "Não informado"}</dd></div>
+                  <div><dt>Posição</dt><dd>{link?.position || "Não informada"}</dd></div>
+                  <div><dt>Camisa</dt><dd>{link?.number ?? "Não informada"}</dd></div>
+                  <div><dt>Código</dt><dd>{team.code}</dd></div>
+                </dl>
 
-                <div className="team-info">
-                  <div><strong>Treinador</strong><p>{treinador?.name || "Não informado"}</p></div>
-                  <div><strong>Código</strong><p>{team.code}</p></div>
-                </div>
-
-                <div className="team-card__actions">
+                <footer className="team-card__actions">
                 <Button
                   disabled={pending}
                   onClick={() => onOpenTeam(team.id)}
@@ -110,13 +110,14 @@ export function AthleteLobby({
                   Acessar dados
                 </Button>
                 {actions && <Button type="button" variant="danger" disabled={pending} onClick={() => leaveTeam(team)}>Sair da equipe</Button>}
-                </div>
+                </footer>
               </article>
             );
           })}
         </div>
       )}
       </section>
+    {(state.memberships || []).filter(m => m.athleteId === currentUser.id && m.status !== "approved").map(m => <p key={m.teamId} className="panel">{state.teams.find(t => t.id === m.teamId)?.name} · {m.status === "pending" ? "Aguardando aprovação" : "Solicitação recusada"}</p>)}
     </main>
   );
 }

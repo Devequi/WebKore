@@ -57,6 +57,9 @@ async function request(path, options = {}) {
 }
 
 export const api = {
+  saveGoal(teamId, id, body) {
+    return request(`/goals/${encodeURIComponent(teamId)}${id ? "/" + encodeURIComponent(id) : ""}`, { method: id ? "PATCH" : "POST", body });
+  },
   legalDocuments() { return request("/legal/documents"); },
   legalDocument(type, version) { return request(`/legal/documents/${encodeURIComponent(type)}/${encodeURIComponent(version)}`); },
   legalMe() { return request("/legal/me"); },

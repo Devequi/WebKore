@@ -34,8 +34,15 @@ const training = { id: 'qa-training', teamId: team.id, date: '2026-11-18', type:
 const documents = initialLegalDocuments.map(d => ({ ...d, id: `${d.type}-${d.version}`, publishedAt: coach.createdAt, contentHash: 'qa-only' }));
 const legal = { documents, pending: [], consents: [], history: documents.map((document, index) => ({ id: `qa-decision-${index}`, document, documentId: document.id, action: document.type === 'TERMS' ? 'ACCEPT' : 'ACKNOWLEDGE', occurredAt: coach.createdAt })) };
 const cases = [
+  ['athlete-overview-history', 'athlete', '/athlete/teams/qa-team'],
+  ['athlete-overview-long', 'athlete', '/athlete/teams/qa-team'],
+  ['athlete-lobby-multiple', 'athlete', '/athlete/teams'],
   ['coach-lobby', 'coach', '/coach/teams'], ['athlete-lobby', 'athlete', '/athlete/teams'],
   ['coach-home', 'coach', '/coach/teams/qa-team'], ['athlete-home', 'athlete', '/athlete/teams/qa-team'],
+  ['athlete-keeper', 'athlete', '/athlete/teams/qa-team/performance'], ['athlete-goal-progress', 'athlete', '/athlete/teams/qa-team/goals'],
+  ['athlete-no-team', 'athlete', '/athlete/teams'], ['athlete-no-scores', 'athlete', '/athlete/teams/qa-team'],
+  ['athlete-performance', 'athlete', '/athlete/teams/qa-team/performance'], ['athlete-goals', 'athlete', '/athlete/teams/qa-team/goals'],
+  ['athlete-trainings', 'athlete', '/athlete/teams/qa-team/trainings'],
   ['athletes', 'coach', '/coach/teams/qa-team/athletes/qa-line'], ['trainings', 'coach', '/coach/teams/qa-team/trainings'],
   ['evaluations', 'coach', '/coach/teams/qa-team/evaluations'], ['settings', 'coach', '/coach/teams/qa-team/settings'],
   ['requests', 'coach', '/coach/teams/qa-team/requests'], ['coach-profile', 'coach', '/perfil'],
@@ -67,6 +74,9 @@ try {
     const context = await browser.newContext({ reducedMotion: 'reduce' });
     const page = await context.newPage();
     page.on('pageerror', error => errors.push(`${name}: ${error.message}`));
+    if (name.startsWith('athlete-overview-')) page.on('console', message => {
+      if (message.type() === 'error') errors.push(`${name}: ${message.text()}`);
+    });
     if (role) await context.addInitScript(() => localStorage.setItem('webkore-auth-token-v1', 'qa-only-token'));
     await page.clock.setFixedTime(new Date('2026-11-21T15:00:00Z'));
     await page.route('**/api/**', async route => {
@@ -74,6 +84,38 @@ try {
       const state = { users: role === 'athlete' ? [coach, athlete] : [coach, athlete, keeper], teams: [team],
         memberships: (role === 'athlete' ? [athlete] : [athlete, keeper]).map(a => ({ id: `m-${a.id}`, teamId: team.id, athleteId: a.id, status: 'approved', position: a.position })),
         trainings: [{ ...training, athletes: role === 'athlete' ? { [athlete.id]: training.athletes[athlete.id] } : training.athletes }], teamRankings: {} };
+      if (name === 'athlete-lobby-multiple') {
+        state.memberships[0].number = 0;
+        for (const [index, name] of ['Clube de Futsal da Universidade Metropolitana', 'Equipe de formação sub-20'].entries()) {
+          const id = 'qa-extra-' + index;
+          state.teams.push({ ...team, id, name });
+          state.memberships.push({ ...state.memberships[0], id: 'm-' + id, teamId: id, position: 'Goleiro', number: 12 });
+        }
+      }
+      if (name === 'athlete-keeper') {
+        state.memberships[0].position = 'Goleiro';
+        state.trainings[0].athletes[athlete.id] = record('GOALKEEPER');
+      }
+      if (name.startsWith('athlete-overview-')) {
+        const criteria = criteriaFor(team, 'OUTFIELD', 'QUALITATIVE');
+        state.trainings = Array.from({ length: 8 }, (_, i) => {
+          const snapshot = criteria.map((c, j) => ({ criterionId: c.id, name: c.name, score: 4 + j + i % 4 }));
+          const ratings = Object.fromEntries(snapshot.map(c => [c.name, c.score]));
+          const finalScore = snapshot.reduce((sum, c) => sum + c.score, 0) / snapshot.length;
+          return { ...training, id: 'session-' + i, date: '2026-' + String(i + 3).padStart(2, '0') + '-15',
+            athletes: { [athlete.id]: { ...record('OUTFIELD'), criteriaSnapshot: snapshot, ratings, finalScore } } };
+        });
+        if (name.endsWith('long')) {
+          state.users = [coach, { ...athlete, name: 'Marina Costa de Almeida e Albuquerque dos Santos' }];
+          state.teams = [{ ...team, name: 'Associação Universitária de Desenvolvimento Esportivo Metropolitano' }];
+          state.goals = [{ id: 'goal', membershipId: state.memberships[0].id, metric: 'criterion:' + criteria[0].id,
+            label: criteria[0].name, unit: 'score', direction: 'atLeast', target: 10, profile: 'OUTFIELD' }];
+        }
+      }
+      if (name === 'athlete-goal-progress') state.goals = [{ id: 'goal', membershipId: state.memberships[0].id,
+        metric: 'criterion:' + criteriaFor(team,'OUTFIELD','QUANTITATIVE')[0].id, label: 'Gols', unit: 'count', direction: 'atLeast', target: 3, profile: 'OUTFIELD' }];
+      if (name === 'athlete-no-team') Object.assign(state,{ teams: [], memberships: [], trainings: [] });
+      if (name === 'athlete-no-scores') state.trainings[0].athletes[athlete.id] = { present: false, role: 'OUTFIELD' };
       const pathname = new URL(route.request().url()).pathname;
       if (name === 'team-search' && pathname.endsWith('/teams')) return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([team]) });
       if (name === 'login-error' && pathname.endsWith('/auth/login')) return route.fulfill({ status: 401, contentType: 'application/json', body: JSON.stringify({ message: 'E-mail ou senha incorretos.' }) });
@@ -93,6 +135,26 @@ try {
       await page.locator(name.startsWith('legal-') ? '.legal-page' : role ? '.profile-page, .lobby-page, .app-shell' : '.auth-form').first().waitFor();
       await page.locator('.athlete-loading').waitFor({ state: 'hidden' });
       await page.waitForLoadState('networkidle');
+      if (name.startsWith('athlete-overview-')) {
+        if (name.endsWith('long') && width >= 1060) {
+          const collapse = page.getByRole('button', { name: 'Recolher menu lateral' });
+          if (await collapse.count()) await collapse.click();
+        }
+        const chart = page.locator('.chart-panel').filter({has: page.getByRole('heading', {name:'Evolução da média geral'})});
+        await chart.getByRole('combobox').selectOption('30');
+        await chart.locator('.recharts-area').waitFor({ state: 'hidden' });
+        await chart.getByRole('combobox').selectOption('all');
+        await chart.locator('.recharts-area').waitFor();
+        await chart.locator('summary').click();
+        assert.equal(await chart.locator('tbody tr').count(), 8);
+        await chart.locator('summary').click();
+        assert.equal(await page.locator('section.panel').filter({has:page.getByRole('heading',{name:'Destaques pessoais'})}).locator('dt').count(), 3);
+        if (name.endsWith('long')) await page.locator('section.panel').filter({has:page.getByRole('heading',{name:'Metas em andamento'})}).getByText(criteriaFor(team,'OUTFIELD','QUALITATIVE')[0].name, { exact: true }).waitFor();
+      }
+      if (name === 'athlete-keeper') await page.getByLabel('Visualização').selectOption('statistics');
+      if (name === 'athlete-goal-progress') await page.getByText('Em andamento', { exact: false }).waitFor();
+      if (name === 'athlete-no-team') await page.getByText('Nenhuma equipe aprovada', { exact: true }).waitFor();
+      if (name === 'athlete-no-scores') await page.getByText('Nenhuma avaliação registrada.', { exact: true }).waitFor();
       if (name === 'privacy-profile') await page.getByRole('tab', { name: 'Privacidade e segurança' }).click();
       if (name === 'privacy-profile') await page.getByRole('heading', { name: 'Documentos legais' }).waitFor();
       if (['register', 'privacy-modal'].includes(name)) {
@@ -132,6 +194,22 @@ try {
       await page.evaluate(() => document.fonts.ready);
       await page.waitForTimeout(cssSuite ? 200 : 400);
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `${name} em ${width}px tem overflow horizontal.`);
+      if (phase === 'after' && name.startsWith('athlete-lobby')) {
+        const cards = page.locator('.athlete-lobby .team-card');
+        assert.equal(await cards.count(), name.endsWith('multiple') ? 3 : 1);
+        const boxes = await cards.evaluateAll(nodes => nodes.map(card => {
+          const box = card.getBoundingClientRect();
+          for (const el of card.querySelectorAll('h3, dt, dd, button, small')) {
+            const rect = el.getBoundingClientRect();
+            if (rect.left < box.left || rect.right > box.right + 1 || el.scrollWidth > el.clientWidth + 1)
+              throw new Error('Conteúdo cortado no card: ' + el.textContent);
+          }
+          return { top: box.top, width: box.width };
+        }));
+        if (boxes.length === 1) assert.ok(boxes[0].width <= 577);
+        else if (width >= 1366) assert.equal(boxes[0].top, boxes[1].top);
+        else if (width <= 390) assert.ok(boxes[1].top > boxes[0].top);
+      }
       const file = `${name}-${width}.png`;
       let computed;
       if (cssSuite) computed = await page.evaluate(() => Array.from(document.body.querySelectorAll('*')).filter(el => !['SCRIPT', 'STYLE', 'LINK'].includes(el.tagName)).map(el => {

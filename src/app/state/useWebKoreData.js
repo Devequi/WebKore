@@ -167,6 +167,7 @@ export function useWebKoreData() {
       if (token === getAuthToken()) resetSession();
     },
     refresh,
+    saveGoal: (teamId, id, body) => mutate(() => api.saveGoal(teamId, id, body)),
     updateTeam: ({ teamId, patch }) => mutate(() => api.updateTeam(teamId, patch)),
     addCriterion: (payload) => editCriterion(payload, "add"),
     removeCriterion: (payload) => editCriterion(payload, "remove"),

@@ -102,7 +102,24 @@ model Team {
   updatedAt   DateTime     @updatedAt
 }
 
+model PersonalGoal {
+  id           String @id @default(cuid())
+  membershipId String
+  membership   Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  metric       String @db.VarChar(255)
+  label        String
+  unit         String
+  profile      String
+  target       Float
+  direction    String
+  deadline     String? @db.Char(10)
+  archived     Boolean @default(false)
+  createdAt    DateTime @default(now())
+  @@index([membershipId, archived])
+}
+
 model Membership {
+  goals     PersonalGoal[]
   id        String           @id @default(cuid())
   teamId    String
   athleteId String

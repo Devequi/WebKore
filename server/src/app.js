@@ -1,3 +1,4 @@
+import { goalsRouter } from "./routes/goals.routes.js";
 import cors from "cors";
 import express from "express";
 import helmet from "helmet";
@@ -46,6 +47,7 @@ export function createApp() {
     response.json({ status: "ok", service: "webkore-api" });
   });
 
+  app.use("/api/goals", goalsRouter);
   app.use("/api/auth", authRouter);
   app.use("/api/legal", legalRouter);
   app.use("/api/teams", teamsRouter);

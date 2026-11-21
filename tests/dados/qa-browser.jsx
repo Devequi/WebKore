@@ -48,7 +48,7 @@ function QA() {
     </div>
     <p role="status">{message}</p><p data-testid="session-count">Treinos na sessão: {data.trainings.length}; nota salva: {data.trainings[0]?.athletes[user.id].ratings.Técnica ?? 'aguardando'}; pontos exibidos: {points.length}</p>
     <EvolutionChart key={mode} data={points} criteria={['Técnica']} title="Evolução QA" />
-    {mobile && <iframe title="Viewport de celular 390 px" src="/tests/dadosFicticios/qa-browser.html?mobile=1" style={{ width: 390, height: 1000, border: '2px solid #4b8fff', marginTop: 20 }} />}
+    {mobile && <iframe title="Viewport de celular 390 px" src="/tests/dados/qa-browser.html?mobile=1" style={{ width: 390, height: 1000, border: '2px solid #4b8fff', marginTop: 20 }} />}
   </main>;
 }
 createRoot(document.getElementById('root')).render(<QA />);
