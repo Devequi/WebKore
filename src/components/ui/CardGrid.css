@@ -99,3 +99,71 @@
 @container cards (min-width: 64rem) {
   :is(.app-shell, .team-lobby) .card-region > .card-grid--summary[data-columns="4"] { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
+
+/* Summary panels use their own available width inside the shared card grid. */
+.card-grid .summary-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  container-type: inline-size;
+  overflow-wrap: anywhere;
+}
+.summary-card > header, .summary-card h2, .summary-card header small, .goal-summary > div {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+.summary-card > header, .goal-summary > div { justify-content: space-between; flex-wrap: wrap; }
+.summary-card > header, .summary-card footer { border-block-end: 1px solid var(--line); padding-bottom: .8rem; }
+.summary-card h2 { margin: 0; font-size: var(--text-lg); line-height: 1.25; }
+.summary-card h2 svg, .summary-card header small svg { flex: none; color: var(--primary); }
+.summary-card header small svg { width: 1rem; }
+.summary-card footer { margin-top: auto; border: 0; border-top: 1px solid var(--line); padding: .8rem 0 0; }
+.summary-card footer .button { width: auto; color: var(--primary); }
+.summary-card :is(p, dl, dd) { margin: 0; }
+.summary-card small, .summary-card dt { color: var(--muted); }
+.score-breakdown { display: grid; align-items: center; gap: .8rem; }
+@container (min-width: 16rem) {
+  .score-breakdown { grid-template-columns: minmax(4.75rem, 30%) minmax(0, 1fr); }
+}
+.score-ring {
+  display: grid;
+  place-items: center;
+  width: min(100%, 7rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: conic-gradient(var(--primary) var(--score-angle), var(--line) 0);
+}
+.score-ring strong {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  width: 79%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--surface);
+  font-size: clamp(1.25rem, 8cqi, 2rem);
+  line-height: 1.1;
+}
+.score-ring small { font-size: var(--text-sm); color: var(--primary); }
+.criterion-scores { display: grid; gap: .35rem; padding-top: .4rem; }
+.criterion-scores > div, .highlight-list dd { display: flex; justify-content: space-between; align-items: baseline; gap: .5rem; }
+.criterion-scores dt { padding: .15rem .45rem; background: var(--bg-soft); border-radius: var(--radius); font-size: var(--text-sm); }
+.criterion-scores dd, .highlight-list strong { font-weight: 700; white-space: nowrap; }
+.highlight-list { display: grid; flex: 1; }
+.highlight-list > div { position: relative; align-content: center; padding: .75rem 0 .75rem 2.9rem; }
+.highlight-list > div + div, .goal-summary + .goal-summary { border-top: 1px solid var(--line); }
+.highlight-icon { position: absolute; left: 0; top: 50%; translate: 0 -50%; padding: .5rem; width: 2.35rem; height: 2.35rem; border-radius: var(--radius); background: var(--primary-soft); }
+.highlight-icon.metric-rise { background: var(--success-soft); }
+.highlight-icon.metric-fall { background: var(--error-hover); }
+.highlight-list dt, .summary-badge { font-size: var(--text-sm); }
+.highlight-list dd { flex-wrap: wrap; }
+.highlight-icon.metric-rise, .app-shell .athlete-kpis strong .metric-rise { color: var(--success); }
+.highlight-icon.metric-fall, .app-shell .athlete-kpis strong .metric-fall { color: var(--error); }
+.metric-trend, .app-shell .athlete-kpis .kpi-card__icon { color: var(--primary); }
+.app-shell .athlete-kpis .kpi-card strong span { font: inherit; }
+.summary-badge { padding: .15rem .6rem; border-radius: 1rem; background: var(--primary-soft); color: var(--primary); }
+.goal-summary { display: grid; gap: .65rem; }
+.goal-summary + .goal-summary { padding-top: .75rem; }
+.goal-summary label { display: flex; align-items: center; gap: .65rem; }
+.goal-summary progress { flex: 1; min-width: 0; height: .6rem; accent-color: var(--primary); }

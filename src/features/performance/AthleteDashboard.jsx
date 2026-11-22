@@ -1,4 +1,4 @@
-import { Activity, ArrowRight, CalendarCheck, ChartNoAxesColumnIncreasing, ClipboardList, Target, TrendingUp } from "lucide-react";
+import { Activity, ArrowRight, CalendarDays, CalendarCheck, ChartNoAxesColumnIncreasing, ClipboardList, Target, TrendingUp } from "lucide-react";
 import { evaluationRole, recordScore } from "../../../shared/evaluations.js";
 import { goalProgress } from "../../../shared/personalGoals.js";
 import { getApprovedAthletes, getAthleteTrainings } from "../../app/state/selectors.js";
@@ -13,7 +13,7 @@ import { EvolutionChart } from "./components/EvolutionChart.jsx";
 import { individualEvolution } from "./model/individualEvolution.js";
 import { mean, numberLabel, personalPanel, signed } from "./model/personalPanel.js";
 import { scoreLabel } from "./model/athletePerformance.js";
-import { GoalResult, PersonalGoals } from "./PersonalGoals.jsx";
+import { PersonalGoals } from "./PersonalGoals.jsx";
 import { PersonalHistory } from "./PersonalHistory.jsx";
 import { Highlights, PersonalPerformance } from "./PersonalPerformance.jsx";
 import "./AthleteExperience.css";
@@ -41,14 +41,19 @@ export function AthleteDashboard({ athleteId, state, team, onOpenTraining, view 
   const latest = panel.evaluated[0];
   const previous = panel.evaluated.find(t => t.date < latest.date);
   const change = previous ? scores[0] - recordScore(previous.athletes[athleteId]) : null;
-  const ongoing = goals.filter(g => !g.archived && (!g.deadline || g.deadline >= today) && goalProgress(g, rowsFor(g), today).status !== "Atingida").slice(0,3);
-  const criteria = Object.entries(latest?.athletes[athleteId]?.ratings || {}).filter(([, score]) => Number.isFinite(score));
+  const ongoing = goals.filter(g => !g.archived && (!g.deadline || g.deadline >= today))
+    .map(goal => ({ goal, result: goalProgress(goal, rowsFor(goal), today) }))
+    .filter(({ result }) => result.status !== "Atingida");
+  const record = latest?.athletes[athleteId];
+  const criteria = (record?.criteriaSnapshot?.length
+    ? record.criteriaSnapshot.map(item => [item.name, item.score])
+    : Object.entries(record?.ratings || {})).filter(([, score]) => Number.isFinite(score));
   return <div className="page-stack athlete-experience">
     <header className="section-heading athlete-profile-header"><div><h2>Olá, {athlete.name}</h2><p>{team.name}{athlete.position && ` · ${athlete.position}`}{role && ` · Perfil de ${role === "GOALKEEPER" ? "goleiro" : "linha"}`}</p></div></header>
     <CardGrid columns={4} className="kpi-grid athlete-kpis" label="Resumo pessoal">
       <KpiCard icon={Activity} label="Média geral" value={scoreLabel(mean(scores))} detail="Avaliações desta equipe" />
       <KpiCard icon={CalendarCheck} label="Presença" value={panel.attendance === null ? "—" : numberLabel(panel.attendance) + "%"} detail={`${panel.present} de ${panel.present + panel.absent} treinos com registro`} />
-      <KpiCard icon={TrendingUp} label="Evolução recente" value={signed(change)} detail="Entre as últimas datas" />
+      <KpiCard icon={TrendingUp} label="Evolução recente" value={<span className={change > 0 ? "metric-rise" : change < 0 ? "metric-fall" : undefined}>{signed(change)}</span>} detail="Entre as últimas datas" />
       <KpiCard icon={ClipboardList} label="Avaliações válidas" value={scores.length} detail="Treinos com nota geral" />
     </CardGrid>
     <EvolutionChart dashboard icon={ChartNoAxesColumnIncreasing} title="Evolução da média geral"
@@ -56,16 +61,35 @@ export function AthleteDashboard({ athleteId, state, team, onOpenTraining, view 
       data={panel.rows.map(row => ({ ...row, averageScore: row.scores.get("average") }))}
       footer={<Button type="button" variant="ghost" icon={ArrowRight} onClick={() => navigate("athlete-performance")}>Ver desempenho completo</Button>} />
     <CardGrid label="Acompanhamento pessoal">
-      <section className="panel page-stack"><h2>Última avaliação</h2>{latest ? <>
-        <div className="page-stack"><div><p>{formatDate(latest.date)} · {latest.type}</p><strong className="athlete-performance__value">{scoreLabel(scores[0])}</strong></div>
-          <div><p>Critérios avaliados</p>{criteria.length ? <p>{criteria.map(([name]) => name).join(" · ")}</p> : <p>Sem critérios registrados.</p>}</div></div>
-        <Button variant="ghost" icon={ArrowRight} onClick={() => onOpenTraining(latest.id)}>Ver detalhes</Button></> : <p>Nenhuma avaliação registrada.</p>}</section>
+      <section className="panel summary-card">
+        <header><h2><ClipboardList />Última avaliação</h2>{latest && <small><CalendarDays />{formatDate(latest.date)}</small>}</header>
+        {latest ? <>
+          <strong>{latest.type}</strong>
+          <div className="score-breakdown">
+            <div className="score-ring" style={{ "--score-angle": (scores[0] * 36) + "deg" }}>
+              <strong>{numberLabel(scores[0])}<small>/10</small></strong>
+            </div>
+            <div><p>Critérios avaliados</p>{criteria.length ? <dl className="criterion-scores">{criteria.map(([name, score]) =>
+              <div key={name}><dt>{name}</dt><dd>{numberLabel(score)}</dd></div>)}</dl> : <p>Sem critérios registrados.</p>}</div>
+          </div>
+          <footer><Button variant="ghost" icon={ArrowRight} onClick={() => onOpenTraining(latest.id)}>Ver detalhes</Button></footer>
+        </> : <p>Nenhuma avaliação registrada.</p>}
+      </section>
       <Highlights highlights={panel.highlights} />
-      <section className="panel page-stack"><h2>Metas em andamento</h2>
-        <div className={ongoing.length ? "page-stack" : "empty-state"}>
-          {ongoing.length ? ongoing.map(g => <GoalResult key={g.id} goal={g} rows={rowsFor(g)} today={today} />) : <p>Nenhuma meta em andamento.</p>}
-          <Button variant="ghost" icon={Target} onClick={() => navigate("athlete-goals")}>Consultar metas</Button>
-        </div></section>
+      <section className="panel summary-card">
+        <header><h2><Target />Metas em andamento</h2><span className="summary-badge">{ongoing.length} {ongoing.length === 1 ? "ativa" : "ativas"}</span></header>
+        {ongoing.length ? ongoing.slice(0, 3).map(({ goal, result }) => {
+          const ratio = goal.direction === "atLeast" && goal.target > 0 && Number.isFinite(result.average)
+            ? result.average / goal.target : null;
+          return <article className="goal-summary" key={goal.id}>
+            <div><strong>{goal.label}</strong><span className="summary-badge">{result.status}</span></div>
+            <p>Média {numberLabel(result.average)} · Alvo {goal.direction === "atMost" ? "até" : "a partir de"} {numberLabel(goal.target)} {goal.unit === "score" ? "pts" : "por treino"}</p>
+            <small>{result.count} registros{goal.deadline && ` · Prazo ${formatDate(goal.deadline)}`}</small>
+            {ratio !== null && <label><progress max="1" value={ratio} aria-label={`Percentual do alvo de ${goal.label}`} />{numberLabel(ratio * 100)}%</label>}
+          </article>;
+        }) : <p>Nenhuma meta em andamento.</p>}
+        <footer><Button variant="ghost" icon={ArrowRight} onClick={() => navigate("athlete-goals")}>Consultar metas</Button></footer>
+      </section>
     </CardGrid>
     {role === "GOALKEEPER" && <GoalkeeperSummary records={trainings.map(t => t.athletes[athleteId])} />}
   </div>;

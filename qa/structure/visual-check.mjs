@@ -34,6 +34,7 @@ const training = { id: 'qa-training', teamId: team.id, date: '2026-11-18', type:
 const documents = initialLegalDocuments.map(d => ({ ...d, id: `${d.type}-${d.version}`, publishedAt: coach.createdAt, contentHash: 'qa-only' }));
 const legal = { documents, pending: [], consents: [], history: documents.map((document, index) => ({ id: `qa-decision-${index}`, document, documentId: document.id, action: document.type === 'TERMS' ? 'ACCEPT' : 'ACKNOWLEDGE', occurredAt: coach.createdAt })) };
 const cases = [
+  ...['regular', 'long', 'empty'].map(suffix => ['athlete-criteria-' + suffix, 'athlete', '/athlete/teams/qa-team/performance']),
   ['athlete-overview-history', 'athlete', '/athlete/teams/qa-team'],
   ['athlete-overview-long', 'athlete', '/athlete/teams/qa-team'],
   ['athlete-lobby-multiple', 'athlete', '/athlete/teams'],
@@ -84,6 +85,13 @@ try {
       const state = { users: role === 'athlete' ? [coach, athlete] : [coach, athlete, keeper], teams: [team],
         memberships: (role === 'athlete' ? [athlete] : [athlete, keeper]).map(a => ({ id: `m-${a.id}`, teamId: team.id, athleteId: a.id, status: 'approved', position: a.position })),
         trainings: [{ ...training, athletes: role === 'athlete' ? { [athlete.id]: training.athletes[athlete.id] } : training.athletes }], teamRankings: {} };
+      if (name.startsWith('athlete-criteria-')) {
+        const qualitative = name.endsWith('empty') ? [] : name.endsWith('long')
+          ? ['Controle orientado da bola durante a transição sob pressão defensiva'] : ['Técnica', 'Participação'];
+        const objective = name.endsWith('empty') ? [] : ['Pontos', 'Aces', 'Bloqueios'];
+        state.teams = [{ ...team, modality: 'Vôlei', qualitativeCriteria: qualitative, objectiveCriteria: objective }];
+        state.trainings[0].athletes[athlete.id] = { present: true, modality: 'Vôlei', ratings: Object.fromEntries(qualitative.map(key => [key, 7])), metrics: { Pontos: 16, Aces: 0 } };
+      }
       if (name === 'athlete-lobby-multiple') {
         state.memberships[0].number = 0;
         for (const [index, name] of ['Clube de Futsal da Universidade Metropolitana', 'Equipe de formação sub-20'].entries()) {
@@ -150,6 +158,27 @@ try {
         await chart.locator('summary').click();
         assert.equal(await page.locator('section.panel').filter({has:page.getByRole('heading',{name:'Destaques pessoais'})}).locator('dt').count(), 3);
         if (name.endsWith('long')) await page.locator('section.panel').filter({has:page.getByRole('heading',{name:'Metas em andamento'})}).getByText(criteriaFor(team,'OUTFIELD','QUALITATIVE')[0].name, { exact: true }).waitFor();
+      }
+      if (name.startsWith('athlete-criteria-')) {
+        await page.getByRole('button', { name: 'Critérios', exact: true }).click();
+        const panel = page.locator('.profile-criteria');
+        assert.equal(await panel.locator('header svg').count(), 0);
+        if (name.endsWith('empty')) await panel.getByText('Nenhum critério configurado.').waitFor();
+        else {
+          const rows = panel.locator('.personal-criterion > button');
+          assert.equal(await rows.count(), name.endsWith('long') ? 4 : 5);
+          assert.match(await rows.first().innerText(), /7\/10/);
+          const points = rows.filter({ hasText: 'Pontos' });
+          assert.match(await points.innerText(), /16 por treino/);
+          await points.focus();
+          await points.press('Enter');
+          assert.equal(await points.getAttribute('aria-expanded'), 'true');
+          await panel.locator('.criterion-history:visible').getByText('16', { exact: true }).waitFor();
+          await points.press('Space');
+          assert.equal(await points.getAttribute('aria-expanded'), 'false');
+          assert.match(await rows.filter({ hasText: 'Aces' }).innerText(), /0 por treino/);
+          assert.match(await rows.filter({ hasText: 'Bloqueios' }).innerText(), /0 registros/);
+        }
       }
       if (name === 'athlete-keeper') await page.getByLabel('Visualização').selectOption('statistics');
       if (name === 'athlete-goal-progress') await page.getByText('Em andamento', { exact: false }).waitFor();
@@ -220,6 +249,20 @@ try {
       if (details && computed) await writeFile(`${output}/${phase}/${file}.computed.json`, JSON.stringify(computed));
       const png = await page.screenshot({ path: `${output}/${phase}/${file}`, fullPage: true, animations: 'disabled' });
       results.push({ file, sha256: createHash('sha256').update(png).digest('hex'), ...(computed ? { computedHash: createHash('sha256').update(JSON.stringify(computed)).digest('hex') } : {}) });
+      if (phase === 'after' && name === 'athlete-overview-long') {
+        assert.equal(await page.locator('.score-ring strong').innerText().then(text => text.replace(/\s/g, '')), '8,5/10');
+        assert.equal(await page.locator('.goal-summary progress').evaluate(bar => bar.value), 0.55);
+        const overview = page.url();
+        for (const [button, destination] of [
+          ['Ver detalhes', /session-7$/],
+          ['Ver desempenho completo', /performance$/],
+          ['Consultar metas', /goals$/]
+        ]) {
+          await page.getByRole('button', { name: button, exact: true }).click();
+          await page.waitForURL(destination);
+          await page.goto(overview);
+        }
+      }
       if (name === 'login-active') await page.mouse.up();
       await writeFile(`${output}/${phase}.json`, JSON.stringify(results, null, 2));
     }

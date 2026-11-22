@@ -19,8 +19,7 @@
 .personal-tabs [aria-current="page"] { color: var(--primary); border-color: currentColor; }
 .personal-row { justify-content: space-between; border-bottom: 1px solid var(--line); padding-block: .55rem; }
 .personal-row > div, .personal-criterion { min-width: 0; overflow-wrap: anywhere; }
-.personal-criterion summary { cursor: pointer; }
-.personal-criterion p { padding-block: .3rem; }
+
 .personal-row .button { justify-self: start; width: auto; }
 
 .personal-goals { width: 100%; max-width: 60rem; }
@@ -28,4 +27,44 @@
 .athlete-facts.personal-attendance { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 @media (min-width: 768px) {
   .athlete-facts.personal-attendance { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+.profile-criteria { container-type: inline-size; display: grid; gap: 1.4rem; }
+.profile-criteria :is(h2, h3, p) { margin: 0; }
+.profile-criteria > header p { margin-top: .25rem; color: var(--muted); font-size: var(--text-sm); }
+.criterion-group { display: grid; gap: .35rem; min-width: 0; }
+.criterion-group header { display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin-bottom: .2rem; }
+.criterion-group h3 { border-inline-start: 3px solid var(--primary); padding-inline-start: .65rem; font-size: 1rem; }
+.criterion-group header span, .criterion-meta, .criterion-history { font-size: var(--text-sm); color: var(--muted); }
+.personal-criterion { background: var(--surface-strong); border: 1px solid var(--line); border-radius: var(--radius); }
+.personal-criterion > button {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr) auto;
+  align-items: center;
+  gap: .75rem;
+  width: 100%;
+  min-height: var(--control-height);
+  padding: .5rem .85rem;
+  color: var(--ink);
+  font: inherit;
+  text-align: start;
+  background: transparent;
+  border: 0;
+  border-radius: inherit;
+  cursor: pointer;
+}
+.personal-criterion > button:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+.personal-criterion > button > strong { font-weight: 600; overflow-wrap: anywhere; }
+.personal-criterion button[aria-expanded="true"] svg { transform: rotate(180deg); }
+.criterion-meta { display: grid; grid-template-columns: 1fr 1.35fr 1fr; align-items: center; gap: .5rem; }
+.criterion-type { justify-self: start; padding: .08rem .5rem; color: var(--primary); border: 1px solid var(--primary-strong); border-radius: 1rem; font-size: var(--text-xs); font-weight: 600; }
+.criterion-average b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.criterion-history { padding: .25rem .85rem; border-top: 1px solid var(--line); }
+.criterion-history p { display: flex; align-items: baseline; flex-wrap: wrap; gap: .35rem .85rem; padding-block: .4rem; }
+.criterion-history p + p { border-top: 1px solid var(--line); }
+.criterion-history strong { margin-inline-start: auto; color: var(--ink); }
+@container (max-width: 37rem) {
+  .personal-criterion > button { grid-template-columns: minmax(0, 1fr) auto; gap: .25rem .5rem; padding-inline: .65rem; }
+  .personal-criterion button > svg { grid-area: 1 / 2; }
+  .criterion-meta { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: .2rem .6rem; }
 }
