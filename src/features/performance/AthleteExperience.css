@@ -68,3 +68,6 @@
   .personal-criterion button > svg { grid-area: 1 / 2; }
   .criterion-meta { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: .2rem .6rem; }
 }
+
+.personal-analysis h2, .personal-analysis p { margin: 0; }
+.personal-analysis select { width: auto; max-width: 100%; }

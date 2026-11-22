@@ -1,5 +1,7 @@
+import { CardGrid } from "../../../components/ui/CardGrid.jsx";
+import { KpiCard } from "../../../components/ui/KpiCard.jsx";
 import { useState } from "react";
-import { ArrowDown, ArrowUp, Minus } from "lucide-react";
+import { ArrowDown, ArrowUp, CalendarDays, Minus, TrendingUp } from "lucide-react";
 import { useTodayDate } from "../../../hooks/useTodayDate.js";
 import { formatDate, trainingCoverage } from "../../../utils/formatters.js";
 import { individualEvolution, individualSeries } from "../model/individualEvolution.js";
@@ -34,7 +36,7 @@ function EvolutionChange({ change, unit }) {
   </span>;
 }
 
-export function AthleteDashboard({ trainings, athlete, team }) {
+export function AthleteDashboard({ trainings, athlete, team, showSummary = false }) {
   const [period, setPeriod] = useState("all");
   const [mode, setMode] = useState("average");
   const [group, setGroup] = useState("qualitative");
@@ -54,7 +56,24 @@ export function AthleteDashboard({ trainings, athlete, team }) {
   const { data, table, change, count } = individualSeries(rows, metric);
   const coverage = metric && metric.unit !== "score" ? trainingCoverage(count, table.length) : null;
 
-  return <CollapsiblePanel title={title} className="chart-panel individual-evolution"
+  const summaryAllowed = view === "average" || view === "qualitative" || (grouped && group === "qualitative");
+  const observed = showSummary && summaryAllowed ? data.filter(row => Number.isFinite(row.value)) : [];
+  const first = observed[0], last = observed.at(-1);
+  const summaryChange = observed.length === 1 ? 0 : change;
+  const emptyDetail = summaryAllowed ? "Sem avaliações válidas no período" : "Disponível para média geral e critérios qualitativos";
+  const criterionDetail = view === "average" ? "registro" : `nota de ${metric?.label || "critério"}`;
+
+  return <>
+    {showSummary && <CardGrid columns={3} className="athlete-kpis" label="Resumo da evolução">
+      <KpiCard icon={CalendarDays} label="Primeira avaliação" value={first ? units.score.format(first.value) : "—"}
+        detail={first ? `Primeira ${criterionDetail === "registro" ? "avaliação" : criterionDetail} no período · ${formatDate(first.date)}` : emptyDetail} />
+      <KpiCard icon={TrendingUp} label="Evolução total"
+        value={first ? <EvolutionChange change={summaryChange} unit={units.score} /> : "—"}
+        detail={first ? "Entre a primeira e a última avaliação" : emptyDetail} />
+      <KpiCard icon={CalendarDays} label="Última avaliação" value={last ? units.score.format(last.value) : "—"}
+        detail={last ? `Última ${criterionDetail === "registro" ? "avaliação" : criterionDetail} no período · ${formatDate(last.date)}` : emptyDetail} />
+    </CardGrid>}
+    <CollapsiblePanel title={title} className="chart-panel individual-evolution"
     headingClassName="individual-evolution__heading" actions={<EvolutionChange change={change} unit={unit} />}>
     <div className="individual-evolution__filters" data-grouped={grouped || undefined}>
       <label>Visualização<select value={view} onChange={(event) => { setMode(event.target.value); setCriterion(""); }}>
@@ -94,5 +113,6 @@ export function AthleteDashboard({ trainings, athlete, team }) {
       </table></div>
     </details>}
     <TrainingDetails selected={trainings.find((training) => training.id === selectedId)} athleteId={athlete.id} onClose={() => setSelectedId(null)} />
-  </CollapsiblePanel>;
+  </CollapsiblePanel>
+  </>;
 }

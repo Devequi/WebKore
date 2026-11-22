@@ -14,3 +14,26 @@
 @media (max-width: 480px) {
   .team-evolution__tooltip { max-width: 230px; padding: 0.6rem; }
 }
+
+.individual-evolution__filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: .6rem .9rem;
+}
+.individual-evolution__filters label {
+  display: grid;
+  flex: 0 1 14rem;
+  min-width: 0;
+  max-width: 100%;
+  gap: .25rem;
+  color: var(--muted-strong);
+  font-size: var(--text-xs);
+}
+.individual-evolution__filters select {
+  width: 100%;
+  min-width: 0;
+  min-height: var(--control-height);
+  font-size: var(--text-sm);
+  text-overflow: ellipsis;
+}

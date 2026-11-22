@@ -1,16 +1,18 @@
-import { ArrowDown, ArrowUp, ChevronDown, TrendingUp, Trophy } from "lucide-react";
+import { CardGrid } from "../../components/ui/CardGrid.jsx";
+import { KpiCard } from "../../components/ui/KpiCard.jsx";
+import { ArrowDown, ArrowUp, ChartNoAxesColumnIncreasing, ChevronDown, Target, TrendingUp, Trophy } from "lucide-react";
 import { useId, useState } from "react";
 import { AthleteDashboard as IndividualChart } from "./components/IndividualDashboard.jsx";
 import { PersonalHistory } from "./PersonalHistory.jsx";
-import { comparePeriods, mean, numberLabel, signed } from "./model/personalPanel.js";
+import { filterEvolution } from "./model/athletePerformance.js";
+import { numberLabel, signed } from "./model/personalPanel.js";
 import { formatDate } from "../../utils/formatters.js";
 
 export function Highlights({ highlights, detailed = false }) {
   const ranked = [...highlights].sort((a,b) => b.average - a.average);
   const rising = highlights.filter(c => c.change > 0).sort((a,b) => b.change - a.change);
-  const falling = highlights.filter(c => c.change < 0).sort((a,b) => a.change - b.change);
+  const best = ranked[0], lowest = ranked.at(-1), growth = rising[0];
   if (!detailed) {
-    const best = ranked[0], lowest = ranked.at(-1), growth = rising[0];
     const rows = [
       [ArrowUp, "rise", "Ponto forte", best, best && numberLabel(best.average) + "/10"],
       [ArrowDown, "fall", "Ponto de atenção", lowest?.average < best?.average ? lowest : null, lowest && numberLabel(lowest.average) + "/10"],
@@ -22,13 +24,19 @@ export function Highlights({ highlights, detailed = false }) {
           <dd>{criterion ? <><span>{criterion.label}</span><strong>{value}</strong></> : label === "Maior evolução" ? "Sem crescimento" : "Sem diferença entre médias"}</dd></div>)}</dl>
         : <p>Os destaques aparecem a partir de três notas de um critério, em pelo menos duas datas.</p>}</section>;
   }
-  return <section className="panel page-stack"><h2>Destaques pessoais</h2>
-    {!ranked.length ? <p>Os destaques aparecem a partir de três notas de um critério, em pelo menos duas datas.</p> :
-      <><p><strong>Maior média</strong> · {ranked[0].label} ({numberLabel(ranked[0].average)}/10)</p>
-        {ranked.at(-1).average < ranked[0].average && <p><strong>Menor média</strong> · {ranked.at(-1).label} ({numberLabel(ranked.at(-1).average)}/10)</p>}
-        {(detailed ? rising : rising.slice(0,1)).map(c => <p key={c.id}>Evolução positiva · {c.label} ({signed(c.change)} pts)</p>)}
-        {detailed && falling.map(c => <p key={c.id}>Queda · {c.label} ({signed(c.change)} pts)</p>)}</>}
-  </section>;
+  const attention = lowest?.average < best?.average ? lowest : null;
+  return <section className="panel page-stack">
+      <h2>Resumo pessoal</h2>
+      <CardGrid columns={4} className="athlete-kpis">
+        <KpiCard icon={Trophy} label="Melhor critério" value={best ? numberLabel(best.average) + "/10" : "—"} detail={best?.label} />
+        <KpiCard icon={Target} label="Critério a melhorar" value={attention ? numberLabel(attention.average) + "/10" : "—"}
+          detail={attention?.label || (best && "Sem diferença entre médias")} />
+        <KpiCard icon={TrendingUp} label="Maior evolução" value={growth ? signed(growth.change) + " pts" : "—"}
+          detail={growth?.label || (best && "Sem crescimento")} />
+        <KpiCard icon={ChartNoAxesColumnIncreasing} label="Critérios em evolução" value={best ? rising.length : "—"} detail="Variações positivas" />
+      </CardGrid>
+      {!best && <p>Os destaques aparecem a partir de três notas de um critério, em pelo menos duas datas.</p>}
+    </section>;
 }
 
 function CriterionRow({ criterion, rows, type }) {
@@ -73,18 +81,33 @@ function ProfileCriteria({ criteria, rows }) {
 export function PersonalPerformance(props) {
   const { panel, today } = props;
   const [tab, setTab] = useState("Evolução");
-  const [days, setDays] = useState(30);
-  const comparison = comparePeriods(panel.rows, today, days);
+  const [period, setPeriod] = useState("all");
+  const quantitative = panel.criteria.filter(c => c.kind === "quantitative");
   return <div className="page-stack">
     <nav className="personal-tabs" aria-label="Seções de desempenho">{["Evolução", "Critérios", "Análise pessoal", "Histórico de avaliações"].map(t =>
       <button key={t} type="button" aria-current={tab === t ? "page" : undefined} onClick={() => setTab(t)}>{t}</button>)}</nav>
-    {tab === "Evolução" && <IndividualChart {...props} />}
+    {tab === "Evolução" && <IndividualChart {...props} showSummary />}
     {tab === "Critérios" && <ProfileCriteria criteria={panel.criteria} rows={panel.rows} />}
-    {tab === "Análise pessoal" && <><Highlights highlights={panel.highlights} detailed />
-      <section className="panel page-stack"><h2>Comparação de períodos</h2><label>Intervalo<select value={days} onChange={e => setDays(Number(e.target.value))}><option value={30}>30 dias</option><option value={90}>90 dias</option></select></label>
-        <p>Últimos {days} dias · {numberLabel(mean(comparison.recent))} ({comparison.recent.length} avaliações)</p>
-        <p>{days} dias anteriores · {numberLabel(mean(comparison.earlier))} ({comparison.earlier.length} avaliações)</p>
-        <p>{comparison.change === null ? "Faltam avaliações em um dos períodos para comparar." : `Diferença entre médias: ${signed(comparison.change)} pts`}</p></section></>}
+    {tab === "Análise pessoal" && <div className="page-stack personal-analysis">
+      <Highlights highlights={panel.highlights} detailed />
+      <section className="panel page-stack">
+        <header className="personal-row">
+          <div><h2>Estatísticas de desempenho</h2><p>Seus resultados quantitativos acumulados nos treinos.</p></div>
+          {quantitative.length > 0 && <select aria-label="Período das estatísticas" value={period} onChange={e => setPeriod(e.target.value)}>
+            <option value="all">Todo o histórico</option><option value="30">Últimos 30 dias</option><option value="90">Últimos 90 dias</option>
+          </select>}
+        </header>
+        {quantitative.length ? <CardGrid columns={4} className="athlete-kpis">
+          {quantitative.map(({ id, label, history }) => {
+            const records = filterEvolution(history, period, today);
+            const total = records.reduce((sum, row) => sum + row.scores.get(id), 0);
+            return <KpiCard key={id} icon={ChartNoAxesColumnIncreasing} label={label}
+              value={records.length ? numberLabel(total) : "—"}
+              detail={records.length ? `Média: ${numberLabel(total / records.length)} por treino` : "Sem registros no período"} />;
+          })}
+        </CardGrid> : <p>Nenhum critério quantitativo configurado para este perfil.</p>}
+      </section>
+    </div>}
     {tab === "Histórico de avaliações" && <PersonalHistory {...props} evaluationsOnly />}
   </div>;
 }

@@ -228,16 +228,6 @@
 }
 .individual-evolution__change[data-direction="positive"] { color: var(--success); }
 .individual-evolution__change[data-direction="negative"] { color: var(--error); }
-.individual-evolution__filters {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
-  gap: .6rem .9rem;
-}
-@container (min-width: 24rem) and (max-width: 47rem) {
-  .individual-evolution__filters[data-grouped] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-.individual-evolution__filters label { min-width: 0; color: var(--muted-strong); font-size: var(--text-xs); }
-.individual-evolution__filters select { width: 100%; min-width: 0; min-height: 44px; font-size: var(--text-base); text-overflow: ellipsis; }
 .individual-evolution .team-evolution__area-plot { height: clamp(13rem, 33cqi, 18rem); margin-top: .35rem; }
 .individual-evolution .recharts-wrapper { touch-action: pan-y; }
 .individual-evolution .team-evolution__tooltip { max-width: min(245px, 85cqi); overflow-wrap: anywhere; }
