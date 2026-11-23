@@ -9,14 +9,14 @@
   --error-rgb: 248 113 113;
   --warning-rgb: 251 191 36;
 
-  --bg: #0d0f18;
-  --institutional: #0f131f;
-  --surface: #131a25;
-  --line: #263247;
+  --bg: #0c0e13;
+  --institutional: #14171f;
+  --surface: #0f1218;
+  --line: #161b2456;
   --primary: #22D3EE;
   --primary-strong: #06B6D4;
-  --ink: #F8FAFC;
-  --muted: #94A3B8;
+  --ink: #d6d5d5;
+  --muted: #a0aab9;
   --success: #22C55E;
   --error: #F87171;
   --warning: #FBBF24;

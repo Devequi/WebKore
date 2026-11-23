@@ -332,11 +332,11 @@ test("revisão inicia em 5, mantém pendências explícitas e oculta avaliação
   } }, athletes: [{ id: "a", name: "Ana", position: "Goleiro" }, { id: "b", name: "Bruno", position: "Ala" }], actions: {}, drafts: {}, setDrafts() {} };
   const html = render(TrainingReview, props);
   assert.equal((html.match(/value="5"/g) || []).length, 4);
-  assert.match(html, /Pendente de revisão/);
-  assert.match(html, /Revisei e confirmo estas notas/);
+  assert.match(html, /Atletas avaliados/);
+  assert.match(html, /Ao salvar, você confirma as notas deste atleta/);
   assert.match(html, /Estatísticas do goleiro/);
   assert.match(html, /button[^>]*disabled/);
-  assert.match(html, /Salvar presença, notas e medidas/);
+  assert.match(html, /Salvar e próximo atleta/);
   assert.doesNotMatch(html, /4\. Revisão e salvamento|review-summary|atleta\(s\) avaliado\(s\) ou revisado\(s\)/);
   assert.doesNotMatch(html, /Finalização e ataque/);
   props.training.athletes.a.present = false;
@@ -355,7 +355,7 @@ test("histórico aberto oferece recolhimento e mantém somente a avaliação ind
   const page = render(TrainingsPage, { team, state, actions: {}, initialTrainingId: "w", onNavigateTraining() {} });
   assert.match(page, /aria-expanded="true"/);
   assert.match(page, /Recolher treino/);
-  assert.match(page, /Salvar presença, notas e medidas/);
+  assert.match(page, /Salvar e próximo atleta/);
   assert.doesNotMatch(page, /Revisão e salvamento|review-summary/);
   const { TrainingReview } = await server.ssrLoadModule("/src/features/training/TrainingReview.jsx");
   const confirmed = render(TrainingReview, { team, training: state.trainings[0], athletes, actions: {}, setDrafts() {},
@@ -363,7 +363,7 @@ test("histórico aberto oferece recolhimento e mantém somente a avaliação ind
       Posicionamento: 8, "Tomada de decisão": 7, "Trabalho em equipe": 9, "Disciplina tática": 6
     }, measurements: {} }])) });
   assert.doesNotMatch(confirmed, /<ul|review-summary|Revisão e salvamento/);
-  const saveButton = confirmed.match(/<button[^>]*><span>Salvar presença, notas e medidas<\/span><\/button>/)?.[0];
+  const saveButton = confirmed.match(/<button[^>]*><span>Salvar e próximo atleta<\/span><\/button>/)?.[0];
   assert.ok(saveButton);
   assert.doesNotMatch(saveButton, /disabled/);
 });

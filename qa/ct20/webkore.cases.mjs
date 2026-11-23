@@ -226,14 +226,115 @@ define('CT-13', async ({ rig, page }, info) => {
   await openTraining(page, fixture, training);
   for (const athlete of fixture.athletes) {
     await selectAthlete(page, athlete.user.name);
-    const fields = page.locator('.rating-grid input');
+    const fields = page.locator('.review-ratings input');
     await expect(fields).toHaveCount(4);
     for (const field of await fields.all()) await expect(field).toHaveValue('5');
-    await expect(page.getByRole('button', { name: 'Salvar presença, notas e medidas', exact: true })).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Salvar avaliação', exact: true })).toBeEnabled();
   }
+  const review = page.locator('.review-individual');
+  await review.locator('summary').filter({ hasText: 'Estatísticas do goleiro' }).click();
+  for (const width of [320, 375, 430, 768, 1024, 1366, 1920]) {
+    await page.setViewportSize({ width, height: 900 });
+    await expect.poll(() => review.evaluate(root => {
+      return document.documentElement.scrollWidth <= innerWidth && [...root.querySelectorAll('button,input,select,label,h4,summary,.review-number')]
+        .filter(el => el.getClientRects().length).every(el => {
+          const rect = el.getBoundingClientRect();
+          return rect.left >= 0 && rect.right <= innerWidth + 1;
+        });
+    }), { message: `Layout em ${width}px` }).toBe(true);
+    const targetsFit = await review.locator('.review-stepper button:visible').evaluateAll(buttons => buttons.every(button => {
+      const box = button.getBoundingClientRect();
+      return box.width >= 44 && box.height >= 44;
+    }));
+    expect(targetsFit).toBe(true);
+    await review.screenshot({ path: info.outputPath(`avaliacao-${width}.png`) });
+  }
+  await page.setViewportSize({ width: 1366, height: 900 });
+  await page.evaluate(() => { document.documentElement.style.zoom = '2'; });
+  expect(await review.evaluate(el => el.getBoundingClientRect().right <= innerWidth && el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+  await review.locator('.review-number label').first().evaluate(el => { el.textContent = 'Critério'.repeat(27); });
+  expect(await review.evaluate(root => root.scrollWidth <= root.clientWidth + 1)).toBe(true);
+  const count = review.getByLabel('Quantidade: Defesas', { exact: true });
+  await expect(count).toHaveValue('');
+  await review.getByRole('button', { name: 'Aumentar Quantidade: Defesas', exact: true }).click();
+  await expect(count).toHaveValue('1');
+  await review.getByRole('button', { name: 'Diminuir Quantidade: Defesas', exact: true }).click();
+  await expect(count).toHaveValue('0');
+  await count.fill('-1');
+  expect(await count.evaluate(el => el.validity.rangeUnderflow)).toBe(true);
+  await count.fill('');
+  const reflex = review.getByLabel('Nota: Reflexos', { exact: true });
+  await reflex.fill('8.2');
+  await review.getByRole('button', { name: 'Aumentar Nota: Reflexos', exact: true }).click();
+  await expect(reflex).toHaveValue('8.3');
+  await review.getByRole('button', { name: 'Diminuir Nota: Reflexos', exact: true }).click();
+  await expect(review.locator('.review-score')).toContainText('5,8/10');
+  await selectAthlete(page, fixture.athletes[0].user.name);
+  await selectAthlete(page, fixture.athletes[1].user.name);
+  await expect(reflex).toHaveValue('8.2');
+  await page.evaluate(() => { document.documentElement.style.zoom = ''; });
+  const plus = review.getByRole('button', { name: 'Aumentar Nota: Reflexos', exact: true });
+  const minus = review.getByRole('button', { name: 'Diminuir Nota: Reflexos', exact: true });
+  await plus.press('Space');
+  await expect(reflex).toHaveValue('8.3');
+  await minus.press('Enter');
+  await expect(reflex).toHaveValue('8.2');
+  await plus.hover();
+  await page.mouse.down();
+  await expect.poll(async () => Number(await reflex.inputValue())).toBeGreaterThanOrEqual(8.5);
+  await page.mouse.up();
+  async function expectStopped(field) {
+    const stopped = await field.inputValue();
+    await page.waitForTimeout(250);
+    await expect(field).toHaveValue(stopped);
+  }
+  await expectStopped(reflex);
+  await minus.hover();
+  await page.mouse.down();
+  await page.mouse.move(0, 0);
+  await page.waitForTimeout(450);
+  await expectStopped(reflex);
+  await page.mouse.up();
+  await plus.hover();
+  await page.mouse.down();
+  await page.evaluate(() => window.dispatchEvent(new Event('blur')));
+  const beforeBlur = await reflex.inputValue();
+  await page.waitForTimeout(550);
+  await expect(reflex).toHaveValue(beforeBlur);
+  await page.mouse.up();
+  await reflex.fill('9.9');
+  await plus.click();
+  await expect(reflex).toHaveValue('10');
+  await expect(plus).toBeDisabled();
+  await reflex.fill('0.1');
+  await minus.click();
+  await expect(reflex).toHaveValue('0');
+  await expect(minus).toBeDisabled();
+
+  await page.setViewportSize({ width: 375, height: 850 });
+  const touch = await page.context().newCDPSession(page);
+  try {
+    await touch.send('Emulation.setTouchEmulationEnabled', { enabled: true });
+    const countPlus = review.getByRole('button', { name: 'Aumentar Quantidade: Defesas', exact: true });
+    await countPlus.scrollIntoViewIfNeeded();
+    const box = await countPlus.boundingBox();
+    const point = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+    const touchEvent = (type, touchPoints) => touch.send('Input.dispatchTouchEvent', { type, touchPoints });
+    await touchEvent('touchStart', [point]);
+    await expect.poll(async () => Number(await count.inputValue())).toBeGreaterThanOrEqual(3);
+    await touchEvent('touchEnd', []);
+    await expectStopped(count);
+    expect(Number.isInteger(Number(await count.inputValue()))).toBe(true);
+    await touchEvent('touchStart', [point]);
+    await touchEvent('touchCancel', []);
+    const cancelled = await count.inputValue();
+    await page.waitForTimeout(500);
+    await expect(count).toHaveValue(cancelled);
+  } finally { await touch.detach(); }
+
   expect(await rig.prisma.evaluation.count({ where: { record: { trainingId: training.id } } })).toBe(0);
   expect(initialRatings([{ name: 'Técnica' }], { Técnica: 0 })).toEqual({ Técnica: 0 });
-  obtained(info, 'Linha e goleiro exibiram quatro notas 5 como rascunho; salvar permaneceu desabilitado e banco sem avaliação; zero salvo não foi substituído.');
+  obtained(info, 'Linha e goleiro exibiram quatro notas 5 como rascunho; navegar preservou o banco sem avaliação; zero salvo não foi substituído.');
 });
 
 define('CT-14', async ({ rig, page }, info) => {
@@ -243,12 +344,25 @@ define('CT-14', async ({ rig, page }, info) => {
     await selectAthlete(page, fixture.athletes[index].user.name);
     await page.getByRole('spinbutton', { name: 'Nota: Posicionamento', exact: true }).fill(score);
     await page.getByRole('spinbutton', { name: `Quantidade: ${metric}`, exact: true }).fill(quantity);
-    await page.getByRole('checkbox', { name: 'Revisei e confirmo estas notas', exact: true }).check();
+    const selector = page.getByLabel('Selecionar atleta');
+    const nextId = await selector.evaluate(el => el.options[el.selectedIndex + 1]?.value);
+    const save = page.getByRole('button', { name: nextId ? 'Salvar e próximo atleta' : 'Salvar avaliação', exact: true });
+    if (index === 0) {
+      await page.route('**/api/trainings/*/athletes/*', route => route.fulfill({ status: 503, json: { message: 'Tente novamente.' } }), { times: 1 });
+      await save.click();
+      await expect(page.locator('.review-individual').getByRole('alert')).toContainText('mantidas');
+      await expect(selector).toHaveValue(fixture.athletes[index].user.id);
+      await expect(page.getByLabel('Nota: Posicionamento', { exact: true })).toHaveValue(score);
+    }
+    await save.click();
+    await expect(page.locator('.review-individual').getByRole('status')).toContainText('salvo.');
+    if (nextId) await expect(selector).toHaveValue(nextId);
+    await expect(page.getByRole('progressbar', { name: 'Atletas avaliados' })).toHaveAttribute('value', String(index + 1));
   }
   await selectAthlete(page, fixture.athletes[2].user.name);
   await page.getByRole('checkbox', { name: 'Participou do treino', exact: true }).uncheck();
-  await page.getByRole('button', { name: 'Salvar presença, notas e medidas', exact: true }).click();
-  await expect(page.locator('.review-save-actions').getByRole('status')).toContainText('Avaliações confirmadas salvas.');
+  await page.getByRole('button', { name: 'Salvar avaliação', exact: true }).click();
+  await expect(page.locator('.review-individual').getByRole('status')).toContainText('salvo.');
   const rows = await rig.prisma.trainingRecord.findMany({ where: { trainingId: training.id }, include: { evaluation: { include: { criteria: true } }, measurements: true } });
   for (const [index, score, mean, metric, quantity] of [[0, 8, 5.75, 'Gols', 3], [1, 6, 5.25, 'Defesas', 2]]) {
     const row = rows.find(item => item.athleteId === fixture.athletes[index].user.id);

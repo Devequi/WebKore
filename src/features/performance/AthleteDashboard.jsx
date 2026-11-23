@@ -56,7 +56,7 @@ export function AthleteDashboard({ athleteId, state, team, onOpenTraining, view 
       <KpiCard icon={TrendingUp} label="Evolução recente" value={<span className={change > 0 ? "metric-rise" : change < 0 ? "metric-fall" : undefined}>{signed(change)}</span>} detail="Entre as últimas datas" />
       <KpiCard icon={ClipboardList} label="Avaliações válidas" value={scores.length} detail="Treinos com nota geral" />
     </CardGrid>
-    <EvolutionChart dashboard icon={ChartNoAxesColumnIncreasing} title="Evolução da média geral"
+    <EvolutionChart dashboard title="Evolução da média geral"
       yAxis={{ domain: [0, 10], ticks: [0, 2.5, 5, 7.5, 10], tickFormatter: numberLabel }}
       data={panel.rows.map(row => ({ ...row, averageScore: row.scores.get("average") }))}
       footer={<Button type="button" variant="ghost" icon={ArrowRight} onClick={() => navigate("athlete-performance")}>Ver desempenho completo</Button>} />

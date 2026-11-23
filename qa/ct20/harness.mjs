@@ -99,6 +99,6 @@ export async function openTraining(page, fixture, training) {
   await expect(page.getByRole('heading', { name: '3. Avaliação individual', exact: true })).toBeVisible();
 }
 export async function selectAthlete(page, name) {
-  await page.locator('.review-participant').filter({ has: page.getByText(name, { exact: true }) }).click();
+  await page.getByLabel('Selecionar atleta').selectOption({ label: name });
   await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
 }
