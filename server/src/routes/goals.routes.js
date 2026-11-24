@@ -2,12 +2,14 @@ import { Router } from "express";
 import { requireAuth } from "../middleware/auth.js";
 import { prisma } from "../db/prisma.js";
 import { profileInclude } from "../auth/access.js";
-import { HttpError } from "../lib/validation.js";
+import { HttpError, validateParam } from "../lib/validation.js";
 import { evaluationRole } from "../../../shared/evaluations.js";
 import { configuredMetrics, validGoal } from "../../../shared/personalGoals.js";
 
 export const goalsRouter = Router();
 goalsRouter.use(requireAuth);
+goalsRouter.param("teamId", validateParam);
+goalsRouter.param("goalId", validateParam);
 async function save(request, response, next) {
   try {
     if (request.user.role !== "ATHLETE") throw new HttpError(403, "Ação exclusiva do atleta.");

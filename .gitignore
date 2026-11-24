@@ -34,3 +34,9 @@ desktop.ini
 !/deploy/*.example
 /test-results/
 /playwright-report/
+
+# Backups locais do banco
+/backups/
+/backup-*.sql
+*.sql.gz
+*.sql.bak

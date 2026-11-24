@@ -136,7 +136,7 @@
   gap: var(--space-md);
 }
 
-.privacy-box, .team-result, .empty-state {
+.team-result, .empty-state {
   display: grid;
   gap: 0.7rem;
   padding: var(--space-md);
@@ -148,14 +148,8 @@
   transition: var(--transition);
 }
 
-.privacy-box, .empty-state {
-  display: grid;
-  gap: 0.7rem;
-  padding: var(--space-md);
-  transition: var(--transition);
-}
-
 .empty-state {
+  transition: var(--transition);
   text-align: center;
 }
 .request-list, .athlete-list, .accordion-list {

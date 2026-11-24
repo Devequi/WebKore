@@ -1,5 +1,4 @@
 // Visual-only fixtures: real page/components, no API or persistent storage.
-import React from "react";
 import { createRoot } from "react-dom/client";
 import { TeamHome } from "../../src/features/performance/CoachDashboard.jsx";
 import { AthleteDashboard } from "../../src/features/performance/AthleteDashboard.jsx";

@@ -1,3 +1,4 @@
+import { stripVTControlCharacters } from 'node:util';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { cases } from './catalogue.mjs';
 
@@ -59,7 +60,7 @@ export default class CT20Reporter {
     const id = test.title.match(/CT-\d{2}/)?.[0];
     this.results = this.results.filter(item => item.id !== id);
     this.results.push({ id, status: result.status, durationMs: result.duration,
-      obtained: result.status === 'passed' ? test.annotations.find(item => item.type === 'obtido')?.description || 'Asserções concluídas.' : result.error?.message?.replace(/\u001b\[[0-9;]*m/g, '') || result.status });
+      obtained: result.status === 'passed' ? test.annotations.find(item => item.type === 'obtido')?.description || 'Asserções concluídas.' : stripVTControlCharacters(result.error?.message || '').replace(/(Bearer\s+)[\w.-]+/gi, '$1[redigido]') || result.status });
   }
   async onEnd() {
     await writeReport({ date: new Date().toISOString(), isolation: `Banco exclusivo ${process.env.WEBKORE_CT20_DB_NAME}.`, results: this.results });

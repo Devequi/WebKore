@@ -30,5 +30,6 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
     }
     location ~ /\. { deny all; }
+    location /assets/ { try_files $uri =404; }
     location / { try_files $uri $uri/ /index.html; }
 }

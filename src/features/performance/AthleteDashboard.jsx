@@ -1,4 +1,4 @@
-import { Activity, ArrowRight, CalendarDays, CalendarCheck, ChartNoAxesColumnIncreasing, ClipboardList, Target, TrendingUp } from "lucide-react";
+import { Activity, ArrowRight, CalendarDays, CalendarCheck, ClipboardList, Target, TrendingUp } from "lucide-react";
 import { evaluationRole, recordScore } from "../../../shared/evaluations.js";
 import { goalProgress } from "../../../shared/personalGoals.js";
 import { getApprovedAthletes, getAthleteTrainings } from "../../app/state/selectors.js";

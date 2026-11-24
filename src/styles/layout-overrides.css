@@ -88,17 +88,6 @@ summary:focus-visible { border-radius: var(--radius-sm); }
     justify-content: flex-start;
   }
 
-  .sidebar__footer {
-    display: grid;
-    gap: 0.55rem;
-    min-width: 0;
-    margin-top: auto;
-  }
-
-  .sidebar__footer .button {
-    width: 100%;
-  }
-
   .profile-chip {
     min-width: 0;
   }

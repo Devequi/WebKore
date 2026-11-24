@@ -6,7 +6,7 @@ import { defaultQualitativeCriteria, metricCatalog } from "../shared/criteria.js
 const testMode = process.argv.includes("--test");
 const clearRecords = process.argv.includes("--clear");
 if (clearRecords && !testMode) throw new Error("--clear exige o modo --test.");
-if (testMode && process.env.NODE_ENV === "production") throw new Error("Seed de testes não permitido em produção.");
+if (process.env.NODE_ENV === "production") throw new Error("Seed de testes não permitido em produção.");
 // Credencial pública exclusivamente das fixtures de desenvolvimento/teste.
 const seedPassword = testMode ? "Teste123!" : process.env.SEED_PASSWORD;
 if (!seedPassword?.trim()) {

@@ -13,7 +13,7 @@ export function getJwtSecret() {
   if (!secret?.trim()) {
     throw new Error("Configure JWT_SECRET no ambiente ou no arquivo .env antes de iniciar a API.");
   }
-  if (process.env.NODE_ENV === "production" && (Buffer.byteLength(secret) < 32 || /^(change|replace|example|secret|test)/i.test(secret))) {
+  if (process.env.NODE_ENV === "production" && (Buffer.byteLength(secret.trim()) < 32 || /^(change|replace|example|secret|test)/i.test(secret.trim()))) {
     throw new Error("JWT_SECRET de produção deve ser aleatório, exclusivo e ter no mínimo 32 bytes.");
   }
   return secret;

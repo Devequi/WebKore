@@ -1,3 +1,4 @@
+import { prisma } from "./src/db/prisma.js";
 import { createApp } from "./src/app.js";
 import "./src/config/environment.js";
 
@@ -18,3 +19,15 @@ server.on("error", (error) => {
   }
   process.exitCode = 1;
 });
+
+function shutdown() {
+  const deadline = setTimeout(() => process.exit(1), 15000);
+  deadline.unref();
+  server.close(async () => {
+    try { await prisma.$disconnect(); }
+    catch { process.exitCode = 1; }
+    finally { clearTimeout(deadline); }
+  });
+}
+process.once("SIGTERM", shutdown);
+process.once("SIGINT", shutdown);

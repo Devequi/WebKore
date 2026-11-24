@@ -48,7 +48,6 @@ export function RegistrationPrivacy({ value, onChange, role, birthDate }) {
   return <div className="registration-privacy">
     <p>Conheça como o WebKore utiliza seus dados. Ciência da Política e aceite dos Termos são decisões separadas.</p>
     <LegalLinks />
-    <Button type="button" variant="ghost" onClick={load}>Atualizar documentos</Button>
     {error && <p role="alert">{error} <Button type="button" variant="ghost" onClick={load}>Tentar novamente</Button></p>}
     <Button type="button" variant="secondary" disabled={!terms || !privacy} onClick={event => { trigger.current = event.currentTarget; dialog.current.showModal(); }} icon={ShieldCheck}>Privacidade e proteção de dados</Button>
     <p role="status">{same && value.acceptTerms && value.acknowledgePrivacy ? "Termos aceitos e ciência da Política confirmada." : "Confirme suas decisões antes de criar a conta."}</p>

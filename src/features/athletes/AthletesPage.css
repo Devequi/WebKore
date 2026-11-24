@@ -206,8 +206,7 @@
   .dashboard-grid.athletes-layout { grid-template-columns: clamp(280px, 29%, 380px) minmax(0, 1fr); }
   .athletes-layout .athlete-list { max-height: max(400px, calc(100dvh - 240px)); overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; scrollbar-width: thin; }
   .athletes-layout .roster-panel,
-  .athletes-layout .athlete-profile-panel,
-  .athletes-layout .athlete-dashboard { padding: 1.25rem; }
+  .athletes-layout .athlete-profile-panel { padding: 1.25rem; }
   .athletes-layout .athlete-card { min-height: 90px; font-size: var(--text-base); padding: var(--space-md); }
   .athletes-layout .athlete-card__identity span,
   .athletes-layout .athlete-card small { font-size: 0.85rem; }

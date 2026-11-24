@@ -11,8 +11,10 @@ import { writeReport, jsonFile } from './report.mjs';
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const security = process.argv.includes('--security');
 const visual = process.argv.includes('--visual');
+const built = process.argv.includes('--built');
 const dbName = `webkore_ct20_${randomUUID().replaceAll('-', '')}`;
-const cacheDir = resolve(root, 'tmp', dbName, 'vite-cache');
+const cacheRoot = resolve(root, 'node_modules', '.vite-ct20');
+const cacheDir = resolve(cacheRoot, dbName);
 let admin, created = false, apiServer, apiPrisma, vite, child;
 let exitCode = 1, errorMessage, cleanup = 'Nenhum banco temporário criado.', interrupted = false;
 const interruption = () => { interrupted = true; child?.kill('SIGTERM'); };
@@ -28,6 +30,14 @@ function command(relativePath, args) {
     child.once('error', reject);
     child.once('exit', code => { child = null; code === 0 ? resolve() : reject(new Error(`Comando ${relativePath.split('/').at(-1)} encerrou com código ${code}.`)); });
   });
+}
+
+async function dropTemporaryDatabase() {
+  // The exact name is generated above; an existing database is never reused.
+  if (!/^webkore_ct20_[a-f0-9]{32}$/.test(dbName)) throw new Error('Nome temporário inválido; remoção recusada.');
+  await admin.$executeRawUnsafe(`DROP DATABASE \`${dbName}\``);
+  const remaining = await admin.$queryRawUnsafe('SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = ?', dbName);
+  if (remaining.length) throw new Error('O banco temporário ainda existe.');
 }
 
 try {
@@ -52,7 +62,7 @@ try {
   process.env.AUTH_REGISTER_LIMIT = '500';
   process.env.API_RATE_LIMIT = '10000';
   console.log(`CT20: schema e dados exclusivamente no banco temporário ${dbName}.`);
-  await command('../../node_modules/prisma/build/index.js', ['db', 'push', '--skip-generate']);
+  await command('../../node_modules/prisma/build/index.js', ['migrate', 'deploy']);
   await command('../../prisma/publish-legal.js', []);
   const socket = createSocketServer();
   await new Promise((resolve, reject) => { socket.once('error', reject); socket.listen(0, '127.0.0.1', resolve); });
@@ -65,18 +75,24 @@ try {
   await new Promise((resolve, reject) => { apiServer.once('listening', resolve); apiServer.once('error', reject); });
   process.env.WEBKORE_CT20_API = `http://127.0.0.1:${apiServer.address().port}/api`;
   process.env.VITE_API_URL = process.env.WEBKORE_CT20_API;
-  const { createServer } = await import('vite');
-  vite = await createServer({ cacheDir,
-    optimizeDeps: { entries: ['index.html'], include: ['react', 'react-dom/client', 'lucide-react', 'recharts'] },
-    server: { host: '127.0.0.1', port: frontendPort, strictPort: true, open: false } });
-  await vite.listen();
+  const { createServer, preview } = await import('vite');
+  const frontend = { host: '127.0.0.1', port: frontendPort, strictPort: true, open: false };
+  if (built) {
+    vite = await preview({ preview: { ...frontend, headers: { 'Content-Security-Policy': "connect-src 'self'" },
+      proxy: { '/api': new URL(process.env.WEBKORE_CT20_API).origin } } });
+  } else {
+    vite = await createServer({ cacheDir,
+      optimizeDeps: { entries: ['index.html'], include: ['react', 'react-dom/client', 'lucide-react', 'recharts'] },
+      server: frontend });
+    await vite.listen();
+  }
   process.env.WEBKORE_CT20_ORIGIN = `http://127.0.0.1:${vite.httpServer.address().port}`;
   if (security) {
     await command('./security-check.mjs', []);
     await command('../../tests/integracao/api.check.js', ['7']);
     await command('../../tests/integracao/positions.check.js', []);
   }
-  await command('../../node_modules/@playwright/test/cli.js', ['test', '--config', visual ? 'qa/ct20/visual.config.mjs' : 'qa/ct20/playwright.config.mjs', ...process.argv.slice(2).filter(arg => !['--security', '--visual'].includes(arg))]);
+  await command('../../node_modules/@playwright/test/cli.js', ['test', '--config', visual ? 'qa/ct20/visual.config.mjs' : 'qa/ct20/playwright.config.mjs', ...process.argv.slice(2).filter(arg => !['--security', '--visual', '--built'].includes(arg))]);
   if (security) await command('../../node_modules/@playwright/test/cli.js', ['test', '--config', 'qa/ct20/security-ui.config.mjs']);
   exitCode = 0;
 } catch (error) {
@@ -90,11 +106,14 @@ try {
   const resourceErrors = [];
   // A cache/server failure must never skip the attempt to drop our database.
   for (const [name, close] of [
-    ['frontend', async () => vite?.close()],
+    ['frontend', async () => {
+      if (built && vite) await new Promise(resolve => vite.httpServer.close(resolve));
+      else await vite?.close();
+    }],
     ['API', async () => { if (apiServer) { apiServer.closeAllConnections(); await new Promise(resolve => apiServer.close(resolve)); } }],
     ['conexão da API', async () => apiPrisma?.$disconnect()],
     ['cache', async () => {
-      if (!cacheDir.startsWith(resolve(root, 'tmp', dbName) + sep)) throw new Error('Cache fora da pasta temporária.');
+      if (!cacheDir.startsWith(cacheRoot + sep)) throw new Error('Cache fora da pasta temporária.');
       await rm(cacheDir, { recursive: true, force: true });
     }]
   ]) {
@@ -102,11 +121,7 @@ try {
   }
   try {
     if (created) {
-      // The exact name is generated above; an existing database is never reused.
-      if (!/^webkore_ct20_[a-f0-9]{32}$/.test(dbName)) throw new Error('Nome temporário inválido; remoção recusada.');
-      await admin.$executeRawUnsafe(`DROP DATABASE \`${dbName}\``);
-      const remaining = await admin.$queryRawUnsafe('SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = ?', dbName);
-      if (remaining.length) throw new Error('O banco temporário ainda existe.');
+      await dropTemporaryDatabase();
       cleanup = 'Banco temporário removido e ausência confirmada no MySQL. Banco original não consultado nem alterado.';
       console.log('CT20: banco temporário removido; banco original preservado.');
     }

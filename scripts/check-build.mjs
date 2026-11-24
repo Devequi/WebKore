@@ -10,6 +10,8 @@ const assets = await readdir(new URL("assets/", output));
 for (const name of assets.filter((name) => name.endsWith(".js"))) {
   const script = await readFile(new URL(`assets/${name}`, output), "utf8");
   assert.doesNotMatch(script, /serviceWorker\.register\s*\(|workbox-window|virtual:pwa-register/);
+  assert.doesNotMatch(script, /https?:\/\/(?:localhost|127(?:\.\d+){3}|\[::1\])(?::\d+)?\/api\b/i,
+    "O bundle de produção aponta para uma API de loopback.");
 }
 const tombstone = await readFile(new URL("sw.js", output), "utf8");
 assert.doesNotMatch(tombstone, /addEventListener\(["']fetch["']/);

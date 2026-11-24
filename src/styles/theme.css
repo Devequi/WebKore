@@ -195,7 +195,7 @@ a[href]:hover { color: var(--primary-strong); }
   letter-spacing: 0.08em;
 }
 
-.request-card, .athlete-card, .training-card, .team-result, .privacy-box, .empty-state {
+.request-card, .athlete-card, .training-card, .team-result, .empty-state {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface);
@@ -240,10 +240,6 @@ a[href]:hover { color: var(--primary-strong); }
   background: var(--surface-strong);
 }
 
-.privacy-box {
-  background: var(--surface-strong);
-}
-
 .form-feedback {
   border-radius: var(--radius);
   animation: none;
@@ -258,13 +254,11 @@ a[href]:hover { color: var(--primary-strong); }
   letter-spacing: -0.02em;
 }
 
-.auth-copy h1,
 .lobby-hero h1,
 .topbar h1 {
   letter-spacing: -0.035em;
 }
 
-.auth-copy p,
 .lobby-hero p {
   color: var(--muted);
   line-height: 1.65;

@@ -81,7 +81,7 @@ export async function login(page, account) {
   await page.goto('/#/login');
   await page.getByLabel('E-mail', { exact: true }).fill(account.email);
   await page.getByLabel('Senha', { exact: true }).fill(account.password);
-  await page.getByRole('combobox', { name: 'Perfil', exact: true }).selectOption(account.user.role);
+  await page.getByRole('combobox', { name: 'Tipo de conta', exact: true }).selectOption(account.user.role);
   await page.getByRole('button', { name: 'Entrar', exact: true }).click();
   await expect(page).toHaveURL(new RegExp(`/#/${account.user.role}/teams$`));
 }

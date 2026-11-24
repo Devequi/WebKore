@@ -228,7 +228,7 @@ test("último treino mostra destaque da sessão e melhor atleta ocupa um card in
       { id: "2", teamId: "t", date: "2026-10-02", type: "Coletivo", description: "Treino recente", athletes: { a: { present: true, ratings: { Técnica: 8 } }, b: { present: true, ratings: { Técnica: 9 } } } }
     ] };
   const html = render(TeamHome, { team, state });
-  const latest = html.split(/class="panel collapsible-panel[^\"]* last-training-panel"/)[1].split('</section>')[0];
+  const latest = html.split(/class="panel collapsible-panel[^"]* last-training-panel"/)[1].split('</section>')[0];
   assert.match(latest, /02\/10\/2026/);
   assert.match(latest, /Treino recente/);
   assert.match(latest, /Melhores do treino/);

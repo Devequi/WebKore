@@ -15,7 +15,7 @@ import { PositionField } from "./PositionField.jsx";
 import { positionError } from "../../../shared/positions.js";
 import { KpiCard } from "../../components/ui/KpiCard.jsx";
 import { EmptyState } from "../../components/ui/EmptyState.jsx";
-import { formatDate, percent } from "../../utils/formatters.js";
+import { percent } from "../../utils/formatters.js";
 import { runUiAction } from "../../utils/runUiAction.js";
 import { filterAthletesByName } from "./athleteSearch.js";
 import "./AthletesPage.css";

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { aggregateGoalkeeperStats, evaluationRole, goalkeeperIndicators, MIN_RANKING_EVALUATIONS, positionRankings, profileFor, recordScore, validateGoalkeeperStats, validateProfile, weightedEvaluation, arithmeticEvaluation, initialRatings, criteriaFor, validateTypedCriteria, validateMeasurements } from '../../shared/evaluations.js';
+import { aggregateGoalkeeperStats, evaluationRole, goalkeeperIndicators, MIN_RANKING_EVALUATIONS, positionRankings, profileFor, recordScore, validateGoalkeeperStats, validateProfile, weightedEvaluation, initialRatings, criteriaFor, validateTypedCriteria, validateMeasurements } from '../../shared/evaluations.js';
 import { prepareEvaluation, recordContext } from '../../server/src/domain/evaluations.js';
 import { toClientTraining } from '../../server/src/lib/serializers.js';
 import { athletePerformance } from '../../src/features/performance/model/athletePerformance.js';

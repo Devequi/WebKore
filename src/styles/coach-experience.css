@@ -25,7 +25,6 @@
 .coach-experience .training-card__summary > div > span { overflow-wrap: anywhere; line-height: 1.6; }
 .coach-experience .training-card__summary > span { flex-shrink: 0; }
 .coach-experience .training-editor { min-width: 0; }
-.coach-experience .privacy-box { border-radius: var(--radius); }
 @media (max-width: 900px) {
   .coach-experience .coach-settings .settings-grid { grid-template-columns: minmax(0, 1fr); }
   .coach-experience .coach-settings .criteria-grid { grid-template-columns: minmax(0, 1fr); }

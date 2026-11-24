@@ -38,6 +38,26 @@ define('CT-02', async ({ rig, browser }, info) => {
       await page.getByLabel('E-mail', { exact: true }).fill(email);
       await page.getByLabel('Senha', { exact: true }).fill(password);
       if (role === 'athlete') await page.getByLabel('Data de Nascimento').fill('2000-02-29');
+      for (const [width, height] of [[320,568], [375,667], [430,932], [768,1024], [1024,768], [1366,768], [1920,1080]]) {
+        await page.setViewportSize({ width, height });
+        const layout = await page.locator('.auth-form--register').evaluate(form => {
+          const bounds = form.getBoundingClientRect();
+          const account = form.querySelector('.register-account').getBoundingClientRect();
+          const confirmations = form.querySelector('.register-confirmations').getBoundingClientRect();
+          return {
+            stacked: account.bottom <= confirmations.top,
+            fits: document.documentElement.scrollWidth <= innerWidth && [...form.querySelectorAll('input,select,button,a')]
+              .filter(el => el.getClientRects().length).every(el => {
+                const rect = el.getBoundingClientRect();
+                return rect.left >= bounds.left && rect.right <= bounds.right + 1;
+              }),
+            height: document.documentElement.scrollHeight
+          };
+        });
+        expect(layout.stacked && layout.fits, `${role} em ${width}px`).toBe(true);
+        if (width >= 1024) expect(layout.height).toBeLessThanOrEqual(height);
+        if (role === 'athlete' && [375, 1366].includes(width)) await page.screenshot({ path: info.outputPath(`cadastro-${width}.png`), fullPage: true });
+      }
       await page.getByRole('button', { name: 'Privacidade e proteção de dados', exact: true }).click();
       await page.getByRole('checkbox', { name: /Tomei ciência/ }).check();
       await page.getByRole('checkbox', { name: /Aceito os Termos/ }).check();
@@ -55,6 +75,12 @@ define('CT-02', async ({ rig, browser }, info) => {
       const me = await rig.req('/auth/me', 'GET', undefined, { token });
       expect(me.user.id).toBe(payload.user.id);
       expect(jwt.verify(token, process.env.JWT_SECRET).role).toBe(role.toUpperCase());
+      const returningUser = await browser.newContext({ baseURL: process.env.WEBKORE_CT20_ORIGIN });
+      try {
+        const loginPage = await returningUser.newPage();
+        await login(loginPage, { email, password, user: payload.user });
+        await expect(loginPage.getByRole('heading', { name: `Olá, Cadastro ${role} CT20`, exact: true })).toBeVisible();
+      } finally { await returningUser.close(); }
     } finally { await context.close(); }
   }
   obtained(info, 'Formulário real cadastrou os dois perfis, persistiu JWT validado pela API e abriu automaticamente a área correta.');

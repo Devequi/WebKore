@@ -1,6 +1,6 @@
 // Harness exclusivo de QA: componentes/hooks reais, HTTP simulado para falhas determinísticas.
 // Não usa tokens, dados ou armazenamento persistente do usuário.
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { EvolutionChart } from '../../src/features/performance/components/EvolutionChart.jsx';
 import { useWebKoreData } from '../../src/app/state/useWebKoreData.js';

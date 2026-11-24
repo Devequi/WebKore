@@ -244,7 +244,12 @@ try {
       if (cssSuite) computed = await page.evaluate(() => Array.from(document.body.querySelectorAll('*')).filter(el => !['SCRIPT', 'STYLE', 'LINK'].includes(el.tagName)).map(el => {
         const style = getComputedStyle(el), rect = el.getBoundingClientRect();
         const props = ['display','visibility','opacity','position','box-sizing','color','background-color','background-image','border-top','border-right','border-bottom','border-left','border-radius','font-family','font-size','font-weight','font-style','line-height','letter-spacing','text-align','white-space','overflow','overflow-wrap','text-overflow','width','height','min-width','max-width','min-height','max-height','padding','margin','gap','grid-template-columns','grid-template-rows','grid-auto-flow','align-items','align-content','justify-content','flex','flex-direction','flex-wrap','order','transform','box-shadow','outline','outline-offset','transition','animation','cursor','pointer-events','fill','stroke','stroke-width','accent-color'];
-        return [el.tagName, typeof el.className === 'string' ? el.className : el.className.baseVal, [rect.x, rect.y, rect.width, rect.height], props.map(prop => [prop, style.getPropertyValue(prop)])];
+        const values = props.map(prop => {
+          const value = style.getPropertyValue(prop);
+          // Each preview uses an ephemeral port. Keep the full asset path for comparison.
+          return [prop, prop === 'background-image' ? value.replaceAll('url("' + location.origin + '/', 'url("/') : value];
+        });
+        return [el.tagName, typeof el.className === 'string' ? el.className : el.className.baseVal, [rect.x, rect.y, rect.width, rect.height], values];
       }));
       if (details && computed) await writeFile(`${output}/${phase}/${file}.computed.json`, JSON.stringify(computed));
       const png = await page.screenshot({ path: `${output}/${phase}/${file}`, fullPage: true, animations: 'disabled' });

@@ -4,7 +4,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { issueSession } from '../../server/src/auth/sessions.js';
 import { createApp } from '../../server/src/app.js';
 import { prisma } from '../../server/src/db/prisma.js';
-import { criteriaFor, profileFor, positionRankings, recordScore } from '../../shared/evaluations.js';
+import { profileFor, positionRankings, recordScore } from '../../shared/evaluations.js';
 import { teamReportRows } from '../../src/features/teams/reports.js';
 const models = ['authSession', 'user', 'team', 'membership', 'training', 'trainingRecord', 'evaluation', 'sportMetric', 'evaluationProfile', 'profileCriterion', 'evaluationCriterion', 'goalkeeperStats', 'trainingMeasurement'];
 const snapshot = () => Promise.all(models.map(async (model) => ({ model, digest: createHash('sha256').update(JSON.stringify(await prisma[model].findMany({ orderBy: { id: 'asc' } }))).digest('hex') })));

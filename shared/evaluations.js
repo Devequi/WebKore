@@ -18,7 +18,7 @@ export function criteriaFor(team, role, kind) {
 export function validateTypedCriteria(criteria) {
   if (!Array.isArray(criteria) || criteria.length > 8) throw new Error("Cada perfil permite até 4 critérios qualitativos e 4 quantitativos.");
   const ids = new Set(), names = new Set(), counts = { QUALITATIVE: 0, QUANTITATIVE: 0 };
-  return criteria.map((item, order) => {
+  return criteria.map((item) => {
     if (!item || !Object.hasOwn(counts, item.kind)) throw new Error("Tipo de critério inválido.");
     if (++counts[item.kind] > 4) throw new Error("O limite é de 4 critérios por tipo e perfil.");
     if (typeof item.id !== "string" || !/^[a-zA-Z0-9:_-]+$/.test(item.id) || item.id.length > 191 || ids.has(item.id.toLowerCase())) throw new Error("Identificador de critério inválido ou repetido.");

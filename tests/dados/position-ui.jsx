@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { PositionEvaluationEditor, PositionProfileSettings, GoalkeeperSummary } from '../../src/features/evaluations/PositionEvaluation.jsx';
 import { AverageRankings } from '../../src/features/performance/components/AverageRankings.jsx';
