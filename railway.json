@@ -1,5 +1,5 @@
 {
   "deploy": {
-    "preDeployCommand": "node prisma/publish-legal.js --demo"
+    "preDeployCommand": "sh -c 'npx prisma migrate deploy && node prisma/publish-legal.js --demo'"
   }
 }
