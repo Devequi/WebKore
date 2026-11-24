@@ -1,0 +1,46 @@
+[
+  {
+    "type": "TERMS",
+    "title": "Termos de Uso — versão provisória de demonstração acadêmica",
+    "version": "demo-2026-11-24.1",
+    "effectiveAt": "2026-11-24T00:00:01Z",
+    "requirementKey": "demo-terms-1",
+    "changeSummary": "Versão provisória para testes com dados fictícios.",
+    "content": [
+      {
+        "title": "Participação",
+        "text": "O WebKore está em demonstração acadêmica para o TCC. Escolha um e-mail fictício e uma senha exclusiva para esta demonstração. Não envie dados pessoais reais, seus ou de terceiros."
+      },
+      {
+        "title": "Uso esportivo",
+        "text": "Treinadores podem criar equipes e registrar treinos e avaliações fictícias. Atletas podem pedir ingresso e acompanhar seu desempenho. Proteja seu acesso e use apenas os dados de teste da sua equipe."
+      },
+      {
+        "title": "Decisões",
+        "text": "Para criar uma conta, aceite estes Termos e confirme separadamente a ciência da Política. As decisões ficam associadas à versão apresentada."
+      }
+    ]
+  },
+  {
+    "type": "PRIVACY",
+    "title": "Política de Privacidade — versão provisória de demonstração acadêmica",
+    "version": "demo-2026-11-24.1",
+    "effectiveAt": "2026-11-24T00:00:01Z",
+    "requirementKey": "demo-privacy-1",
+    "changeSummary": "Versão provisória para testes com dados fictícios.",
+    "content": [
+      {
+        "title": "Dados de teste",
+        "text": "O WebKore está em demonstração acadêmica para o TCC. Não insira dados pessoais reais. Use nome, e-mail, data de nascimento de atleta e registros esportivos fictícios. A senha de acesso é armazenada como hash."
+      },
+      {
+        "title": "Uso e acesso",
+        "text": "A API utiliza os dados para autenticar participantes, gerenciar vínculos e apresentar treinos, presença, notas e estatísticas. O treinador acompanha os atletas de suas equipes. O atleta consulta seus próprios registros. Os dados da aplicação ficam no MySQL hospedado no Railway."
+      },
+      {
+        "title": "Controle da conta",
+        "text": "Em Meu Perfil você pode consultar suas decisões sobre os documentos, exportar os dados da conta e solicitar a exclusão. A exclusão não recolhe arquivos já baixados. A ciência desta Política e o aceite dos Termos são registrados separadamente."
+      }
+    ]
+  }
+]

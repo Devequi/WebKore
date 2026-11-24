@@ -3,10 +3,10 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { createServer as createSocketServer } from "node:net";
-import { writeFile, unlink } from "node:fs/promises";
+import { readFile, writeFile, unlink } from "node:fs/promises";
 import { PrismaClient } from "@prisma/client";
 import "../../server/src/config/environment.js";
-import { initialLegalDocuments } from "../../shared/legalDocuments.js";
+const demoDocuments = JSON.parse(await readFile(new URL("../../prisma/legal-demo.json", import.meta.url), "utf8")).sort((a,b) => a.type.localeCompare(b.type));
 import { documentData, legalStatus, recordDecision } from "../../server/src/domain/legal.js";
 const originalUrl = process.env.DATABASE_URL;
 const url = new URL(originalUrl);
@@ -25,15 +25,15 @@ try {
   const migration = spawnSync(process.execPath, ["node_modules/prisma/build/index.js", "migrate", "deploy"], { env: process.env, encoding: "utf8" });
   assert.equal(migration.status, 0, migration.stderr);
   ({ prisma } = await import("../../server/src/db/prisma.js"));
-  const docs = initialLegalDocuments.map(documentData);
-  await prisma.legalDocument.createMany({ data: docs });
+  const docs = demoDocuments.map(documentData);
+
   await check("publicação imutável e idempotente após persistência JSON no MySQL", async () => {
     for (let n = 0; n < 2; n++) {
-      const result = spawnSync(process.execPath, ["prisma/publish-legal.js"], { env: process.env, encoding: "utf8" });
+      const result = spawnSync(process.execPath, ["prisma/publish-legal.js", "--demo"], { env: { ...process.env, NODE_ENV: "production" }, encoding: "utf8" });
       assert.equal(result.status, 0, result.stderr);
     }
     const path = `tmp/${database}-document.json`;
-    await writeFile(path, JSON.stringify({ ...initialLegalDocuments[0], title: "Tentativa de sobrescrever versão" }));
+    await writeFile(path, JSON.stringify({ ...demoDocuments[0], title: "Tentativa de sobrescrever versão" }));
     try { const result = spawnSync(process.execPath, ["prisma/publish-legal.js", path], { env: process.env, encoding: "utf8" }); assert.equal(result.status, 1); assert.match(result.stderr, /imutável/); }
     finally { await unlink(path); }
     assert.equal(await prisma.legalDocument.count(), 2);
@@ -81,7 +81,7 @@ try {
     await runLegalBrowserChecks(base, athlete.token);
   }
   // Consent documents are fixtures ONLY in this disposable database. No invented purpose in the real catalog.
-  const consent = await prisma.legalDocument.create({ data: documentData({ ...initialLegalDocuments[0], type: "CONSENT", purpose: "TEST_ONLY", version: "fixture-1", requirementKey: "fixture-purpose-1" }) });
+  const consent = await prisma.legalDocument.create({ data: documentData({ ...demoDocuments[0], type: "CONSENT", purpose: "TEST_ONLY", version: "fixture-1", requirementKey: "fixture-purpose-1" }) });
   await check("cadastro registra escolha opcional separada, sem autorização genérica", async () => {
     for (const granted of [false, true]) {
       const result = await request("/auth/register", "POST", { ...userBody, email: `choice-${granted}@example.invalid`, legal: { ...legal, consents: [{ documentId: consent.id, granted }] } }, null, 201);
@@ -112,27 +112,27 @@ try {
   });
   await check("nova finalidade não herda consentimento", async () => {
     await recordDecision(prisma, athlete.user.id, { documentId: consent.id, action: "GRANT", requestKey: "fixture-regrant" });
-    await prisma.legalDocument.create({ data: documentData({ ...initialLegalDocuments[0], type: "CONSENT", purpose: "TEST_ONLY", version: "fixture-2", requirementKey: "fixture-purpose-2", effectiveAt: new Date().toISOString() }) });
+    await prisma.legalDocument.create({ data: documentData({ ...demoDocuments[0], type: "CONSENT", purpose: "TEST_ONLY", version: "fixture-2", requirementKey: "fixture-purpose-2", effectiveAt: new Date().toISOString() }) });
     assert.equal((await legalStatus(prisma, athlete.user.id)).consents[0].granted, false);
     await recordDecision(prisma, athlete.user.id, { documentId: consent.id, action: "REVOKE", requestKey: "fixture-old-revoke" });
   });
   await check("nova versão editorial dos Termos não exige aceite", async () => {
-    await prisma.legalDocument.create({ data: documentData({ ...initialLegalDocuments[1], version: "fixture-edit", effectiveAt: new Date().toISOString() }) });
+    await prisma.legalDocument.create({ data: documentData({ ...demoDocuments[1], version: "fixture-edit", effectiveAt: new Date().toISOString() }) });
     assert.equal((await legalStatus(prisma, athlete.user.id)).pending.length, 0);
     assert.equal((await request(`/legal/documents/TERMS/${docs[1].version}`)).id, docs[1].id);
   });
   await check("alteração material dos Termos exige nova decisão sem bloquear login", async () => {
-    await prisma.legalDocument.create({ data: documentData({ ...initialLegalDocuments[1], version: "fixture-material", requirementKey: "new-contract", effectiveAt: new Date(Date.now() - 1).toISOString() }) });
+    await prisma.legalDocument.create({ data: documentData({ ...demoDocuments[1], version: "fixture-material", requirementKey: "new-contract", effectiveAt: new Date(Date.now() - 1).toISOString() }) });
     // Ensure deterministic current revision even on a millisecond tie.
     const latest = await prisma.legalDocument.findUnique({ where: { id: "TERMS-fixture-edit" } });
     // Create a later effective date relative to both, but already effective.
     await new Promise(r => setTimeout(r, 5));
-    await prisma.legalDocument.create({ data: documentData({ ...initialLegalDocuments[1], version: "fixture-material-final", requirementKey: "new-contract", effectiveAt: new Date().toISOString() }) });
+    await prisma.legalDocument.create({ data: documentData({ ...demoDocuments[1], version: "fixture-material-final", requirementKey: "new-contract", effectiveAt: new Date().toISOString() }) });
     assert.equal((await legalStatus(prisma, athlete.user.id)).pending[0].type, "TERMS");
     const login = await request("/auth/login", "POST", { email: userBody.email, password: userBody.password }); assert.ok(login.token); assert.ok(latest);
   });
   await check("nova Política não gera consentimento automático", async () => {
-    await prisma.legalDocument.create({ data: documentData({ ...initialLegalDocuments[0], version: "fixture-policy", requirementKey: "new-notice", effectiveAt: new Date().toISOString() }) });
+    await prisma.legalDocument.create({ data: documentData({ ...demoDocuments[0], version: "fixture-policy", requirementKey: "new-notice", effectiveAt: new Date().toISOString() }) });
     const status = await legalStatus(prisma, athlete.user.id); assert.ok(status.pending.some(d => d.type === "PRIVACY")); assert.equal(status.consents[0].granted, false);
   });
   const current = await legalStatus(prisma, athlete.user.id);

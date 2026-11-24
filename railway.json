@@ -1,0 +1,5 @@
+{
+  "deploy": {
+    "preDeployCommand": "node prisma/publish-legal.js --demo"
+  }
+}
